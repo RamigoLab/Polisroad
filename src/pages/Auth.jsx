@@ -37,13 +37,13 @@ export const Auth = () => {
   return (
     <PageWrapper style={{ justifyContent: 'center', backgroundColor: C.primary, color: '#fff' }}>
       <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>CdS Pro</h1>
-        <p style={{ color: C.accentLight }}>Codice della Strada e Prontuario</p>
+        <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>PolisRoad</h1>
+        <p style={{ color: C.accentLight }}>Il Codice della Strada, sempre con te</p>
       </div>
 
       <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', color: C.text }}>
         <h2 style={{ marginBottom: '20px', textAlign: 'center' }}>{isLogin ? 'Accedi' : 'Registrati'}</h2>
-        
+
         {!isLogin && (
           <>
             <TextInput label="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
@@ -52,12 +52,12 @@ export const Auth = () => {
             <TextInput label="Forza di Polizia" value={forza} onChange={(e) => setForza(e.target.value)} />
           </>
         )}
-        
+
         <TextInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
         <TextInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
-        <button 
-          onClick={handleSubmit} 
+        <button
+          onClick={handleSubmit}
           disabled={loading}
           style={{
             width: '100%',
@@ -75,7 +75,7 @@ export const Auth = () => {
         </button>
 
         <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <button 
+          <button
             onClick={() => setIsLogin(!isLogin)}
             style={{ color: C.accent, textDecoration: 'underline', fontSize: '0.9rem' }}
           >
@@ -83,7 +83,7 @@ export const Auth = () => {
           </button>
         </div>
       </div>
-      
+
       {toast && <Toast message={toast} type="error" onClose={() => setToast('')} />}
     </PageWrapper>
   );
