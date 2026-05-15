@@ -3,62 +3,125 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
 import { Toast } from '../components/ui/Toast';
 import { C } from '../styles/theme';
+import { S } from '../styles/styles';
+import { PS } from '../styles/pages';
 import { useAuth } from '../hooks/useAuth';
+import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS } from '../config/constants';
 
-export const Profilo = () => {
-  const { profile, updateProfile, signOut } = useAuth();
-  
-  const [grado, setGrado] = useState(profile?.grado || '');
-  const [nome, setNome] = useState(profile?.nome || '');
-  const [cognome, setCognome] = useState(profile?.cognome || '');
-  const [forza, setForza] = useState(profile?.forza || '');
-  const [email, setEmail] = useState(profile?.email || '');
-  const [telefono, setTelefono] = useState(profile?.telefono || '');
-  
+export const Profilo = ({ onNavigate }) => {
+  const { profile, updateProfile, signOut, userCount } = useAuth();
+
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    grado: profile?.grado || '',
+    nome: profile?.nome || '',
+    cognome: profile?.cognome || '',
+    forza: profile?.forza || '',
+    email: profile?.email || '',
+    telefono: profile?.telefono || '',
+  });
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState('');
 
   const handleSave = async () => {
     setLoading(true);
-    const { error } = await updateProfile({ grado, nome, cognome, forza, email, telefono });
+    const { error } = await updateProfile(formData);
     if (error) setToast('Errore nel salvataggio: ' + error.message);
-    else setToast('Profilo aggiornato con successo!');
+    else { setToast('Profilo aggiornato!'); setIsEditing(false); }
     setLoading(false);
   };
 
-  return (
-    <PageWrapper>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-        <h2 style={{ color: C.primary }}>Profilo Operatore</h2>
-        <button 
-          onClick={signOut}
-          style={{ padding: '6px 12px', backgroundColor: C.dangerLight, color: C.danger, borderRadius: '8px', fontWeight: 'bold' }}>
-          Esci
-        </button>
+  const handleCancel = () => {
+    setFormData({
+      grado: profile?.grado || '', nome: profile?.nome || '',
+      cognome: profile?.cognome || '', forza: profile?.forza || '',
+      email: profile?.email || '', telefono: profile?.telefono || '',
+    });
+    setIsEditing(false);
+  };
+
+  const DataRow = ({ label, value, icon }) => (
+    <div style={S.dataRow}>
+      <div style={S.dataRowIcon}>{icon}</div>
+      <div style={{ flex: 1 }}>
+        <div style={S.dataRowLabel}>{label}</div>
+        <div style={S.dataRowValue}>{value || 'Non specificato'}</div>
       </div>
-      
-      <div style={{ backgroundColor: '#fff', padding: '16px', borderRadius: '12px', marginBottom: '24px' }}>
-        <TextInput label="Grado" value={grado} onChange={e => setGrado(e.target.value)} />
-        <TextInput label="Nome" value={nome} onChange={e => setNome(e.target.value)} />
-        <TextInput label="Cognome" value={cognome} onChange={e => setCognome(e.target.value)} />
-        <TextInput label="Forza di Polizia" value={forza} onChange={e => setForza(e.target.value)} />
-        <TextInput label="Email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
-        <TextInput label="Telefono" type="tel" value={telefono} onChange={e => setTelefono(e.target.value)} />
-        
-        <button 
-          onClick={handleSave}
-          disabled={loading}
-          style={{ width: '100%', padding: '12px', backgroundColor: C.primary, color: '#fff', borderRadius: '8px', fontWeight: 'bold', marginTop: '8px' }}>
-          {loading ? 'Salvataggio...' : 'Salva Modifiche'}
-        </button>
+    </div>
+  );
+
+  const SysRow = ({ label, value, valueStyle }) => (
+    <div style={S.infoRow}>
+      <span style={{ color: C.textLight }}>{label}</span>
+      <span style={{ fontWeight: 'bold', ...valueStyle }}>{value}</span>
+    </div>
+  );
+
+  return (
+    <PageWrapper onNavigate={onNavigate}>
+      <div style={{ ...S.pageHeader, marginBottom: '24px' }}>
+        <h2 style={S.pageTitle}>Profilo Operatore</h2>
+        <button onClick={signOut} style={PS.profileExitBtn}>Esci</button>
       </div>
 
-      <div style={{ backgroundColor: '#fff', padding: '16px', borderRadius: '12px', textAlign: 'center', border: `1px solid ${C.border}` }}>
-        <h4 style={{ color: C.primary, marginBottom: '8px' }}>Supporta CdS Pro</h4>
+      {/* Scheda Identità */}
+      <div style={{ ...S.cardElevated, marginBottom: '24px' }}>
+        <div style={PS.profileHeaderBg}>
+          <div style={PS.profileAvatar}>👮</div>
+          <div>
+            <h3 style={PS.profileHeaderName}>{profile?.nome} {profile?.cognome}</h3>
+            <p style={PS.profileHeaderGrado}>{profile?.grado || 'Operatore'}</p>
+          </div>
+        </div>
+
+        <div style={{ padding: '16px' }}>
+          {isEditing ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+              <TextInput label="Grado" value={formData.grado} onChange={e => setFormData({ ...formData, grado: e.target.value })} />
+              <TextInput label="Nome" value={formData.nome} onChange={e => setFormData({ ...formData, nome: e.target.value })} />
+              <TextInput label="Cognome" value={formData.cognome} onChange={e => setFormData({ ...formData, cognome: e.target.value })} />
+              <TextInput label="Forza di Polizia" value={formData.forza} onChange={e => setFormData({ ...formData, forza: e.target.value })} />
+              <TextInput label="Email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
+              <TextInput label="Telefono" type="tel" value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} />
+              <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                <button onClick={handleCancel} style={S.btnSecondary}>Annulla</button>
+                <button onClick={handleSave} disabled={loading} style={{ ...S.btnPrimary, flex: 2 }}>
+                  {loading ? 'Salvataggio...' : 'Salva Modifiche'}
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <DataRow label="Grado / Qualifica" value={profile?.grado} icon="🎖️" />
+              <DataRow label="Nome" value={profile?.nome} icon="👤" />
+              <DataRow label="Cognome" value={profile?.cognome} icon="🆔" />
+              <DataRow label="Corpo / Forza" value={profile?.forza} icon="🏢" />
+              <DataRow label="Email di Servizio" value={profile?.email} icon="📧" />
+              <DataRow label="Contatto Telefonico" value={profile?.telefono} icon="📱" />
+              <button onClick={() => setIsEditing(true)} style={S.btnOutline}>⚙️ Modifica Profilo</button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Informazioni di Sistema */}
+      <div style={PS.profileSysBox}>
+        <h4 style={PS.profileSysTitle}>📦 Informazioni di Sistema</h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <SysRow label="Versione Database CdS:" value={DB_VERSION_CDS} valueStyle={{ color: C.primary }} />
+          <SysRow label="Versione Prontuario:" value={DB_VERSION_PRONTUARIO} valueStyle={{ color: C.primary }} />
+          <SysRow label="Operatori Iscritti:" value={userCount} valueStyle={{ color: C.accent }} />
+          <SysRow label="Stato Connessione:" value={SYSTEM_STATUS} valueStyle={{ color: C.success }} />
+        </div>
+      </div>
+
+      {/* Supporta */}
+      <div style={PS.profileSupportBox}>
+        <h4 style={{ color: C.primary, marginBottom: '8px' }}>Supporta PolisRoad</h4>
         <p style={{ fontSize: '0.85rem', color: C.textLight, marginBottom: '12px' }}>
           Questa app è sviluppata per supportare il lavoro delle forze dell'ordine. Se la trovi utile, puoi offrire un caffè allo sviluppatore.
         </p>
-        <a href="#" style={{ display: 'inline-block', padding: '10px 20px', backgroundColor: '#0070ba', color: '#fff', borderRadius: '24px', textDecoration: 'none', fontWeight: 'bold', fontSize: '0.9rem' }}>
+        <a href="https://www.paypal.me" target="_blank" rel="noreferrer" style={PS.profileDonateBtn}>
           ☕ Dona con PayPal
         </a>
       </div>

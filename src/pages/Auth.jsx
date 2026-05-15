@@ -2,8 +2,52 @@ import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
 import { Toast } from '../components/ui/Toast';
-import { useAuth } from '../hooks/useAuth';
 import { C } from '../styles/theme';
+import { S } from '../styles/styles';
+import { useAuth } from '../hooks/useAuth';
+
+const authPageStyle = {
+  justifyContent: 'center',
+  backgroundColor: C.primary,
+  color: '#fff',
+};
+
+const authHeaderStyle = {
+  textAlign: 'center',
+  marginBottom: '32px',
+};
+
+const authTitleStyle = {
+  fontSize: '2.5rem',
+  marginBottom: '8px',
+};
+
+const authSubtitleStyle = {
+  color: C.accentLight,
+};
+
+const authCardStyle = {
+  backgroundColor: '#fff',
+  padding: '24px',
+  borderRadius: '16px',
+  color: C.text,
+};
+
+const authCardTitleStyle = {
+  marginBottom: '20px',
+  textAlign: 'center',
+};
+
+const authSwitchStyle = {
+  textAlign: 'center',
+  marginTop: '16px',
+};
+
+const authSwitchBtnStyle = {
+  color: C.accent,
+  textDecoration: 'underline',
+  fontSize: '0.9rem',
+};
 
 export const Auth = () => {
   const { signIn, signUp } = useAuth();
@@ -26,23 +70,20 @@ export const Auth = () => {
     } else {
       const { error } = await signUp(email, password, { nome, cognome, grado, forza });
       if (error) setToast(error.message);
-      else {
-        setToast('Registrazione completata!');
-        setIsLogin(true);
-      }
+      else { setToast('Registrazione completata!'); setIsLogin(true); }
     }
     setLoading(false);
   };
 
   return (
-    <PageWrapper style={{ justifyContent: 'center', backgroundColor: C.primary, color: '#fff' }}>
-      <div style={{ textAlign: 'center', marginBottom: '32px' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '8px' }}>PolisRoad</h1>
-        <p style={{ color: C.accentLight }}>Il Codice della Strada, sempre con te</p>
+    <PageWrapper style={authPageStyle}>
+      <div style={authHeaderStyle}>
+        <h1 style={authTitleStyle}>PolisRoad</h1>
+        <p style={authSubtitleStyle}>Il Codice della Strada, sempre con te</p>
       </div>
 
-      <div style={{ backgroundColor: '#fff', padding: '24px', borderRadius: '16px', color: C.text }}>
-        <h2 style={{ marginBottom: '20px', textAlign: 'center' }}>{isLogin ? 'Accedi' : 'Registrati'}</h2>
+      <div style={authCardStyle}>
+        <h2 style={authCardTitleStyle}>{isLogin ? 'Accedi' : 'Registrati'}</h2>
 
         {!isLogin && (
           <>
@@ -59,26 +100,13 @@ export const Auth = () => {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          style={{
-            width: '100%',
-            padding: '14px',
-            backgroundColor: C.primary,
-            color: '#fff',
-            borderRadius: '8px',
-            fontSize: '1rem',
-            fontWeight: 'bold',
-            marginTop: '8px',
-            opacity: loading ? 0.7 : 1
-          }}
+          style={{ ...S.btnPrimary, marginTop: '8px', opacity: loading ? 0.7 : 1 }}
         >
           {loading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Registrati')}
         </button>
 
-        <div style={{ textAlign: 'center', marginTop: '16px' }}>
-          <button
-            onClick={() => setIsLogin(!isLogin)}
-            style={{ color: C.accent, textDecoration: 'underline', fontSize: '0.9rem' }}
-          >
+        <div style={authSwitchStyle}>
+          <button onClick={() => setIsLogin(!isLogin)} style={authSwitchBtnStyle}>
             {isLogin ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi'}
           </button>
         </div>
