@@ -4,7 +4,7 @@ import { USE_SUPABASE } from '../config/constants';
 
 const DEMO_USER = {
   id: 'admin-1',
-  email: 'admin@cds.it',
+  email: 'admin@polisroad.it',
   nome: 'Admin',
   cognome: 'Demo',
   grado: 'Ispettore',
@@ -18,11 +18,12 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null);
   const [profile, setProfile] = useState(null);
+  const [userCount, setUserCount] = useState(0);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!USE_SUPABASE) {
-      const localSession = localStorage.getItem('cds_demo_session');
+      const localSession = localStorage.getItem('polisroad_demo_session');
       if (localSession) {
         setSession({ user: DEMO_USER });
         setProfile(DEMO_USER);
@@ -46,8 +47,21 @@ export const AuthProvider = ({ children }) => {
       }
     });
 
+    fetchUserCount();
+
     return () => subscription.unsubscribe();
   }, []);
+
+  const fetchUserCount = async () => {
+    if (!USE_SUPABASE) {
+      setUserCount(124);
+      return;
+    }
+    const { count, error } = await supabase
+      .from('profiles')
+      .select('*', { count: 'exact', head: true });
+    if (!error) setUserCount(count);
+  };
 
   const fetchProfile = async (userId) => {
     try {
@@ -69,13 +83,13 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     if (!USE_SUPABASE) {
-      if (email === 'admin@cds.it' && password === 'admin123') {
-        localStorage.setItem('cds_demo_session', 'true');
+      if (email === 'admin@polisroad.it' && password === 'admin123') {
+        localStorage.setItem('polisroad_demo_session', 'true');
         setSession({ user: DEMO_USER });
         setProfile(DEMO_USER);
         return { error: null };
       }
-      return { error: { message: 'Credenziali errate. Usa admin@cds.it / admin123' } };
+      return { error: { message: 'Credenziali errate. Usa admin@polisroad.it / admin123' } };
     }
     return await supabase.auth.signInWithPassword({ email, password });
   };
@@ -97,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     if (!USE_SUPABASE) {
-      localStorage.removeItem('cds_demo_session');
+      localStorage.removeItem('polisroad_demo_session');
       setSession(null);
       setProfile(null);
       return { error: null };
@@ -120,7 +134,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, profile, loading, signIn, signUp, signOut, updateProfile }}>
+    <AuthContext.Provider value={{ session, profile, userCount, loading, signIn, signUp, signOut, updateProfile, refreshUserCount: fetchUserCount }}>
       {children}
     </AuthContext.Provider>
   );
