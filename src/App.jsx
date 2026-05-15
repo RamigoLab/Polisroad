@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './hooks/useAuth';
+import { useData } from './context/DataContext';
 import { Auth } from './pages/Auth';
 import { Home } from './pages/Home';
 import { Prontuario } from './pages/Prontuario';
@@ -20,16 +21,32 @@ import { AdminProntuario } from './pages/admin/AdminProntuario';
 import { AdminNormativa } from './pages/admin/AdminNormativa';
 
 function App() {
-  const { session, loading } = useAuth();
+  const { session, loading: authLoading } = useAuth();
+  const { loading: dataLoading } = useData();
+  const loading = authLoading || dataLoading;
   const [currentPage, setCurrentPage] = useState('home');
-  const [showSplash, setShowSplash] = useState(true);
+  const [navigationParams, setNavigationParams] = useState(null);
+  
+  const navigate = (page, params = null) => {
+    setCurrentPage(page);
+    setNavigationParams(params);
+  };
+  const [showSplash, setShowSplash] = useState(() => {
+    // Se siamo in modalità Standalone (App installata) o se abbiamo già visto lo splash, lo saltiamo
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+    const hasShown = sessionStorage.getItem('polisroad_splash_shown');
+    return !hasShown;
+  });
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 3000);
-    return () => clearTimeout(timer);
-  }, []);
+    if (showSplash) {
+      const timer = setTimeout(() => {
+        setShowSplash(false);
+        sessionStorage.setItem('polisroad_splash_shown', 'true');
+      }, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showSplash]);
 
   if (showSplash || loading) {
     return <Splash />;
@@ -40,25 +57,27 @@ function App() {
   }
 
   const renderPage = () => {
+    const props = { onNavigate: navigate, navigationParams };
+    
     switch (currentPage) {
-      case 'home': return <Home onNavigate={setCurrentPage} />;
-      case 'prontuario': return <Prontuario />;
-      case 'normativa': return <Normativa />;
-      case 'preferiti': return <Preferiti onNavigate={setCurrentPage} />;
-      case 'ricerca': return <Ricerca onNavigate={setCurrentPage} />;
-      case 'calcolatore': return <Calcolatore />;
-      case 'news': return <News />;
-      case 'links': return <Links />;
-      case 'profilo': return <Profilo />;
-      case 'operatore': return <Operatore onNavigate={setCurrentPage} />;
+      case 'home': return <Home {...props} />;
+      case 'prontuario': return <Prontuario {...props} />;
+      case 'normativa': return <Normativa {...props} />;
+      case 'preferiti': return <Preferiti {...props} />;
+      case 'ricerca': return <Ricerca {...props} />;
+      case 'calcolatore': return <Calcolatore {...props} />;
+      case 'news': return <News {...props} />;
+      case 'links': return <Links {...props} />;
+      case 'profilo': return <Profilo {...props} />;
+      case 'operatore': return <Operatore {...props} />;
       
       // Admin Pages
-      case 'admin_dashboard': return <AdminLayout currentTab="dashboard" onNavigate={setCurrentPage}><AdminDashboard /></AdminLayout>;
-      case 'admin_news': return <AdminLayout currentTab="news" onNavigate={setCurrentPage}><AdminNews /></AdminLayout>;
-      case 'admin_prontuario': return <AdminLayout currentTab="prontuario" onNavigate={setCurrentPage}><AdminProntuario /></AdminLayout>;
-      case 'admin_normativa': return <AdminLayout currentTab="normativa" onNavigate={setCurrentPage}><AdminNormativa /></AdminLayout>;
+      case 'admin_dashboard': return <AdminLayout currentTab="dashboard" {...props}><AdminDashboard /></AdminLayout>;
+      case 'admin_news': return <AdminLayout currentTab="news" {...props}><AdminNews /></AdminLayout>;
+      case 'admin_prontuario': return <AdminLayout currentTab="prontuario" {...props}><AdminProntuario /></AdminLayout>;
+      case 'admin_normativa': return <AdminLayout currentTab="normativa" {...props}><AdminNormativa /></AdminLayout>;
       
-      default: return <Home onNavigate={setCurrentPage} />;
+      default: return <Home {...props} />;
     }
   };
 
@@ -67,7 +86,7 @@ function App() {
   return (
     <>
       {renderPage()}
-      {showNav && <BottomNav currentPage={currentPage} onNavigate={setCurrentPage} />}
+      {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
     </>
   );
 }
