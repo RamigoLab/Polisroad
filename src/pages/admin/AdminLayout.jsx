@@ -1,43 +1,44 @@
 import React from 'react';
-import { PageWrapper } from '../../components/layout/PageWrapper';
 import { C } from '../../styles/theme';
+import { LS } from '../../styles/layout';
+
+const ADMIN_TABS = [
+  { id: 'dashboard', label: 'Dashboard', page: 'admin_dashboard' },
+  { id: 'news', label: 'News', page: 'admin_news' },
+  { id: 'prontuario', label: 'Prontuario', page: 'admin_prontuario' },
+  { id: 'normativa', label: 'Normativa', page: 'admin_normativa' },
+];
 
 export const AdminLayout = ({ children, currentTab, onNavigate }) => {
   return (
-    <div style={{ flex: 1, display: 'flex', flexDirection: 'column', backgroundColor: C.text, color: '#fff', minHeight: '100vh' }}>
-      <div style={{ padding: '16px', borderBottom: '1px solid #444', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <span style={{ fontSize: '1.2rem' }}>⚙️</span>
-          <h2 style={{ fontSize: '1.2rem', margin: 0 }}>Pannello Admin</h2>
+    <div style={LS.adminContainer(C.text)}>
+      <header style={LS.adminHeader}>
+        <div style={LS.adminHeaderLeft}>
+          <span>⚙️</span>
+          <h2 style={LS.adminHeaderTitle}>Area Amministrativa</h2>
         </div>
-        <button onClick={() => onNavigate('home')} style={{ color: C.accentLight, padding: '4px' }}>Chiudi</button>
-      </div>
+        <button onClick={() => onNavigate('home')} style={LS.adminCloseBtn(C.accentLight)}>
+          Chiudi
+        </button>
+      </header>
 
-      <div style={{ display: 'flex', overflowX: 'auto', padding: '12px 16px', borderBottom: '1px solid #444', gap: '12px', scrollbarWidth: 'none' }}>
-        {['dashboard', 'news', 'prontuario', 'normativa'].map(tab => (
-          <button 
-            key={tab}
-            onClick={() => onNavigate(`admin_${tab}`)}
-            style={{ 
-              padding: '8px 16px', 
-              backgroundColor: currentTab === tab ? C.accent : 'transparent',
-              color: currentTab === tab ? '#fff' : '#aaa',
-              borderRadius: '20px',
-              border: `1px solid ${currentTab === tab ? C.accent : '#666'}`,
-              textTransform: 'capitalize',
-              whiteSpace: 'nowrap'
-            }}
+      <div style={LS.adminTabBar}>
+        {ADMIN_TABS.map(tab => (
+          <button
+            key={tab.id}
+            onClick={() => onNavigate(tab.page)}
+            style={LS.adminTab(currentTab === tab.id, C.accent)}
           >
-            {tab}
+            {tab.label}
           </button>
         ))}
       </div>
 
-      <div style={{ flex: 1, backgroundColor: C.surface, color: C.text, borderTopLeftRadius: '24px', borderTopRightRadius: '24px', marginTop: '16px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <PageWrapper style={{ padding: '24px 16px' }}>
+      <main style={LS.adminContent}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '20px' }}>
           {children}
-        </PageWrapper>
-      </div>
+        </div>
+      </main>
     </div>
   );
 };
