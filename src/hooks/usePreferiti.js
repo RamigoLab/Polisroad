@@ -55,5 +55,5 @@ export const usePreferiti = () => {
 
   const isPreferito = (id) => preferiti.includes(id);
 
-  return { preferiti, togglePreferito, isPreferito };
+  return { preferiti, togglePreferito, isPreferito, toggle: togglePreferito };
 };
