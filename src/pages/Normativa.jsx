@@ -31,9 +31,9 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   const filteredList = list.filter(item => {
     const s = search.toLowerCase();
     return (
-      item.titolo.toLowerCase().includes(s) ||
-      item.articolo.toLowerCase().includes(s) ||
-      item.testo.toLowerCase().includes(s) ||
+      (item.titolo?.toLowerCase() || '').includes(s) ||
+      (item.articolo?.toLowerCase() || '').includes(s) ||
+      (item.testo?.toLowerCase() || '').includes(s) ||
       (item.articolo_num && item.articolo_num.toString() === search)
     );
   });
