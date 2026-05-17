@@ -25,12 +25,35 @@ export const DataProvider = ({ children }) => {
       return;
     }
 
+    // Helper per aggirare il limite dei 1000 risultati di Supabase
+    const fetchAllRows = async (table, orderCol) => {
+      let allData = [];
+      let from = 0;
+      const step = 1000;
+      while (true) {
+        const { data, error } = await supabase
+          .from(table)
+          .select('*')
+          .order(orderCol)
+          .range(from, from + step - 1);
+        
+        if (error) return { data: null, error };
+        if (!data || data.length === 0) break;
+        
+        allData = [...allData, ...data];
+        if (data.length < step) break; // Fine dei risultati
+        
+        from += step;
+      }
+      return { data: allData, error: null };
+    };
+
     try {
-      // Eseguiamo le fetch in parallelo per velocità
+      // Fetch impaginate automatiche per bypassare i blocchi del server
       const [prontuarioRes, normativaRes, newsRes] = await Promise.all([
-        supabase.from('prontuario').select('*').order('rif_normativo').limit(5000),
-        supabase.from('codice_strada').select('*').order('ordine').limit(5000),
-        supabase.from('news').select('*').order('created_at', { ascending: false })
+        fetchAllRows('prontuario', 'rif_normativo'),
+        fetchAllRows('codice_strada', 'ordine'),
+        supabase.from('news').select('*').order('created_at', { ascending: false }).limit(100)
       ]);
 
       if (prontuarioRes.error || normativaRes.error || newsRes.error) {
