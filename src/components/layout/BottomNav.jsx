@@ -51,7 +51,7 @@ export const BottomNav = ({ currentPage, onNavigate }) => {
   }, []);
 
   return (
-    <div style={LS.navContainer}>
+    <div style={LS.navContainer} className="app-bottom-nav">
       <style>
         {`
           @keyframes bounceRight {

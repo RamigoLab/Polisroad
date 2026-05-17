@@ -3,6 +3,7 @@ import { useAuth } from './hooks/useAuth';
 import { useData } from './context/DataContext';
 import { Auth } from './pages/Auth';
 import { BottomNav } from './components/layout/BottomNav';
+import { Sidebar } from './components/layout/Sidebar';
 import { Splash } from './components/layout/Splash';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { PageLoader } from './components/ui/PageLoader';
@@ -100,8 +101,13 @@ function App() {
   return (
     <ErrorBoundary>
       <Suspense fallback={<PageLoader />}>
-        {renderPage()}
-        {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
+        <div className="app-viewport-container">
+          {showNav && <Sidebar currentPage={currentPage} onNavigate={navigate} />}
+          <div className="app-main-content">
+            {renderPage()}
+          </div>
+          {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
+        </div>
         {errorToast && <Toast message={errorToast} onClose={() => setErrorToast('')} />}
       </Suspense>
     </ErrorBoundary>
