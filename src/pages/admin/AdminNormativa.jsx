@@ -54,7 +54,7 @@ export const AdminNormativa = () => {
 
   const cleanTitle = (title) => {
     if (!title) return '';
-    return title.replace(/^\(|\)\.?$/g, '').trim();
+    return title.replace(/^\s*\(\s*/, '').replace(/\s*\)\s*\.?\s*$/, '').trim();
   };
 
   // Open the detailed article editor

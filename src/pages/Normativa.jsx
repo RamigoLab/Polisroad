@@ -46,7 +46,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
 
   const cleanTitle = (title) => {
     if (!title) return '';
-    return title.replace(/^\(|\)\.?$/g, '').trim();
+    return title.replace(/^\s*\(\s*/, '').replace(/\s*\)\s*\.?\s*$/, '').trim();
   };
 
   const debouncedSearch = useDebounce(search, 300);
