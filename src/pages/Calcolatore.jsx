@@ -43,10 +43,34 @@ export const Calcolatore = ({ onNavigate }) => {
           options={list.map(item => ({ value: item.id, label: `${item.rif_normativo} - ${item.titolo.substring(0, 30)}...` }))}
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <TextInput label="Edittale Minimo (€)" type="number" value={min} onChange={e => setMin(e.target.value)} />
-          <TextInput label="Edittale Massimo (€)" type="number" value={max} onChange={e => setMax(e.target.value)} />
+          <TextInput 
+            label="Edittale Minimo (€)" 
+            type="number" 
+            value={min} 
+            onChange={e => {
+              const val = e.target.value;
+              if (val === '' || parseFloat(val) >= 0) setMin(val);
+            }} 
+          />
+          <TextInput 
+            label="Edittale Massimo (€)" 
+            type="number" 
+            value={max} 
+            onChange={e => {
+              const val = e.target.value;
+              if (val === '' || parseFloat(val) >= 0) setMax(val);
+            }} 
+          />
         </div>
-        <TextInput label="Punti Patente" type="number" value={punti} onChange={e => setPunti(e.target.value)} />
+        <TextInput 
+          label="Punti Patente" 
+          type="number" 
+          value={punti} 
+          onChange={e => {
+            const val = e.target.value;
+            if (val === '' || parseInt(val, 10) >= 0) setPunti(val);
+          }} 
+        />
       </div>
 
       {min && (

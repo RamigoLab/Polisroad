@@ -11,6 +11,7 @@ import { useNote } from '../hooks/useNote';
 import { useToast } from '../components/ui/ToastManager';
 import { ProntuarioItem } from '../components/ProntuarioItem';
 import posthog from 'posthog-js';
+import { useDebounce } from '../hooks/useDebounce';
 
 export const Prontuario = ({ onNavigate, navigationParams }) => {
   const { list, loading } = useProntuario();
@@ -34,11 +35,17 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   }, [navigationParams, list, onNavigate]);
 
 
-  const filteredList = list.filter(item =>
-    item.titolo.toLowerCase().includes(search.toLowerCase()) ||
-    item.rif_normativo.toLowerCase().includes(search.toLowerCase()) ||
-    item.codice_violazione.toLowerCase().includes(search.toLowerCase())
-  );
+  const debouncedSearch = useDebounce(search, 300);
+
+  const filteredList = useMemo(() => {
+    const s = debouncedSearch.trim().toLowerCase();
+    if (s.length < 2) return list;
+    return list.filter(item =>
+      (item.titolo || '').toLowerCase().includes(s) ||
+      (item.rif_normativo || '').toLowerCase().includes(s) ||
+      (item.codice_violazione || '').toLowerCase().includes(s)
+    );
+  }, [list, debouncedSearch]);
 
   const handleNoteSave = async (id) => {
     try {

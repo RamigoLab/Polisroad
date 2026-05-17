@@ -6,6 +6,7 @@ import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useNormativa } from '../hooks/useNormativa';
+import { useDebounce } from '../hooks/useDebounce';
 
 export const Normativa = ({ onNavigate, navigationParams }) => {
   const { list, loading } = useNormativa();
@@ -48,8 +49,10 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     return title.replace(/^\(|\)\.?$/g, '').trim();
   };
 
+  const debouncedSearch = useDebounce(search, 300);
+
   const filteredList = React.useMemo(() => {
-    const s = search.toLowerCase();
+    const s = debouncedSearch.trim().toLowerCase();
     if (!s) return groupedList;
 
     return groupedList.filter(group => {
@@ -57,7 +60,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
       if (
         (group.titolo?.toLowerCase() || '').includes(s) || 
         (group.articolo?.toLowerCase() || '').includes(s) || 
-        (group.articolo_num?.toString() || '') === search
+        (group.articolo_num?.toString() || '') === debouncedSearch
       ) {
         return true;
       }
@@ -67,7 +70,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
         (c.comma?.toLowerCase() || '').includes(s)
       );
     });
-  }, [groupedList, search]);
+  }, [groupedList, debouncedSearch]);
 
   if (selectedItem) {
     return (
