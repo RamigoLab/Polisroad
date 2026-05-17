@@ -1,86 +1,79 @@
-# 🚔 PolisRoad — Smart Enforcement Tool
+# 🚔 **PolisRoad — Smart Enforcement Tool**
 
 [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
 [![Vite](https://img.shields.io/badge/vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
 [![Supabase](https://img.shields.io/badge/Supabase-3EC988?style=for-the-badge&logo=supabase&logoColor=white)](https://supabase.com/)
 [![Status](https://img.shields.io/badge/Status-Professional_Release-blue?style=for-the-badge)](https://github.com/)
 
-**PolisRoad** è una Progressive Web App (PWA) d'avanguardia progettata per supportare le Forze dell'Ordine nell'attività quotidiana di controllo stradale. Offre accesso istantaneo al Codice della Strada, un prontuario operativo digitale e strumenti di calcolo avanzati, il tutto con un'interfaccia premium ottimizzata per l'uso mobile "on-the-field".
+**PolisRoad** è una Progressive Web App (PWA) d'avanguardia progettata per supportare le Forze dell'Ordine nella gestione del Codice della Strada, con un'interfaccia premium, veloce e mobile‑first.
 
 ---
 
 ## ✨ Funzionalità Chiave
 
-### 🚨 Modalità Operatore
-Un'interfaccia ad alto contrasto (Dark Mode) progettata per l'uso notturno o in condizioni di scarsa visibilità.
-*   **Accesso rapido ai preferiti**: Le violazioni più frequenti a portata di un tap.
-*   **Calcoli Dinamici**: Calcolo automatico delle sanzioni (PMR, scontata 30%, sanzioni notturne maggiorate del 33.3%).
-*   **Note Operative**: Suggerimenti tecnici e note al verbale integrate per ogni articolo.
+### 🚨 Modalità Operatore (Dark Mode)
+- **Dark Mode** integrata a livello di CSS con variabili (`:root` / `[data‑theme="dark"]`).
+- Interruttore nell'**area Impostazioni Aspetto** della pagina Profilo; la preferenza è salvata in `localStorage` e applicata prima del rendering per evitare flash bianco.
+- Design a contrasto elevato, ottimizzato per l'uso notturno.
 
 ### 📋 Prontuario & Normativa
-*   **Ricerca Intelligente**: Filtra per numero articolo, parola chiave o codice violazione.
-*   **Database Sincronizzato**: Dati sempre aggiornati tramite integrazione cloud con Supabase.
-*   **Testo Integrale**: Accesso completo agli articoli del CdS (Tabella `codice_strada`).
+- **Ricerca intelligente** (debounce a 300 ms) per evitare ricaricamenti ad ogni tasto.
+- **Filtraggio memoizzato** con `useMemo` per performance fluide.
+- **Grouping articolo/commi** nella pagina Normativa; visualizzazione di tutti i commi di un articolo in un unico blocco.
+- **Note operative**: ora il hook `useNote` espone `save` (alias di `salvaNota`) per coerenza con l'uso in `Prontuario.jsx`. È mantenuta anche `salvaNota` per retro‑compatibilità.
+- **Loading / error handling** migliorati in `DataContext.jsx`: messaggi user‑friendly per errori di rete, policy RLS, tabelle mancanti, ecc.
 
-### ⚙️ Pannello Amministrativo
-Un backend completo per la gestione dei contenuti senza toccare il codice:
-*   Gestione News e aggiornamenti normativi.
-*   Editing del Prontuario e delle sanzioni.
-*   Statistiche di sistema (operatori iscritti, versioni database).
+### ⚙️ Backend & Sync
+- **Supabase pagination fix**: la nuova funzione `fetchAllRows` legge i dati a blocchi da 1000 righe usando `.range()`, garantendo il recupero di tutti i > 1000 record (es. 240 articoli del Codice della Strada).
+- **RLS Policies** consigliate (SQL fornito nella documentazione) per garantire lettura sicura delle tabelle `note`, `prontuario`, `codice_strada`, ecc.
 
-### 📱 Esperienza PWA
-*   Installabile su smartphone come un'app nativa.
-*   Splash screen professionale e gestione sessione avanzata.
-*   Navigazione orizzontale fluida e feedback visivi premium.
+### 📱 PWA & UX
+- Installabile su smartphone, splash screen personalizzato.
+- Animazioni di transizione, micro‑interazioni su pulsanti, focus‑visible per accessibilità.
+- Layout responsive da 320 px a 480 px con design system centralizzato (`src/styles/*`).
 
 ---
 
 ## 🛠️ Stack Tecnologico
-
-*   **Frontend**: React.js con hooks personalizzati.
-*   **Build Tool**: Vite per prestazioni fulminee.
-*   **Styling**: Design System centralizzato in Vanilla JS (Zero dipendenze esterne pesanti).
-*   **Backend & DB**: Supabase (PostgreSQL + Auth).
-*   **Icons**: Material Design & Custom Branding.
+- **Frontend**: React 18 + Hooks personalizzati (`useNote`, `useDebounce`, `useProntuario`, ecc.).
+- **Build**: Vite (rapid hot‑module reload).
+- **Styling**: Design System in Vanilla JS (`theme.js`, `pages.js`, `styles.js`).
+- **Backend/DB**: Supabase (PostgreSQL + Auth).
+- **Icons**: Material Design + custom branding.
 
 ---
 
 ## 🚀 Installazione Locale
 
-1. **Clona il repository**:
-   ```bash
-   git clone https://github.com/tuo-username/polisroad.git
-   ```
+```bash
+# 1. Clona il repository
+git clone https://github.com/tuo-username/polisroad.git
+cd polisroad
 
-2. **Installa le dipendenze**:
-   ```bash
-   npm install
-   ```
+# 2. Installa le dipendenze
+npm install
 
-3. **Configura l'ambiente**:
-   Crea un file `.env` nella root con le tue credenziali Supabase:
-   ```env
-   VITE_SUPABASE_URL=tua_url
-   VITE_SUPABASE_ANON_KEY=tua_chiave
-   ```
+# 3. Configura le credenziali Supabase
+#    Crea un file .env nella root con:
+#    VITE_SUPABASE_URL=your_url
+#    VITE_SUPABASE_ANON_KEY=your_key
 
-4. **Avvia in modalità sviluppo**:
-   ```bash
-   npm run dev
-   ```
+# 4. Avvia in modalità sviluppo
+npm run dev
+```
 
 ---
 
-## 📸 Preview Design
-L'applicazione utilizza un design moderno basato su:
-*   **Glassmorphism**: Trasparenze e sfocature eleganti.
-*   **Premium Palette**: Colori istituzionali calibrati per la leggibilità.
-*   **Responsive Layout**: Adattamento perfetto da mobile a desktop.
+## 📸 Design & UX
+- **Glassmorphism** con sfondi semi‑trasparenti e ombre morbide.
+- **Palette premium** (primary, accent, success, danger, warning) gestita tramite CSS variables per supportare Light & Dark mode.
+- **Responsive Grid** per Home, Prontuario, Normativa e Calcolatore.
 
 ---
 
 ## 🤝 Contatti & Supporto
-Sviluppato per supportare l'efficienza e la precisione del lavoro delle Forze di Polizia.
+Sviluppato per aumentare l’efficienza operativa delle Forze dell’Ordine. Per segnalazioni, bug o richieste di funzionalità apri una *issue* su GitHub.
 
 ---
+
 *PolisRoad — La legge, a portata di click.*
