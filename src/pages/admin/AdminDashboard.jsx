@@ -1,8 +1,8 @@
 import React from 'react';
 import { C } from '../../styles/theme';
 import { S } from '../../styles/styles';
-import { PS } from '../../styles/pages';
 import { useNews } from '../../hooks/useNews';
+
 import { useProntuario } from '../../hooks/useProntuario';
 import { useNormativa } from '../../hooks/useNormativa';
 import { useAuth } from '../../hooks/useAuth';

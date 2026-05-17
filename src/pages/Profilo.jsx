@@ -8,6 +8,23 @@ import { PS } from '../styles/pages';
 import { useAuth } from '../hooks/useAuth';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS } from '../config/constants';
 
+const DataRow = ({ label, value, icon }) => (
+  <div style={S.dataRow}>
+    <div style={S.dataRowIcon}>{icon}</div>
+    <div style={{ flex: 1 }}>
+      <div style={S.dataRowLabel}>{label}</div>
+      <div style={S.dataRowValue}>{value || 'Non specificato'}</div>
+    </div>
+  </div>
+);
+
+const SysRow = ({ label, value, valueStyle }) => (
+  <div style={S.infoRow}>
+    <span style={{ color: C.textLight }}>{label}</span>
+    <span style={{ fontWeight: 'bold', ...valueStyle }}>{value}</span>
+  </div>
+);
+
 export const Profilo = ({ onNavigate }) => {
   const { profile, updateProfile, signOut, userCount } = useAuth();
 
@@ -40,22 +57,6 @@ export const Profilo = ({ onNavigate }) => {
     setIsEditing(false);
   };
 
-  const DataRow = ({ label, value, icon }) => (
-    <div style={S.dataRow}>
-      <div style={S.dataRowIcon}>{icon}</div>
-      <div style={{ flex: 1 }}>
-        <div style={S.dataRowLabel}>{label}</div>
-        <div style={S.dataRowValue}>{value || 'Non specificato'}</div>
-      </div>
-    </div>
-  );
-
-  const SysRow = ({ label, value, valueStyle }) => (
-    <div style={S.infoRow}>
-      <span style={{ color: C.textLight }}>{label}</span>
-      <span style={{ fontWeight: 'bold', ...valueStyle }}>{value}</span>
-    </div>
-  );
 
   return (
     <PageWrapper onNavigate={onNavigate}>

@@ -3,8 +3,8 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { Badge } from '../components/ui/Badge';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
-import { C } from '../styles/theme';
 import { useNews } from '../hooks/useNews';
+
 
 export const News = ({ onNavigate }) => {
   const { list, loading } = useNews();

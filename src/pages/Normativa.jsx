@@ -20,7 +20,8 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
         onNavigate('normativa', null);
       }
     }
-  }, [navigationParams, list]);
+  }, [navigationParams, list, onNavigate]);
+
 
   const cleanTitle = (title) => {
     if (!title) return '';

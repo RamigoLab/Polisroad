@@ -1,8 +1,8 @@
 import React from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
-import { C } from '../styles/theme';
 import { PS } from '../styles/pages';
 import { useAuth } from '../hooks/useAuth';
+
 import { useNews } from '../hooks/useNews';
 
 export const Home = ({ onNavigate }) => {

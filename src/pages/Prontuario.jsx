@@ -27,7 +27,8 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
         onNavigate('prontuario', null);
       }
     }
-  }, [navigationParams, list]);
+  }, [navigationParams, list, onNavigate]);
+
 
   const filteredList = list.filter(item =>
     item.titolo.toLowerCase().includes(search.toLowerCase()) ||

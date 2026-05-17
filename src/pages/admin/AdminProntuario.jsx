@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import { C } from '../../styles/theme';
 import { S } from '../../styles/styles';
 import { PS } from '../../styles/pages';
+
 import { TextInput } from '../../components/ui/TextInput';
 import { TextArea } from '../../components/ui/TextArea';
 import { useProntuario } from '../../hooks/useProntuario';
