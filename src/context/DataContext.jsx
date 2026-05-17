@@ -28,8 +28,8 @@ export const DataProvider = ({ children }) => {
     try {
       // Eseguiamo le fetch in parallelo per velocità
       const [prontuarioRes, normativaRes, newsRes] = await Promise.all([
-        supabase.from('prontuario').select('*').order('rif_normativo'),
-        supabase.from('codice_strada').select('*').order('ordine'),
+        supabase.from('prontuario').select('*').order('rif_normativo').limit(5000),
+        supabase.from('codice_strada').select('*').order('ordine').limit(5000),
         supabase.from('news').select('*').order('created_at', { ascending: false })
       ]);
 
