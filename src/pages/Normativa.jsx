@@ -12,31 +12,58 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
 
+  // Raggruppa i commi per articolo
+  const groupedList = React.useMemo(() => {
+    const groups = Object.values(list.reduce((acc, item) => {
+      const art = item.articolo_num;
+      if (!acc[art]) {
+        acc[art] = {
+          id: `art_${art}`,
+          articolo: item.articolo,
+          articolo_num: item.articolo_num,
+          titolo: item.titolo,
+          commi: []
+        };
+      }
+      acc[art].commi.push(item);
+      return acc;
+    }, {})).sort((a, b) => a.articolo_num - b.articolo_num);
+
+    groups.forEach(g => g.commi.sort((a, b) => a.comma_num - b.comma_num));
+    return groups;
+  }, [list]);
+
   useEffect(() => {
-    if (navigationParams?.selectedId && list.length > 0) {
-      const item = list.find(i => i.id === navigationParams.selectedId);
-      if (item) {
-        setSelectedItem(item);
+    if (navigationParams?.selectedId && groupedList.length > 0) {
+      const group = groupedList.find(g => g.commi.some(c => c.id === navigationParams.selectedId));
+      if (group) {
+        setSelectedItem(group);
         onNavigate('normativa', null);
       }
     }
-  }, [navigationParams, list, onNavigate]);
-
+  }, [navigationParams, groupedList, onNavigate]);
 
   const cleanTitle = (title) => {
     if (!title) return '';
     return title.replace(/^\(|\)\.?$/g, '').trim();
   };
 
-  const filteredList = list.filter(item => {
+  const filteredList = React.useMemo(() => {
     const s = search.toLowerCase();
-    return (
-      (item.titolo?.toLowerCase() || '').includes(s) ||
-      (item.articolo?.toLowerCase() || '').includes(s) ||
-      (item.testo?.toLowerCase() || '').includes(s) ||
-      (item.articolo_num && item.articolo_num.toString() === search)
-    );
-  });
+    if (!s) return groupedList;
+
+    return groupedList.filter(group => {
+      // Cerca nel titolo o nel numero dell'articolo
+      if ((group.titolo?.toLowerCase() || '').includes(s) || group.articolo_num.toString() === search) {
+        return true;
+      }
+      // Cerca all'interno dei testi di tutti i commi
+      return group.commi.some(c => 
+        (c.testo?.toLowerCase() || '').includes(s) ||
+        (c.comma?.toLowerCase() || '').includes(s)
+      );
+    });
+  }, [groupedList, search]);
 
   if (selectedItem) {
     return (
@@ -46,13 +73,17 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
           <div style={{ flex: 1 }}>
             <div style={PS.normativaDetailBadges}>
               <Badge type="primary">{selectedItem.articolo}</Badge>
-              {selectedItem.comma && <Badge type="secondary">Comma {selectedItem.comma}</Badge>}
             </div>
             <h2 style={{ fontSize: '1.1rem', color: C.text, lineHeight: 1.3 }}>{cleanTitle(selectedItem.titolo)}</h2>
           </div>
         </div>
         <div style={PS.normativaDetailBody}>
-          <p style={PS.normativaDetailText}>{selectedItem.testo}</p>
+          {selectedItem.commi.map(c => (
+            <div key={c.id} style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#fff', borderRadius: '12px', border: `1px solid ${C.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+              <Badge type="secondary" style={{ marginBottom: '10px', display: 'inline-block' }}>Comma {c.comma.replace(/\.$/, '')}</Badge>
+              <p style={{ ...PS.normativaDetailText, marginTop: 0 }}>{c.testo}</p>
+            </div>
+          ))}
         </div>
       </PageWrapper>
     );
@@ -69,16 +100,15 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
         <div style={S.emptyState}>Caricamento in corso...</div>
       ) : (
         <div style={S.list}>
-          {filteredList.map(item => (
-            <div key={item.id} onClick={() => setSelectedItem(item)} style={PS.normativaItemRow}>
+          {filteredList.map(group => (
+            <div key={group.id} onClick={() => setSelectedItem(group)} style={PS.normativaItemRow}>
               <div style={PS.normativaItemNum}>
-                <span style={PS.normativaItemNumPrefix}>{item.articolo.split('.')[0].toUpperCase()}</span>
-                <span style={PS.normativaItemNumValue}>{item.articolo_num}</span>
-                {item.comma_num && <span style={PS.normativaItemComma}>c. {item.comma_num}</span>}
+                <span style={PS.normativaItemNumPrefix}>{group.articolo.split('.')[0].toUpperCase()}</span>
+                <span style={PS.normativaItemNumValue}>{group.articolo_num}</span>
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={PS.normativaItemTitle}>{cleanTitle(item.titolo)}</h3>
-                <p style={PS.normativaItemPreview}>{item.testo.substring(0, 60)}...</p>
+                <h3 style={PS.normativaItemTitle}>{cleanTitle(group.titolo)}</h3>
+                <p style={PS.normativaItemPreview}>{group.commi.length} commi</p>
               </div>
               <span style={{ color: C.textLight }}>›</span>
             </div>
