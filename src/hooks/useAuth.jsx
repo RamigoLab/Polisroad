@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../config/supabase';
-import { USE_SUPABASE } from '../config/constants';
+import { supabase, isSupabaseConfigured } from '../config/supabase';
 
 const DEMO_USER = {
   id: 'admin-1',
@@ -22,7 +21,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!USE_SUPABASE) {
+    if (!isSupabaseConfigured || !supabase) {
       const localSession = localStorage.getItem('polisroad_demo_session');
       if (localSession) {
         setSession({ user: DEMO_USER });
@@ -53,14 +52,18 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const fetchUserCount = async () => {
-    if (!USE_SUPABASE) {
+    if (!isSupabaseConfigured || !supabase) {
       setUserCount(124);
       return;
     }
-    const { count, error } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true });
-    if (!error) setUserCount(count);
+    try {
+      const { count, error } = await supabase
+        .from('profiles')
+        .select('*', { count: 'exact', head: true });
+      if (!error) setUserCount(count);
+    } catch (err) {
+      console.warn("User count fetch failed:", err);
+    }
   };
 
   const fetchProfile = async (userId) => {
@@ -82,7 +85,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signIn = async (email, password) => {
-    if (!USE_SUPABASE) {
+    if (!isSupabaseConfigured || !supabase) {
       if (email === 'admin@polisroad.it' && password === 'admin123') {
         localStorage.setItem('polisroad_demo_session', 'true');
         setSession({ user: DEMO_USER });
@@ -91,11 +94,15 @@ export const AuthProvider = ({ children }) => {
       }
       return { error: { message: 'Credenziali errate. Usa admin@polisroad.it / admin123' } };
     }
-    return await supabase.auth.signInWithPassword({ email, password });
+    try {
+      return await supabase.auth.signInWithPassword({ email, password });
+    } catch (error) {
+      return { error: { message: "Errore di connessione al server." } };
+    }
   };
 
   const signUp = async (email, password, userData) => {
-    if (!USE_SUPABASE) return { error: { message: 'Registrazione disabilitata in demo mode' } };
+    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Registrazione disabilitata in demo mode' } };
     
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return { error };
@@ -110,17 +117,21 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
-    if (!USE_SUPABASE) {
+    if (!isSupabaseConfigured || !supabase) {
       localStorage.removeItem('polisroad_demo_session');
       setSession(null);
       setProfile(null);
       return { error: null };
     }
-    return await supabase.auth.signOut();
+    try {
+      return await supabase.auth.signOut();
+    } catch (error) {
+      return { error };
+    }
   };
 
   const updateProfile = async (updates) => {
-    if (!USE_SUPABASE) {
+    if (!isSupabaseConfigured || !supabase) {
       setProfile({ ...profile, ...updates });
       return { error: null };
     }

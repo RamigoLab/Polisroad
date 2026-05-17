@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase } from '../config/supabase';
-import { USE_SUPABASE } from '../config/constants';
+import { supabase, isSupabaseConfigured } from '../config/supabase';
 import { mockProntuario } from '../data/prontuario';
 import { mockNormativa } from '../data/normativa';
 import { mockNews } from '../data/news';
@@ -18,7 +17,7 @@ export const DataProvider = ({ children }) => {
     setLoading(true);
     setError(null);
 
-    if (!USE_SUPABASE) {
+    if (!isSupabaseConfigured || !supabase) {
       setProntuario(mockProntuario);
       setNormativa(mockNormativa);
       setNews(mockNews);
@@ -34,9 +33,18 @@ export const DataProvider = ({ children }) => {
         supabase.from('news').select('*').order('created_at', { ascending: false })
       ]);
 
-      if (prontuarioRes.error) console.error('Prontuario Error:', prontuarioRes.error);
-      if (normativaRes.error) console.error('Normativa Error:', normativaRes.error);
-      if (newsRes.error) console.error('News Error:', newsRes.error);
+      if (prontuarioRes.error) {
+        console.error('Prontuario Error:', prontuarioRes.error);
+        setError(`Errore nel prontuario: ${prontuarioRes.error.message}`);
+      }
+      if (normativaRes.error) {
+        console.error('Normativa Error:', normativaRes.error);
+        setError(`Errore nella normativa: ${normativaRes.error.message}`);
+      }
+      if (newsRes.error) {
+        console.error('News Error:', newsRes.error);
+        setError(`Errore nelle news: ${newsRes.error.message}`);
+      }
 
       setProntuario(prontuarioRes.data || mockProntuario);
       setNormativa(normativaRes.data || mockNormativa);
@@ -44,7 +52,7 @@ export const DataProvider = ({ children }) => {
 
     } catch (err) {
       console.error('General Data Fetch Error:', err);
-      setError(err.message);
+      setError(`Errore generale di connessione: ${err.message || 'Verifica la connessione a Supabase'}`);
       // Fallback
       setProntuario(mockProntuario);
       setNormativa(mockNormativa);

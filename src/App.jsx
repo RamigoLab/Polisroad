@@ -20,12 +20,21 @@ import { AdminNews } from './pages/admin/AdminNews';
 import { AdminProntuario } from './pages/admin/AdminProntuario';
 import { AdminNormativa } from './pages/admin/AdminNormativa';
 
+import { Toast } from './components/ui/Toast';
+
 function App() {
   const { session, loading: authLoading } = useAuth();
-  const { loading: dataLoading } = useData();
+  const { loading: dataLoading, error: dataError } = useData();
   const loading = authLoading || dataLoading;
   const [currentPage, setCurrentPage] = useState('home');
   const [navigationParams, setNavigationParams] = useState(null);
+  const [errorToast, setErrorToast] = useState('');
+
+  useEffect(() => {
+    if (dataError) {
+      setErrorToast(dataError);
+    }
+  }, [dataError]);
   
   const navigate = (page, params = null) => {
     setCurrentPage(page);
@@ -87,6 +96,7 @@ function App() {
     <>
       {renderPage()}
       {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
+      {errorToast && <Toast message={errorToast} onClose={() => setErrorToast('')} />}
     </>
   );
 }
