@@ -41,10 +41,9 @@ function App() {
     setNavigationParams(params);
   };
   const [showSplash, setShowSplash] = useState(() => {
-    // Se siamo in modalità Standalone (App installata) o se abbiamo già visto lo splash, lo saltiamo
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const hasShown = sessionStorage.getItem('polisroad_splash_shown');
-    return !hasShown;
+    return !hasShown && !isStandalone;
   });
 
   useEffect(() => {

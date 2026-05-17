@@ -8,10 +8,15 @@ export const usePreferiti = () => {
   const [preferiti, setPreferiti] = useState([]);
 
   useEffect(() => {
+    const loadPreferiti = async () => {
+      const { data } = await supabase.from('preferiti').select('prontuario_id').eq('user_id', session.user.id);
+      if (data) setPreferiti(data.map(d => d.prontuario_id));
+    };
+
     if (!USE_SUPABASE) {
       const saved = localStorage.getItem('cds_preferiti');
       if (saved) {
-        try { setPreferiti(JSON.parse(saved)); } catch(e) {}
+        try { setPreferiti(JSON.parse(saved)); } catch { /* ignore */ }
       }
       return;
     }
@@ -23,10 +28,7 @@ export const usePreferiti = () => {
     }
   }, [session]);
 
-  const loadPreferiti = async () => {
-    const { data } = await supabase.from('preferiti').select('prontuario_id').eq('user_id', session.user.id);
-    if (data) setPreferiti(data.map(d => d.prontuario_id));
-  };
+
 
   const togglePreferito = async (id) => {
     if (!USE_SUPABASE) {

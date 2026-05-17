@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { C } from '../../styles/theme';
 import { LS } from '../../styles/layout';
+
 
 const TABS = [
   { id: 'home', icon: '🏠', label: 'Home' },

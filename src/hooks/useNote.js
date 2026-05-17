@@ -8,10 +8,19 @@ export const useNote = () => {
   const [note, setNote] = useState({});
 
   useEffect(() => {
+    const loadNote = async () => {
+      const { data } = await supabase.from('note').select('prontuario_id, testo').eq('user_id', session.user.id);
+      if (data) {
+        const noteMap = {};
+        data.forEach(n => noteMap[n.prontuario_id] = n.testo);
+        setNote(noteMap);
+      }
+    };
+
     if (!USE_SUPABASE) {
       const saved = localStorage.getItem('cds_note');
       if (saved) {
-        try { setNote(JSON.parse(saved)); } catch(e) {}
+        try { setNote(JSON.parse(saved)); } catch { /* ignore */ }
       }
       return;
     }
@@ -23,14 +32,7 @@ export const useNote = () => {
     }
   }, [session]);
 
-  const loadNote = async () => {
-    const { data } = await supabase.from('note').select('prontuario_id, testo').eq('user_id', session.user.id);
-    if (data) {
-      const noteMap = {};
-      data.forEach(n => noteMap[n.prontuario_id] = n.testo);
-      setNote(noteMap);
-    }
-  };
+
 
   const salvaNota = async (prontuarioId, testo) => {
     if (!USE_SUPABASE) {
