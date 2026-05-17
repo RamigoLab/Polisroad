@@ -19,10 +19,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
     <aside className="app-sidebar">
       <div className="sidebar-logo-container" onClick={() => onNavigate('home')}>
         <img src="/icons/icon-192.png" alt="PolisRoad Logo" className="sidebar-logo" />
-        <div className="sidebar-logo-text">
-          <span className="sidebar-title">PolisRoad</span>
-          <span className="sidebar-tagline">Smart Enforcement</span>
-        </div>
+        <span className="sidebar-title">PolisRoad</span>
       </div>
 
       <nav className="sidebar-nav">
