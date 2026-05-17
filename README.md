@@ -3,12 +3,15 @@
 ---
 
 ## 📖 Overview
-PolisRoad è una **Progressive Web App (PWA)** dedicata alle forze dell'ordine per la consultazione rapida del Codice della Strada, gestire il prontuario e calcolare le sanzioni.  Il progetto è realizzato con **React** e **Vite**, con **Supabase** come backend (PostgreSQL + Auth).
+PolisRoad è una **Progressive Web App (PWA)** dedicata alle forze dell'ordine per la consultazione rapida del Codice della Strada, gestire il prontuario e calcolare le sanzioni. Il progetto è realizzato con **React** e **Vite**, con **Supabase** come backend (PostgreSQL + Auth).
+
+La codebase è strutturata in modalità **Dual-Responsive**: l'app si adatta automaticamente offrendo un'esperienza d'uso nativa ottimizzata per cellulari (perfetta per il successivo confezionamento in app native Android e iOS via WebView) ed una ricca interfaccia desktop a doppia colonna con Sidebar premium per l'utilizzo da browser web.
 
 ---
 
-## ✨ Core Features (v1.0.2)
+## ✨ Core Features (v1.1.0)
 - **Tema Persistente e System-Aware**: Dark Mode gestita a livello di sistema operativo o manuale con persistenza locale (`useTheme`).
+- **Layout Responsive Desktop Premium**: Layout orizzontale automatico con Sidebar premium per monitor grandi, e layout mobile-first nativo (max 480px) per smartphone e pacchetti Android/iOS.
 - **Ricerca Globale Ottimizzata**: Ricerca unificata e debounced per prontuario & normativa con cronologia delle ricerche (`useSearch`, `useSearchHistory`).
 - **Pagine Lazy-Loaded**: Code-splitting con React.lazy e Suspense per caricamento fulmineo e minor consumo di banda (`PageLoader`).
 - **Offline-First Sync**: Coda locale automatica (`useSyncQueue`) che sincronizza con Supabase al ripristino della connettività.
@@ -35,6 +38,7 @@ Tutti i miglioramenti avanzati previsti nella roadmap aziendale sono stati compl
 | 8️⃣ | **Error Boundary** | Schermata di errore premium con pulsante di ripristino. | `src/components/ErrorBoundary.jsx`, `src/App.jsx` | ✅ Completato |
 | 9️⃣ | **Test Unitari** | Suite di test unitari con Vitest per i custom hooks principali. | `src/hooks/__tests__/*` | ✅ Completato |
 | 🔟 | **Analytics** | Inizializzazione di PostHog ed eventi di tracciamento. | `src/main.jsx`, `src/pages/Prontuario.jsx`, `src/pages/Ricerca.jsx` | ✅ Completato |
+| 1️⃣1️⃣ | **Layout Desktop** | Sidebar laterale sinistra premium, e layout espanso automatico per PC. | `src/components/layout/Sidebar.jsx`, `src/index.css` | ✅ Completato |
 
 ---
 

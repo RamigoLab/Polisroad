@@ -1,5 +1,6 @@
 import React from 'react';
 import { C } from '../../styles/theme';
+import { APP_VERSION } from '../../config/constants';
 
 const TABS = [
   { id: 'home', icon: '🏠', label: 'Home' },
@@ -42,7 +43,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
 
       <div className="sidebar-footer">
         <span className="sidebar-status-dot" />
-        <span className="sidebar-status-text">Operativo | v1.0.2</span>
+        <span className="sidebar-status-text">Operativo | v{APP_VERSION}</span>
       </div>
     </aside>
   );
