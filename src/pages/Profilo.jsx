@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
-import { Toast } from '../components/ui/Toast';
+import { useToast } from '../components/ui/ToastManager';
 import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useAuth } from '../hooks/useAuth';
+import { useTheme } from '../hooks/useTheme';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS } from '../config/constants';
 
 const DataRow = ({ label, value, icon }) => (
@@ -38,28 +39,15 @@ export const Profilo = ({ onNavigate }) => {
     telefono: profile?.telefono || '',
   });
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState('');
+  const { showToast } = useToast();
 
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    return document.documentElement.getAttribute('data-theme') === 'dark';
-  });
-
-  const toggleTheme = () => {
-    const newTheme = isDarkMode ? 'light' : 'dark';
-    setIsDarkMode(!isDarkMode);
-    if (newTheme === 'dark') {
-      document.documentElement.setAttribute('data-theme', 'dark');
-    } else {
-      document.documentElement.removeAttribute('data-theme');
-    }
-    localStorage.setItem('polisroad_theme', newTheme);
-  };
+  const { isDarkMode, toggleTheme } = useTheme();
 
   const handleSave = async () => {
     setLoading(true);
     const { error } = await updateProfile(formData);
-    if (error) setToast('Errore nel salvataggio: ' + error.message);
-    else { setToast('Profilo aggiornato!'); setIsEditing(false); }
+    if (error) showToast('Errore nel salvataggio: ' + error.message, 'error');
+    else { showToast('Profilo aggiornato!', 'success'); setIsEditing(false); }
     setLoading(false);
   };
 
@@ -163,8 +151,6 @@ export const Profilo = ({ onNavigate }) => {
           ☕ Dona con PayPal
         </a>
       </div>
-
-      {toast && <Toast message={toast} onClose={() => setToast('')} />}
     </PageWrapper>
   );
 };

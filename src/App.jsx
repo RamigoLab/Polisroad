@@ -1,24 +1,30 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useData } from './context/DataContext';
 import { Auth } from './pages/Auth';
-import { Home } from './pages/Home';
-import { Prontuario } from './pages/Prontuario';
-import { Normativa } from './pages/Normativa';
-import { Preferiti } from './pages/Preferiti';
-import { Ricerca } from './pages/Ricerca';
-import { Calcolatore } from './pages/Calcolatore';
-import { News } from './pages/News';
-import { Links } from './pages/Links';
-import { Profilo } from './pages/Profilo';
-import { Operatore } from './pages/Operatore';
 import { BottomNav } from './components/layout/BottomNav';
 import { Splash } from './components/layout/Splash';
 import { AdminLayout } from './pages/admin/AdminLayout';
-import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminNews } from './pages/admin/AdminNews';
-import { AdminProntuario } from './pages/admin/AdminProntuario';
-import { AdminNormativa } from './pages/admin/AdminNormativa';
+import { PageLoader } from './components/ui/PageLoader';
+import { ErrorBoundary } from './components/ErrorBoundary';
+
+// Lazy loading pages for high performance & smaller initial bundle size
+const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
+const Prontuario = lazy(() => import('./pages/Prontuario').then(m => ({ default: m.Prontuario })));
+const Normativa = lazy(() => import('./pages/Normativa').then(m => ({ default: m.Normativa })));
+const Preferiti = lazy(() => import('./pages/Preferiti').then(m => ({ default: m.Preferiti })));
+const Ricerca = lazy(() => import('./pages/Ricerca').then(m => ({ default: m.Ricerca })));
+const Calcolatore = lazy(() => import('./pages/Calcolatore').then(m => ({ default: m.Calcolatore })));
+const News = lazy(() => import('./pages/News').then(m => ({ default: m.News })));
+const Links = lazy(() => import('./pages/Links').then(m => ({ default: m.Links })));
+const Profilo = lazy(() => import('./pages/Profilo').then(m => ({ default: m.Profilo })));
+const Operatore = lazy(() => import('./pages/Operatore').then(m => ({ default: m.Operatore })));
+
+// Lazy loading admin pages
+const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
+const AdminNews = lazy(() => import('./pages/admin/AdminNews').then(m => ({ default: m.AdminNews })));
+const AdminProntuario = lazy(() => import('./pages/admin/AdminProntuario').then(m => ({ default: m.AdminProntuario })));
+const AdminNormativa = lazy(() => import('./pages/admin/AdminNormativa').then(m => ({ default: m.AdminNormativa })));
 
 import { Toast } from './components/ui/Toast';
 
@@ -92,11 +98,13 @@ function App() {
   const showNav = !currentPage.startsWith('admin_') && currentPage !== 'operatore';
 
   return (
-    <>
-      {renderPage()}
-      {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
-      {errorToast && <Toast message={errorToast} onClose={() => setErrorToast('')} />}
-    </>
+    <ErrorBoundary>
+      <Suspense fallback={<PageLoader />}>
+        {renderPage()}
+        {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
+        {errorToast && <Toast message={errorToast} onClose={() => setErrorToast('')} />}
+      </Suspense>
+    </ErrorBoundary>
   );
 }
 

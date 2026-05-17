@@ -4,6 +4,8 @@ import './index.css';
 import App from './App.jsx';
 import { AuthProvider } from './hooks/useAuth.jsx';
 import { DataProvider } from './context/DataContext.jsx';
+import { ToastProvider } from './components/ui/ToastManager.jsx';
+import posthog from 'posthog-js';
 
 // Applica il tema salvato prima del render per evitare flash bianchi
 const savedTheme = localStorage.getItem('polisroad_theme') || 'light';
@@ -11,11 +13,25 @@ if (savedTheme === 'dark') {
   document.documentElement.setAttribute('data-theme', 'dark');
 }
 
+// Inizializza PostHog se la chiave è presente nelle variabili d'ambiente di Vite
+const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
+const posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com';
+
+if (posthogKey) {
+  posthog.init(posthogKey, {
+    api_host: posthogHost,
+    person_profiles: 'identified_only',
+    capture_pageview: true,
+  });
+}
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
     <AuthProvider>
       <DataProvider>
-        <App />
+        <ToastProvider>
+          <App />
+        </ToastProvider>
       </DataProvider>
     </AuthProvider>
   </StrictMode>,

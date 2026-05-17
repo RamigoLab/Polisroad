@@ -8,11 +8,15 @@ import { PS } from '../styles/pages';
 import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
+import { useToast } from '../components/ui/ToastManager';
+import { ProntuarioItem } from '../components/ProntuarioItem';
+import posthog from 'posthog-js';
 
 export const Prontuario = ({ onNavigate, navigationParams }) => {
   const { list, loading } = useProntuario();
   const { preferiti, toggle } = usePreferiti();
   const { note, save } = useNote();
+  const { showToast } = useToast();
 
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -36,9 +40,20 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
     item.codice_violazione.toLowerCase().includes(search.toLowerCase())
   );
 
-  const handleNoteSave = (id) => {
-    save(id, tempNote);
+  const handleNoteSave = async (id) => {
+    try {
+      await save(id, tempNote);
+      showToast('Nota salvata!', 'success');
+      posthog.capture('prontuario_note_saved', { prontuario_id: id });
+    } catch (err) {
+      showToast('Errore nel salvataggio della nota', 'error');
+    }
     setEditNoteId(null);
+  };
+
+  const handleSelectItem = (item) => {
+    setSelectedItem(item);
+    posthog.capture('prontuario_item_selected', { prontuario_id: item.id, titolo: item.titolo });
   };
 
   if (selectedItem) {
@@ -168,20 +183,12 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
       ) : (
         <div style={S.list}>
           {filteredList.map(item => (
-            <div key={item.id} onClick={() => setSelectedItem(item)} style={S.cardClickable}>
-              <div style={PS.prontuarioItemRow}>
-                <Badge>{item.rif_normativo}</Badge>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                  {item.punti_patente > 0 && <Badge type="danger">-{item.punti_patente} pt</Badge>}
-                  {preferiti.includes(item.id) && <span style={{ color: '#f1c40f' }}>⭐</span>}
-                </div>
-              </div>
-              <h3 style={{ fontSize: '1rem', color: C.text, marginBottom: '8px', lineHeight: 1.3 }}>{item.titolo}</h3>
-              <div style={PS.prontuarioItemMeta}>
-                <span>Cod: {item.codice_violazione}</span>
-                <span style={S.valueDanger}>PMR: €{item.pmr}</span>
-              </div>
-            </div>
+            <ProntuarioItem
+              key={item.id}
+              item={item}
+              isFavorite={preferiti.includes(item.id)}
+              onClick={() => handleSelectItem(item)}
+            />
           ))}
           {filteredList.length === 0 && (
             <div style={S.emptyState}>Nessun risultato trovato.</div>

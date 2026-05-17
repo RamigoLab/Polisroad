@@ -2,10 +2,12 @@ import { useState, useEffect } from 'react';
 import { supabase } from '../config/supabase';
 import { USE_SUPABASE } from '../config/constants';
 import { useAuth } from './useAuth';
+import { useSyncQueue } from './useSyncQueue';
 
 export const useNote = () => {
   const { session } = useAuth();
   const [note, setNote] = useState({});
+  const { addToQueue } = useSyncQueue();
 
   useEffect(() => {
     const loadNote = async () => {
@@ -46,6 +48,16 @@ export const useNote = () => {
     }
 
     if (!session?.user) return;
+
+    if (!navigator.onLine) {
+      setNote(prev => {
+        const updated = { ...prev, [prontuarioId]: testo };
+        if (!testo || testo.trim() === '') delete updated[prontuarioId];
+        return updated;
+      });
+      addToQueue('SAVE_NOTE', { prontuarioId, testo });
+      return;
+    }
     
     if (!testo || testo.trim() === '') {
       await supabase.from('note').delete().match({ user_id: session.user.id, prontuario_id: prontuarioId });
