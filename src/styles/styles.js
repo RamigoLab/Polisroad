@@ -38,19 +38,19 @@ export const S = {
   // CARD
   // ─────────────────────────────────────────────
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
   },
   cardElevated: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
     overflow: 'hidden',
   },
   cardClickable: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -61,7 +61,7 @@ export const S = {
   // FORM
   // ─────────────────────────────────────────────
   formCard: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
     display: 'flex',
@@ -253,7 +253,7 @@ export const S = {
     textAlign: 'center',
     padding: '40px',
     color: C.textLight,
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     borderRadius: '12px',
     border: `2px dashed ${C.border}`,
   },

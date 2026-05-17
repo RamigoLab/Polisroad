@@ -40,7 +40,7 @@ export const PS = {
     width: '56px',
     height: '56px',
     borderRadius: '12px',
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '2px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
   },
@@ -56,7 +56,7 @@ export const PS = {
   },
   homeSearchBtn: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     color: C.primary,
     padding: '12px',
     borderRadius: '12px',
@@ -91,7 +91,7 @@ export const PS = {
     marginBottom: '24px',
   },
   homeNavCard: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -141,7 +141,7 @@ export const PS = {
   // PRONTUARIO
   // ─────────────────────────────────────────────
   prontuarioDetailHeader: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderBottom: `1px solid ${C.border}`,
     position: 'sticky',
@@ -196,7 +196,7 @@ export const PS = {
     gap: '12px',
   },
   prontuarioMemoBlock: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
   },
@@ -212,7 +212,7 @@ export const PS = {
   // NORMATIVA
   // ─────────────────────────────────────────────
   normativaDetailHeader: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderBottom: `1px solid ${C.border}`,
     position: 'sticky',
@@ -229,7 +229,7 @@ export const PS = {
   },
   normativaDetailBody: {
     padding: '20px',
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     flex: 1,
   },
   normativaDetailText: {
@@ -240,7 +240,7 @@ export const PS = {
     textAlign: 'justify',
   },
   normativaItemRow: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
@@ -298,7 +298,7 @@ export const PS = {
     paddingBottom: '4px',
   }),
   ricercaResultItem: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '12px',
     borderRadius: '8px',
     cursor: 'pointer',
@@ -410,7 +410,7 @@ export const PS = {
   profileAvatar: {
     width: '60px',
     height: '60px',
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     borderRadius: '30px',
     display: 'flex',
     justifyContent: 'center',
@@ -430,7 +430,7 @@ export const PS = {
     opacity: 0.9,
   },
   profileSysBox: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
     border: `1px solid ${C.border}`,
@@ -444,7 +444,7 @@ export const PS = {
     paddingBottom: '8px',
   },
   profileSupportBox: {
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
     textAlign: 'center',
@@ -655,7 +655,7 @@ export const PS = {
   // ADMIN COMUNE
   // ─────────────────────────────────────────────
   adminListItem: (isPublished) => ({
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     padding: '16px',
     borderRadius: '12px',
     borderLeft: `4px solid ${isPublished ? C.success : C.textLight}`,
@@ -698,7 +698,7 @@ export const PS = {
     padding: '12px',
     borderRadius: '8px',
     border: `1px solid ${C.border}`,
-    backgroundColor: '#f9f9f9',
+    backgroundColor: C.surface,
     fontSize: '0.9rem',
     width: '100%',
   },

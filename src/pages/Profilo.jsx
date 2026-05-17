@@ -40,6 +40,21 @@ export const Profilo = ({ onNavigate }) => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState('');
 
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    return document.documentElement.getAttribute('data-theme') === 'dark';
+  });
+
+  const toggleTheme = () => {
+    const newTheme = isDarkMode ? 'light' : 'dark';
+    setIsDarkMode(!isDarkMode);
+    if (newTheme === 'dark') {
+      document.documentElement.setAttribute('data-theme', 'dark');
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+    }
+    localStorage.setItem('polisroad_theme', newTheme);
+  };
+
   const handleSave = async () => {
     setLoading(true);
     const { error } = await updateProfile(formData);
@@ -102,6 +117,28 @@ export const Profilo = ({ onNavigate }) => {
               <button onClick={() => setIsEditing(true)} style={S.btnOutline}>⚙️ Modifica Profilo</button>
             </>
           )}
+        </div>
+      </div>
+
+      {/* Impostazioni Aspetto */}
+      <div style={PS.profileSysBox}>
+        <h4 style={PS.profileSysTitle}>🎨 Impostazioni Aspetto</h4>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span style={{ color: C.text, fontWeight: '500' }}>Dark Mode (Tema Scuro)</span>
+          <button 
+            onClick={toggleTheme} 
+            style={{
+              padding: '8px 16px',
+              backgroundColor: isDarkMode ? C.success : C.textLight,
+              color: '#fff',
+              borderRadius: '20px',
+              fontWeight: 'bold',
+              border: 'none',
+              cursor: 'pointer'
+            }}
+          >
+            {isDarkMode ? '🌙 Attiva' : '☀️ Disattivata'}
+          </button>
         </div>
       </div>
 

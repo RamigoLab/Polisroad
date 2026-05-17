@@ -44,7 +44,7 @@ export const LS = {
     bottom: 0,
     zIndex: 100,
     width: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     borderTop: `1px solid ${C.border}`,
     boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
   },
@@ -126,7 +126,7 @@ export const LS = {
   splashLogoWrapper: {
     width: '120px',
     height: '120px',
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     borderRadius: '24px',
     display: 'flex',
     justifyContent: 'center',
@@ -171,7 +171,7 @@ export const LS = {
   },
   splashProgressBar: {
     height: '100%',
-    backgroundColor: '#fff',
+    backgroundColor: C.card,
     animation: 'progress 3s ease-in-out forwards',
   },
   splashVersion: {
@@ -231,8 +231,8 @@ export const LS = {
   }),
   adminContent: {
     flex: 1,
-    backgroundColor: '#f5f7fa',
-    color: '#333333',
+    backgroundColor: C.surface,
+    color: C.text,
     borderTopLeftRadius: '24px',
     borderTopRightRadius: '24px',
     marginTop: '16px',

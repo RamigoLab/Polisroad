@@ -33,17 +33,27 @@ export const DataProvider = ({ children }) => {
         supabase.from('news').select('*').order('created_at', { ascending: false })
       ]);
 
-      if (prontuarioRes.error) {
-        console.error('Prontuario Error:', prontuarioRes.error);
-        setError(`Errore nel prontuario: ${prontuarioRes.error.message}`);
-      }
-      if (normativaRes.error) {
-        console.error('Normativa Error:', normativaRes.error);
-        setError(`Errore nella normativa: ${normativaRes.error.message}`);
-      }
-      if (newsRes.error) {
-        console.error('News Error:', newsRes.error);
-        setError(`Errore nelle news: ${newsRes.error.message}`);
+      if (prontuarioRes.error || normativaRes.error || newsRes.error) {
+        console.error('Data Fetch Errors:', {
+          prontuario: prontuarioRes.error,
+          normativa: normativaRes.error,
+          news: newsRes.error
+        });
+        
+        const anyError = prontuarioRes.error || normativaRes.error || newsRes.error;
+        let userMsg = "Si è verificato un errore durante il caricamento dei dati.";
+        
+        if (anyError.message?.includes('fetch') || anyError.message?.includes('Network')) {
+          userMsg = "Errore di rete: controlla la tua connessione internet o la VPN.";
+        } else if (anyError.code === '42P01') {
+          userMsg = "Database non pronto: manca una tabella in Supabase.";
+        } else if (anyError.code === '42501' || anyError.message?.includes('policy') || anyError.message?.includes('Row Level Security')) {
+          userMsg = "Accesso negato: Le Policies RLS su Supabase stanno bloccando la lettura (0 risultati).";
+        } else {
+          userMsg = "Impossibile caricare i dati aggiornati. Riprova più tardi.";
+        }
+        
+        setError(userMsg);
       }
 
       setProntuario(prontuarioRes.data || mockProntuario);

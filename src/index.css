@@ -5,11 +5,62 @@
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
+:root {
+  --color-primary: #1a3a5c;
+  --color-accent: #1976d2;
+  --color-accent-light: #e3f0fb;
+  --color-danger: #c0392b;
+  --color-danger-light: #fbeaea;
+  --color-success: #1a7a4a;
+  --color-success-light: #e6f4ed;
+  --color-warning: #b45309;
+  --color-warning-light: #fdf3e0;
+  
+  --bg-global: #e0e5ec;
+  --bg-surface: #f5f7fa;
+  --bg-card: #ffffff;
+  
+  --color-text: #333333;
+  --color-text-light: #666666;
+  --color-border: rgba(0,0,0,0.1);
+  --color-white: #ffffff;
+  
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.05);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.15);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.2);
+}
+
+[data-theme="dark"] {
+  --color-primary: #2c4b6f;
+  --color-accent: #3f90e5;
+  --color-accent-light: rgba(63, 144, 229, 0.15);
+  --color-danger: #e74c3c;
+  --color-danger-light: rgba(231, 76, 60, 0.15);
+  --color-success: #2ecc71;
+  --color-success-light: rgba(46, 204, 113, 0.15);
+  --color-warning: #f39c12;
+  --color-warning-light: rgba(243, 156, 18, 0.15);
+
+  --bg-global: #0d1117;
+  --bg-surface: #161b22;
+  --bg-card: #21262d;
+  
+  --color-text: #c9d1d9;
+  --color-text-light: #8b949e;
+  --color-border: rgba(255,255,255,0.1);
+  --color-white: #ffffff;
+  
+  --shadow-sm: 0 2px 8px rgba(0,0,0,0.3);
+  --shadow-md: 0 4px 12px rgba(0,0,0,0.5);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.6);
+}
+
 body {
-  background-color: #e0e5ec; /* Sfondo neutro, come theme.js */
-  color: #333333;
+  background-color: var(--bg-global);
+  color: var(--color-text);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Setup mobile-first container max 480px */
@@ -17,11 +68,12 @@ body {
   max-width: 480px;
   margin: 0 auto;
   min-height: 100vh;
-  background-color: #f5f7fa; /* Superficie app */
-  box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  background-color: var(--bg-surface);
+  box-shadow: 0 0 20px rgba(0,0,0,0.2);
   position: relative;
   display: flex;
   flex-direction: column;
+  transition: background-color 0.3s ease;
 }
 
 /* Rimuove lo stile dai bottoni di default */
