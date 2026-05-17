@@ -14,7 +14,7 @@ export const LS = {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    padding: '16px',
+    padding: '16px 16px 80px 16px',
     overflowY: 'auto',
     position: 'relative',
   },

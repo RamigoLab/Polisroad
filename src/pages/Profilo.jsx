@@ -69,7 +69,7 @@ export const Profilo = ({ onNavigate }) => {
       </div>
 
       {/* Scheda Identità */}
-      <div style={{ ...S.cardElevated, marginBottom: '24px' }}>
+      <div style={{ ...S.cardElevated, marginBottom: '24px', overflow: isEditing ? 'visible' : 'hidden' }}>
         <div style={PS.profileHeaderBg}>
           <div style={PS.profileAvatar}>👮</div>
           <div>
