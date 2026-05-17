@@ -7,33 +7,100 @@ import { useNews } from '../hooks/useNews';
 
 
 export const News = ({ onNavigate }) => {
+  const [activeFilter, setActiveFilter] = React.useState('tutte');
   const { list, loading } = useNews();
+
   const publishedNews = list.filter(n => n.pubblicato);
+
+  const filteredNews = React.useMemo(() => {
+    if (activeFilter === 'tutte') return publishedNews;
+    return publishedNews.filter(n => n.categoria === activeFilter);
+  }, [publishedNews, activeFilter]);
+
+  const filterPills = [
+    { id: 'tutte', label: 'Tutte' },
+    { id: 'normativa', label: 'Normativa' },
+    { id: 'sicurezza', label: 'Sicurezza' },
+    { id: 'informativa', label: 'Utility' }
+  ];
 
   return (
     <PageWrapper onNavigate={onNavigate}>
-      <h2 style={S.sectionTitle}>News Normative</h2>
+      <div style={{ marginBottom: '20px' }}>
+        <h2 style={{ ...S.sectionTitle, marginBottom: '12px' }}>News Normative & CdS</h2>
+        
+        {/* Category Filter Pills */}
+        <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
+          {filterPills.map(pill => {
+            const isActive = activeFilter === pill.id;
+            return (
+              <button
+                key={pill.id}
+                onClick={() => setActiveFilter(pill.id)}
+                style={{
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  border: isActive ? 'none' : '1px solid var(--color-border)',
+                  backgroundColor: isActive ? 'var(--color-primary)' : 'var(--bg-card)',
+                  color: isActive ? '#fff' : 'var(--color-text-light)',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                {pill.label}
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
       {loading ? (
         <div style={S.emptyState}>Caricamento in corso...</div>
-      ) : publishedNews.length === 0 ? (
-        <div style={S.emptyState}>Nessuna news disponibile.</div>
+      ) : filteredNews.length === 0 ? (
+        <div style={S.emptyState}>Nessuna notizia disponibile per questa categoria.</div>
       ) : (
         <div style={{ ...S.list, gap: '16px' }}>
-          {publishedNews.map(item => {
-            const date = new Date(item.created_at).toLocaleDateString('it-IT');
+          {filteredNews.map(item => {
+            const dateVal = item.data_creazione || item.created_at;
+            const date = new Date(dateVal).toLocaleDateString('it-IT');
+            
+            // Extract source/link dynamically if they are embedded in the content column
+            let contentText = item.contenuto || '';
+            let extractedSource = item.fonte || '';
+            let extractedLink = item.url_fonte || '';
+
+            if (contentText.startsWith('[Fonte:')) {
+              const match = contentText.match(/^\[Fonte:\s*([^|\]]+)(?:\s*\|\s*Link:\s*([^\]]+))?\]\s*\n*\s*/);
+              if (match) {
+                extractedSource = match[1].trim();
+                if (match[2]) {
+                  extractedLink = match[2].trim();
+                }
+                contentText = contentText.substring(match[0].length);
+              }
+            }
+
             return (
               <div key={item.id} style={S.card}>
                 <div style={PS.newsItemHeader}>
-                  <Badge type="accent">{item.categoria}</Badge>
+                  <Badge type={
+                    item.categoria === 'normativa' ? 'danger' :
+                    item.categoria === 'sicurezza' ? 'warning' : 'primary'
+                  }>
+                    {item.categoria === 'normativa' ? 'Normativa' :
+                     item.categoria === 'sicurezza' ? 'Sicurezza' : 'Utility'}
+                  </Badge>
                   <span style={PS.newsItemDate}>{date}</span>
                 </div>
                 <h3 style={PS.newsItemTitle}>{item.titolo}</h3>
-                <p style={PS.newsItemContent}>{item.contenuto}</p>
+                <p style={{ ...PS.newsItemContent, whiteSpace: 'pre-wrap' }}>{contentText}</p>
                 <div style={PS.newsItemFooter}>
-                  <span style={PS.newsItemSource}>Fonte: {item.fonte}</span>
-                  {item.url_fonte && (
-                    <a href={item.url_fonte} target="_blank" rel="noreferrer" style={PS.newsItemLink}>
+                  {extractedSource && <span style={PS.newsItemSource}>Fonte: {extractedSource}</span>}
+                  {extractedLink && (
+                    <a href={extractedLink} target="_blank" rel="noreferrer" style={PS.newsItemLink}>
                       Leggi di più ↗
                     </a>
                   )}
