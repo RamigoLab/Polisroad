@@ -53,8 +53,12 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     if (!s) return groupedList;
 
     return groupedList.filter(group => {
-      // Cerca nel titolo o nel numero dell'articolo
-      if ((group.titolo?.toLowerCase() || '').includes(s) || group.articolo_num.toString() === search) {
+      // Cerca nel titolo, nel testo 'Art. X', o nel numero esatto
+      if (
+        (group.titolo?.toLowerCase() || '').includes(s) || 
+        (group.articolo?.toLowerCase() || '').includes(s) || 
+        (group.articolo_num?.toString() || '') === search
+      ) {
         return true;
       }
       // Cerca all'interno dei testi di tutti i commi
