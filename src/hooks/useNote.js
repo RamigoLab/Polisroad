@@ -67,5 +67,5 @@ export const useNote = () => {
 
   const getNota = (prontuarioId) => note[prontuarioId] || '';
 
-  return { note, salvaNota, getNota };
+  return { note, save: salvaNota, getNota, salvaNota };
 };

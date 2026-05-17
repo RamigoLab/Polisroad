@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { SearchBar } from '../components/ui/SearchBar';
 import { Badge } from '../components/ui/Badge';
