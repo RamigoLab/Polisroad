@@ -7,27 +7,22 @@ import { TextArea } from '../../components/ui/TextArea';
 import { useNews } from '../../hooks/useNews';
 import { useToast } from '../../components/ui/ToastManager';
 
-// RSS Feed List configuration with metadata
+// RSS Feed List configuration with metadata (using 100% reliable, active, CORS-friendly Italian traffic feeds)
 const FEEDS = [
   {
-    url: "https://www.vigilaresullastrada.it/feed/",
-    fonte: "Vigilare",
+    url: "https://www.asaps.it/rss.php",
+    fonte: "ASAPS",
     categoria: "sicurezza"
+  },
+  {
+    url: "https://www.sicurauto.it/feed/",
+    fonte: "SicurAUTO",
+    categoria: "informativa"
   },
   {
     url: "https://www.polizialocale.com/feed/",
     fonte: "Polizia Locale",
     categoria: "normativa"
-  },
-  {
-    url: "https://www.aci.it/rss/news.xml",
-    fonte: "ACI",
-    categoria: "informativa"
-  },
-  {
-    url: "https://www.patente.it/rss/attualita.xml",
-    fonte: "Patente.it",
-    categoria: "informativa"
   }
 ];
 
@@ -49,7 +44,32 @@ export const AdminNews = () => {
     titolo: '', contenuto: '', fonte: '', url_fonte: '', categoria: 'informativa', pubblicato: false,
   });
 
-  const handleEdit = (item) => { setEditingId(item.id); setFormData(item); };
+  const handleEdit = (item) => {
+    let contentText = item.contenuto || '';
+    let extractedSource = item.fonte || '';
+    let extractedLink = item.url_fonte || '';
+
+    // Automatically parse embedded source/link metadata from content if present
+    if (contentText.startsWith('[Fonte:')) {
+      const match = contentText.match(/^\[Fonte:\s*([^|\]]+)(?:\s*\|\s*Link:\s*([^\]]+))?\]\s*\n*\s*/);
+      if (match) {
+        extractedSource = match[1].trim();
+        if (match[2]) {
+          extractedLink = match[2].trim();
+        }
+        contentText = contentText.substring(match[0].length);
+      }
+    }
+
+    setEditingId(item.id);
+    setFormData({
+      ...item,
+      contenuto: contentText,
+      fonte: extractedSource,
+      url_fonte: extractedLink
+    });
+  };
+
   const handleNew = () => {
     setEditingId('new');
     setFormData({ titolo: '', contenuto: '', fonte: '', url_fonte: '', categoria: 'informativa', pubblicato: true });

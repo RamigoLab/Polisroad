@@ -17,7 +17,7 @@ export const useNews = () => {
         data_creazione: dataCreazione,
         created_at: new Date().toISOString() 
       };
-      setNews([newItem, ...list]);
+      setNews(prev => [newItem, ...prev]);
       return { error: null };
     }
 
@@ -34,15 +34,15 @@ export const useNews = () => {
 
     const { data, error } = await supabase.from('news').insert([dbPayload]).select();
     if (!error && data && data[0]) {
-      // Keep support for local fields if any are present
-      setNews([{ ...item, ...data[0] }, ...list]);
+      // Use functional state updates to avoid stale closures in loops
+      setNews(prev => [{ ...item, ...data[0] }, ...prev]);
     }
     return { error };
   };
 
   const update = async (id, changes) => {
     if (!USE_SUPABASE) {
-      setNews(list.map(item => item.id === id ? { ...item, ...changes } : item));
+      setNews(prev => prev.map(item => item.id === id ? { ...item, ...changes } : item));
       return { error: null };
     }
 
@@ -56,18 +56,20 @@ export const useNews = () => {
 
     const { error } = await supabase.from('news').update(dbPayload).eq('id', id);
     if (!error) {
-      setNews(list.map(item => item.id === id ? { ...item, ...changes } : item));
+      setNews(prev => prev.map(item => item.id === id ? { ...item, ...changes } : item));
     }
     return { error };
   };
 
   const remove = async (id) => {
     if (!USE_SUPABASE) {
-      setNews(list.filter(item => item.id !== id));
+      setNews(prev => prev.filter(item => item.id !== id));
       return { error: null };
     }
     const { error } = await supabase.from('news').delete().eq('id', id);
-    if (!error) setNews(list.filter(item => item.id !== id));
+    if (!error) {
+      setNews(prev => prev.filter(item => item.id !== id));
+    }
     return { error };
   };
 
