@@ -16,7 +16,7 @@ export const Home = ({ onNavigate }) => {
       {/* Header */}
       <div style={PS.homeHeader}>
         <div style={PS.homeHeaderInner}>
-          <div>
+          <div onClick={() => onNavigate('profilo')} style={{ cursor: 'pointer' }}>
             <p style={PS.homeSubtitle}>Bentornato,</p>
             <h2 style={PS.homeName}>{profile?.grado} {profile?.nome} {profile?.cognome}</h2>
             <p style={PS.homeForza}>{profile?.forza}</p>
@@ -44,6 +44,7 @@ export const Home = ({ onNavigate }) => {
           <NavCard icon="⭐" title="Preferiti" onClick={() => onNavigate('preferiti')} />
           <NavCard icon="📰" title="News" onClick={() => onNavigate('news')} />
           <NavCard icon="🔗" title="Links Utili" onClick={() => onNavigate('links')} />
+          <NavCard icon="👤" title="Profilo" onClick={() => onNavigate('profilo')} />
         </div>
 
         {bannerNews && (
