@@ -84,7 +84,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
         <div style={PS.normativaDetailBody}>
           {selectedItem.commi.map(c => (
             <div key={c.id} style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#fff', borderRadius: '12px', border: `1px solid ${C.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
-              <Badge type="secondary" style={{ marginBottom: '10px', display: 'inline-block' }}>Comma {c.comma.replace(/\.$/, '')}</Badge>
+              <Badge type="secondary" style={{ marginBottom: '10px', display: 'inline-block' }}>Comma {(c.comma || '?').replace(/\.$/, '')}</Badge>
               <p style={{ ...PS.normativaDetailText, marginTop: 0 }}>{c.testo}</p>
             </div>
           ))}
@@ -107,12 +107,12 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
           {filteredList.map(group => (
             <div key={group.id} onClick={() => setSelectedItem(group)} style={PS.normativaItemRow}>
               <div style={PS.normativaItemNum}>
-                <span style={PS.normativaItemNumPrefix}>{group.articolo.split('.')[0].toUpperCase()}</span>
-                <span style={PS.normativaItemNumValue}>{group.articolo_num}</span>
+                <span style={PS.normativaItemNumPrefix}>{(group.articolo || 'Art.').split('.')[0].toUpperCase()}</span>
+                <span style={PS.normativaItemNumValue}>{group.articolo_num || '?'}</span>
               </div>
               <div style={{ flex: 1 }}>
-                <h3 style={PS.normativaItemTitle}>{cleanTitle(group.titolo)}</h3>
-                <p style={PS.normativaItemPreview}>{group.commi.length} commi</p>
+                <h3 style={PS.normativaItemTitle}>{cleanTitle(group.titolo || 'Senza Titolo')}</h3>
+                <p style={PS.normativaItemPreview}>{(group.commi || []).length} commi</p>
               </div>
               <span style={{ color: C.textLight }}>›</span>
             </div>
