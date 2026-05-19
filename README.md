@@ -9,7 +9,10 @@ La codebase è strutturata in modalità **Dual-Responsive**: l'app si adatta aut
 
 ---
 
-## ✨ Core Features (v1.1.0)
+## ✨ Core Features (v1.2.1)
+- **Persistenza Navigazione PWA (v1.2.1)**: Previene il reset della sessione al ricaricamento della pagina o a causa di gesture come lo swipe-up pull-to-refresh. La pagina corrente e i suoi parametri vengono salvati in `localStorage` e ripristinati istantaneamente, saltando inoltre la visualizzazione prolungata della splash screen per una fluidità ottimale.
+- **Modulo di Segnalazione Problemi (v1.2.1)**: Integrato nel Profilo dell'operatore, consente di inoltrare bug, errori o suggerimenti sia salvandoli direttamente nel database Supabase (con salvataggio locale di fallback), sia preparando un'e-mail strutturata inviata tramite client di posta predefinito (`mailto`).
+- **Area Gestione Segnalazioni Amministratore (v1.2.1)**: Una nuova scheda "Segnalazioni" consente agli amministratori di monitorare i ticket, contrassegnarli come risolti o rimuoverli. In caso di tabella database assente, fornisce le istruzioni SQL dettagliate.
 - **Tema Persistente e System-Aware**: Dark Mode gestita a livello di sistema operativo o manuale con persistenza locale (`useTheme`).
 - **Layout Responsive Desktop Premium**: Layout orizzontale automatico con Sidebar premium per monitor grandi, e layout mobile-first nativo (max 480px) per smartphone e pacchetti Android/iOS.
 - **Ricerca Globale Ottimizzata**: Ricerca unificata e debounced per prontuario & normativa con cronologia delle ricerche (`useSearch`, `useSearchHistory`).
@@ -20,6 +23,36 @@ La codebase è strutturata in modalità **Dual-Responsive**: l'app si adatta aut
 - **Gestione Errori Premium**: Error boundary a tutto schermo con ripristino interattivo (`ErrorBoundary`).
 - **Analitiche Avanzate**: Tracciamento di eventi critici integrato con PostHog.
 - **Test di Qualità**: Test di copertura per i custom hooks (`vitest`).
+
+---
+
+## 💾 Configurazione Database Supabase (Segnalazioni)
+Per abilitare il modulo di segnalazione sul tuo database Supabase, esegui il seguente script all'interno della sezione **SQL Editor** del pannello di controllo di Supabase:
+
+```sql
+-- 1. Creazione tabella segnalazioni
+CREATE TABLE IF NOT EXISTS public.segnalazioni (
+    id uuid DEFAULT gen_random_uuid() PRIMARY KEY,
+    created_at timestamp with time zone DEFAULT timezone('utc'::text, now()) NOT NULL,
+    tipo text NOT NULL,
+    dettagli text NOT NULL,
+    email text,
+    operatore text,
+    risolto boolean DEFAULT false NOT NULL
+);
+
+-- 2. RLS (Row Level Security)
+ALTER TABLE public.segnalazioni ENABLE ROW LEVEL SECURITY;
+
+-- 3. Criteri di Sicurezza (Policy)
+-- Consenti a qualsiasi operatore (autenticato o anonimo) di inserire segnalazioni
+CREATE POLICY "Consenti inserimento" ON public.segnalazioni 
+    FOR INSERT WITH CHECK (true);
+
+-- Consenti lettura e gestione (tutte le operazioni)
+CREATE POLICY "Consenti gestione completa" ON public.segnalazioni 
+    FOR ALL USING (true);
+```
 
 ---
 

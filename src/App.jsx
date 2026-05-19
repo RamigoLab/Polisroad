@@ -26,6 +26,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m 
 const AdminNews = lazy(() => import('./pages/admin/AdminNews').then(m => ({ default: m.AdminNews })));
 const AdminProntuario = lazy(() => import('./pages/admin/AdminProntuario').then(m => ({ default: m.AdminProntuario })));
 const AdminNormativa = lazy(() => import('./pages/admin/AdminNormativa').then(m => ({ default: m.AdminNormativa })));
+const AdminSegnalazioni = lazy(() => import('./pages/admin/AdminSegnalazioni').then(m => ({ default: m.AdminSegnalazioni })));
 
 import { Toast } from './components/ui/Toast';
 
@@ -33,8 +34,18 @@ function App() {
   const { session, loading: authLoading } = useAuth();
   const { loading: dataLoading, error: dataError } = useData();
   const loading = authLoading || dataLoading;
-  const [currentPage, setCurrentPage] = useState('home');
-  const [navigationParams, setNavigationParams] = useState(null);
+  const [currentPage, setCurrentPage] = useState(() => {
+    const saved = localStorage.getItem('polisroad_current_page');
+    return saved || 'home';
+  });
+  const [navigationParams, setNavigationParams] = useState(() => {
+    const saved = localStorage.getItem('polisroad_navigation_params');
+    try {
+      return saved ? JSON.parse(saved) : null;
+    } catch (e) {
+      return null;
+    }
+  });
   const [errorToast, setErrorToast] = useState('');
 
   useEffect(() => {
@@ -46,8 +57,18 @@ function App() {
   const navigate = (page, params = null) => {
     setCurrentPage(page);
     setNavigationParams(params);
+    localStorage.setItem('polisroad_current_page', page);
+    if (params) {
+      localStorage.setItem('polisroad_navigation_params', JSON.stringify(params));
+    } else {
+      localStorage.removeItem('polisroad_navigation_params');
+    }
   };
   const [showSplash, setShowSplash] = useState(() => {
+    const savedPage = localStorage.getItem('polisroad_current_page');
+    if (savedPage && savedPage !== 'home') {
+      return false;
+    }
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const hasShown = sessionStorage.getItem('polisroad_splash_shown');
     return !hasShown && !isStandalone;
@@ -88,6 +109,7 @@ function App() {
       
       // Admin Pages
       case 'admin_dashboard': return <AdminLayout currentTab="dashboard" {...props}><AdminDashboard /></AdminLayout>;
+      case 'admin_segnalazioni': return <AdminLayout currentTab="segnalazioni" {...props}><AdminSegnalazioni /></AdminLayout>;
       case 'admin_news': return <AdminLayout currentTab="news" {...props}><AdminNews /></AdminLayout>;
       case 'admin_prontuario': return <AdminLayout currentTab="prontuario" {...props}><AdminProntuario /></AdminLayout>;
       case 'admin_normativa': return <AdminLayout currentTab="normativa" {...props}><AdminNormativa /></AdminLayout>;

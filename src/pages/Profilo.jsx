@@ -43,6 +43,70 @@ export const Profilo = ({ onNavigate }) => {
 
   const { isDarkMode, toggleTheme } = useTheme();
 
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportType, setReportType] = useState('Problema Tecnico');
+  const [reportDetails, setReportDetails] = useState('');
+  const [reportSending, setReportSending] = useState(false);
+
+  const handleSendReport = async (e) => {
+    e.preventDefault();
+    if (!reportDetails.trim()) return;
+    setReportSending(true);
+
+    const operatoreNome = `${profile?.grado || ''} ${profile?.nome || ''} ${profile?.cognome || ''}`.trim() || 'Operatore Anonimo';
+    const operatoreEmail = profile?.email || 'Nessuna';
+    const reportData = {
+      tipo: reportType,
+      dettagli: reportDetails,
+      email: operatoreEmail,
+      operatore: operatoreNome,
+      created_at: new Date().toISOString(),
+      risolto: false
+    };
+
+    let saved = false;
+    try {
+      const { supabase, isSupabaseConfigured } = await import('../config/supabase');
+      if (isSupabaseConfigured && supabase) {
+        const { error } = await supabase.from('segnalazioni').insert([reportData]);
+        if (!error) saved = true;
+      }
+    } catch (err) {
+      console.warn("Supabase insert report skipped/failed:", err);
+    }
+
+    if (!saved) {
+      try {
+        const local = localStorage.getItem('polisroad_local_segnalazioni');
+        const list = local ? JSON.parse(local) : [];
+        list.push({ ...reportData, id: `local_${Date.now()}` });
+        localStorage.setItem('polisroad_local_segnalazioni', JSON.stringify(list));
+      } catch (err) {
+        console.error("Local storage report backup failed:", err);
+      }
+    }
+
+    setReportSending(false);
+    showToast('Segnalazione registrata con successo!', 'success');
+
+    // Prepara e lancia mailto
+    const subject = encodeURIComponent(`[PolisRoad Segnalazione] ${reportType}`);
+    const body = encodeURIComponent(
+      `--- SEGNALAZIONE PROBLEMA POLISROAD ---\n` +
+      `Tipo: ${reportType}\n` +
+      `Data: ${new Date().toLocaleString()}\n` +
+      `Versione App: 1.2.1\n` +
+      `Operatore: ${operatoreNome}\n` +
+      `Email: ${operatoreEmail}\n` +
+      `---------------------------------------\n\n` +
+      `Dettagli:\n${reportDetails}\n`
+    );
+    window.location.href = `mailto:admin@polisroad.it?subject=${subject}&body=${body}`;
+
+    setReportDetails('');
+    setReportOpen(false);
+  };
+
   const handleSave = async () => {
     setLoading(true);
     const { error } = await updateProfile(formData);
@@ -129,6 +193,138 @@ export const Profilo = ({ onNavigate }) => {
           </button>
         </div>
       </div>
+
+      {/* Modulo Segnala un Problema */}
+      <div style={PS.profileSysBox}>
+        <div 
+          onClick={() => setReportOpen(!reportOpen)} 
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            cursor: 'pointer',
+            userSelect: 'none'
+          }}
+        >
+          <h4 style={{ ...PS.profileSysTitle, margin: 0 }}>🚨 Segnala un Problema</h4>
+          <span style={{ 
+            fontSize: '0.8rem', 
+            color: C.textLight, 
+            transition: 'transform 0.2s', 
+            transform: reportOpen ? 'rotate(90deg)' : 'none',
+            display: 'inline-block'
+          }}>
+            ▶
+          </span>
+        </div>
+        
+        {reportOpen && (
+          <form onSubmit={handleSendReport} style={{ display: 'flex', flexDirection: 'column', gap: '14px', marginTop: '16px' }}>
+            <p style={{ fontSize: '0.85rem', color: C.textLight, margin: '0 0 4px 0', lineHeight: '1.4' }}>
+              Segnala bug, errori nei dati o malfunzionamenti. La segnalazione verrà registrata sul database per l'amministratore e si aprirà l'app e-mail per l'invio diretto.
+            </p>
+            
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: C.textLight, textTransform: 'uppercase' }}>
+                Tipo di problema
+              </label>
+              <select
+                value={reportType}
+                onChange={e => setReportType(e.target.value)}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: `1px solid ${C.border}`,
+                  backgroundColor: C.card,
+                  color: C.text,
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  cursor: 'pointer',
+                  boxSizing: 'border-box'
+                }}
+              >
+                <option value="Problema Tecnico">Problema Tecnico (Bug)</option>
+                <option value="Errore nel Prontuario">Errore nel Prontuario</option>
+                <option value="Errore nella Normativa">Errore nella Normativa</option>
+                <option value="Suggerimento">Suggerimento / Richiesta</option>
+                <option value="Altro">Altro</option>
+              </select>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <label style={{ fontSize: '0.75rem', fontWeight: 'bold', color: C.textLight, textTransform: 'uppercase' }}>
+                  Dettagli / Messaggio
+                </label>
+                <span style={{ fontSize: '0.7rem', color: reportDetails.length > 900 ? C.danger : C.textLight }}>
+                  {reportDetails.length}/1000
+                </span>
+              </div>
+              <textarea
+                value={reportDetails}
+                onChange={e => setReportDetails(e.target.value.slice(0, 1000))}
+                placeholder="Descrivi dettagliatamente il problema o l'errore riscontrato..."
+                rows={4}
+                style={{
+                  width: '100%',
+                  padding: '10px 12px',
+                  borderRadius: '8px',
+                  border: `1px solid ${C.border}`,
+                  backgroundColor: C.card,
+                  color: C.text,
+                  fontSize: '0.9rem',
+                  outline: 'none',
+                  fontFamily: 'inherit',
+                  resize: 'vertical',
+                  boxSizing: 'border-box',
+                  lineHeight: '1.4'
+                }}
+              />
+            </div>
+
+            <button 
+              type="submit" 
+              disabled={reportSending || !reportDetails.trim()} 
+              style={{ 
+                ...S.btnPrimary, 
+                display: 'flex', 
+                justifyContent: 'center', 
+                alignItems: 'center', 
+                gap: '8px',
+                opacity: !reportDetails.trim() ? 0.6 : 1,
+                cursor: !reportDetails.trim() ? 'not-allowed' : 'pointer',
+                border: 'none',
+                marginTop: '6px'
+              }}
+            >
+              {reportSending ? 'Registrazione...' : 'Invia e Apri Email 📧'}
+            </button>
+          </form>
+        )}
+      </div>
+
+      {/* Pannello Amministratore (Solo se admin) */}
+      {profile?.ruolo === 'admin' && (
+        <div style={{ ...PS.profileSysBox, borderLeft: `4px solid ${C.accent}` }}>
+          <h4 style={PS.profileSysTitle}>⚙️ Pannello di Controllo Amministratore</h4>
+          <p style={{ fontSize: '0.85rem', color: C.textLight, marginBottom: '12px', lineHeight: '1.4' }}>
+            Il tuo account dispone dei privilegi di amministratore. Accedi al pannello per gestire notizie, prontuario e leggere le segnalazioni inviate.
+          </p>
+          <button 
+            onClick={() => onNavigate('admin_dashboard')} 
+            style={{ 
+              ...S.btnPrimary, 
+              backgroundColor: C.accent, 
+              color: '#fff', 
+              border: 'none',
+              cursor: 'pointer' 
+            }}
+          >
+            Accedi ad Area Amministrativa
+          </button>
+        </div>
+      )}
 
       {/* Informazioni di Sistema */}
       <div style={PS.profileSysBox}>
