@@ -32,7 +32,7 @@ export const Splash = () => {
       </div>
       
       <h1 style={LS.splashTitle}>PolisRoad</h1>
-      <p style={LS.splashSubtitle}>Il tuo compagno su strada</p>
+      <p style={LS.splashSubtitle}>Il Codice della Strada, sempre con te</p>
 
       <div style={LS.splashProgressWrapper}>
         <div style={LS.splashProgressTrack}>
