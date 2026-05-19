@@ -286,6 +286,7 @@ export const AdminNews = () => {
               <option value="normativa">Normativa e Leggi</option>
               <option value="sicurezza">Sicurezza Stradale</option>
               <option value="informativa">Utility e Comunicazioni</option>
+              <option value="banner">Banner Notifica Homepage (Giallo)</option>
             </select>
           </div>
 
@@ -339,14 +340,14 @@ export const AdminNews = () => {
             <div style={PS.adminListItemHeader}>
               <span style={{ 
                 ...S.labelUppercase, 
-                backgroundColor: item.categoria === 'normativa' ? 'rgba(231, 76, 60, 0.1)' : item.categoria === 'sicurezza' ? 'rgba(243, 156, 18, 0.1)' : 'rgba(52, 152, 219, 0.1)',
-                color: item.categoria === 'normativa' ? C.danger : item.categoria === 'sicurezza' ? C.warning : C.primary,
+                backgroundColor: item.categoria === 'normativa' ? 'rgba(231, 76, 60, 0.1)' : item.categoria === 'sicurezza' ? 'rgba(243, 156, 18, 0.1)' : item.categoria === 'banner' ? 'rgba(243, 156, 18, 0.15)' : 'rgba(52, 152, 219, 0.1)',
+                color: item.categoria === 'normativa' ? C.danger : item.categoria === 'sicurezza' ? C.warning : item.categoria === 'banner' ? C.warning : C.primary,
                 padding: '2px 8px',
                 borderRadius: '12px',
                 fontSize: '0.75rem',
                 fontWeight: 'bold'
               }}>
-                {item.categoria === 'normativa' ? 'Normativa' : item.categoria === 'sicurezza' ? 'Sicurezza' : 'Informativa'}
+                {item.categoria === 'normativa' ? 'Normativa' : item.categoria === 'sicurezza' ? 'Sicurezza' : item.categoria === 'banner' ? 'Banner Homepage' : 'Informativa'}
               </span>
               <span style={{ 
                 fontSize: '0.8rem', 

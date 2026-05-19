@@ -9,7 +9,9 @@ La codebase è strutturata in modalità **Dual-Responsive**: l'app si adatta aut
 
 ---
 
-## ✨ Core Features (v1.2.1)
+## ✨ Core Features (v1.2.2)
+- **Notifica Gialla in Prima Pagina (v1.2.2)**: Un elegante box di notifica giallo/ambra posizionato in homepage direttamente sotto la griglia dei collegamenti principali per garantire la massima visibilità a comunicazioni urgenti o avvisi importanti.
+- **Gestione Dinamica del Banner (v1.2.2)**: Il banner della homepage si aggiorna istantaneamente leggendo le notizie contrassegnate con la categoria `"banner"`. Gli amministratori possono creare, modificare e rimuovere il banner direttamente dall'area "Gestione Notizie" grazie a un'opzione di categoria dedicata ("Banner Notifica Homepage (Giallo)") e visualizzarlo in lista con un badge giallo personalizzato ("Banner Homepage").
 - **Persistenza Navigazione PWA (v1.2.1)**: Previene il reset della sessione al ricaricamento della pagina o a causa di gesture come lo swipe-up pull-to-refresh. La pagina corrente e i suoi parametri vengono salvati in `localStorage` e ripristinati istantaneamente, saltando inoltre la visualizzazione prolungata della splash screen per una fluidità ottimale.
 - **Modulo di Segnalazione Problemi (v1.2.1)**: Integrato nel Profilo dell'operatore, consente di inoltrare bug, errori o suggerimenti sia salvandoli direttamente nel database Supabase (con salvataggio locale di fallback), sia preparando un'e-mail strutturata inviata tramite client di posta predefinito (`mailto`).
 - **Area Gestione Segnalazioni Amministratore (v1.2.1)**: Una nuova scheda "Segnalazioni" consente agli amministratori di monitorare i ticket, contrassegnarli come risolti o rimuoverli. In caso di tabella database assente, fornisce le istruzioni SQL dettagliate.

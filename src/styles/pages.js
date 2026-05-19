@@ -110,15 +110,16 @@ export const PS = {
     fontSize: '0.9rem',
   },
   homeBannerBox: {
-    backgroundColor: C.accentLight,
+    backgroundColor: C.warningLight,
     padding: '16px',
     borderRadius: '12px',
-    border: `1px solid ${C.accent}`,
+    border: `1px solid ${C.warning}`,
     marginBottom: '24px',
   },
   homeBannerTitle: {
-    color: C.primary,
+    color: C.warning,
     marginBottom: '4px',
+    fontWeight: 'bold',
   },
   homeBannerText: {
     fontSize: '0.85rem',

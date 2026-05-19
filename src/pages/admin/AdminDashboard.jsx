@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { C } from '../../styles/theme';
 import { S } from '../../styles/styles';
 import { useNews } from '../../hooks/useNews';
@@ -13,13 +13,47 @@ export const AdminDashboard = () => {
   const { list: prontuarioList } = useProntuario();
   const { list: normativaList } = useNormativa();
   const { userCount } = useAuth();
+  const [segnalazioniCount, setSegnalazioniCount] = useState(0);
+
+  useEffect(() => {
+    const fetchCount = async () => {
+      let count = 0;
+      let errorOccurred = false;
+      const { supabase, isSupabaseConfigured } = await import('../../config/supabase');
+      if (isSupabaseConfigured && supabase) {
+        try {
+          const { data, error } = await supabase.from('segnalazioni').select('id');
+          if (!error && data) {
+            count = data.length;
+          } else {
+            errorOccurred = true;
+          }
+        } catch (e) {
+          errorOccurred = true;
+        }
+      } else {
+        errorOccurred = true;
+      }
+
+      if (errorOccurred) {
+        try {
+          const local = localStorage.getItem('polisroad_local_segnalazioni');
+          const list = local ? JSON.parse(local) : [];
+          count = list.length;
+        } catch (e) {}
+      }
+      setSegnalazioniCount(count);
+    };
+    fetchCount();
+  }, []);
 
   return (
     <div>
       <h2 style={S.sectionTitle}>Dashboard</h2>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
         <StatCard title="Operatori Iscritti" count={userCount} color={C.accent} icon="👮" />
+        <StatCard title="Segnalazioni Attive" count={segnalazioniCount} color={C.danger} icon="🚨" />
         <StatCard title="Voci Prontuario" count={prontuarioList.length} color={C.primary} icon="📋" />
         <StatCard title="Articoli Normativa" count={normativaList.length} color={C.success} icon="📖" />
         <StatCard title="News Pubblicate" count={newsList.filter(n => n.pubblicato).length} color={C.warning} icon="📢" />
