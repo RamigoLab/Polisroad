@@ -15,7 +15,8 @@
     "dompurify": "^3.4.5",
     "posthog-js": "^1.373.5",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5"
+    "react-dom": "^19.2.5",
+    "react-router-dom": "^6.28.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
