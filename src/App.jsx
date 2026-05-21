@@ -1,6 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from './hooks/useAuth';
-import { useData } from './context/DataContext';
+import { useData } from './context/DataContext.jsx';
 import { Auth } from './pages/Auth';
 import { BottomNav } from './components/layout/BottomNav';
 import { Sidebar } from './components/layout/Sidebar';
