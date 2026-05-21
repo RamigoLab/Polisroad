@@ -6,6 +6,7 @@ import { TextInput } from '../../components/ui/TextInput';
 import { TextArea } from '../../components/ui/TextArea';
 import { useNews } from '../../hooks/useNews';
 import { useToast } from '../../components/ui/ToastManager';
+import { validators, sanitizers, validateAndSanitize } from '../../utils/validation';
 
 // RSS Feed List configuration with metadata (using 100% reliable, active, CORS-friendly Italian traffic feeds)
 const FEEDS = [
@@ -76,15 +77,40 @@ export const AdminNews = () => {
   };
 
   const handleSave = async () => {
+    // Basic required fields
     if (!formData.titolo || !formData.contenuto) {
-      showToast('Titolo e contenuto sono campi obbligatori!', 'error');
+      showToast('Titolo e contenuto sono obbligatori!', 'error');
       return;
     }
-
+    // Validate title length (max 200 chars)
+    const titleError = validators.maxLength(formData.titolo, 200, 'Titolo');
+    if (titleError) {
+      showToast(titleError, 'error');
+      return;
+    }
+    // Validate content length (max 5000 chars)
+    const contentError = validators.maxLength(formData.contenuto, 5000, 'Contenuto');
+    if (contentError) {
+      showToast(contentError, 'error');
+      return;
+    }
+    // Optional: validate source URL if provided
+    if (formData.url_fonte) {
+      // Ensure URL format is valid
+      const urlValid = validators.url(formData.url_fonte);
+      if (!urlValid) {
+        showToast('URL fonte non è valida.', 'error');
+        return;
+      }
+    }
+    
     setLoading(true);
     
-    // Embed manually entered source info directly into the contenuto field to preserve database compatibility
-    let finalContenuto = formData.contenuto;
+    // Sanitize HTML content to allow only safe tags
+    const sanitizedContent = sanitizers.html(formData.contenuto);
+    
+    // Embed source metadata if not already present
+    let finalContenuto = sanitizedContent;
     if (formData.fonte && !finalContenuto.startsWith('[Fonte:')) {
       const sourceStr = `[Fonte: ${formData.fonte}${formData.url_fonte ? ` | Link: ${formData.url_fonte}` : ''}]\n\n`;
       finalContenuto = sourceStr + finalContenuto;

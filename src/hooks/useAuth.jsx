@@ -2,14 +2,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 
 const DEMO_USER = {
-  id: 'admin-1',
-  email: 'admin@polisroad.it',
-  nome: 'Admin',
-  cognome: 'Demo',
-  grado: 'Ispettore',
-  forza: 'Polizia di Stato',
-  telefono: '3331234567',
-  ruolo: 'admin'
+  id: import.meta.env.VITE_DEMO_USER_ID || 'demo-1',
+  email: import.meta.env.VITE_DEMO_USER_EMAIL || 'admin@polisroad.it',
+  nome: 'Demo',
+  cognome: 'User',
+  grado: 'Operatore',
+  forza: 'Test',
+  telefono: '',
+  ruolo: import.meta.env.VITE_DEMO_USER_ROLE || 'operatore'
 };
 
 const AuthContext = createContext();
@@ -86,13 +86,15 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     if (!isSupabaseConfigured || !supabase) {
-      if (email === 'admin@polisroad.it' && password === 'admin123') {
-        localStorage.setItem('polisroad_demo_session', 'true');
-        setSession({ user: DEMO_USER });
-        setProfile(DEMO_USER);
-        return { error: null };
-      }
-      return { error: { message: 'Credenziali errate. Usa admin@polisroad.it / admin123' } };
+        if (import.meta.env.VITE_DEMO_MODE === 'true' &&
+            email === import.meta.env.VITE_DEMO_USER_EMAIL &&
+            password === import.meta.env.VITE_DEMO_USER_PASSWORD) {
+          localStorage.setItem('polisroad_demo_session', 'true');
+          setSession({ user: DEMO_USER });
+          setProfile(DEMO_USER);
+          return { error: null };
+        }
+        return { error: { message: 'Credenziali errate. Usa le credenziali demo configurate.' } };
     }
     try {
       return await supabase.auth.signInWithPassword({ email, password });

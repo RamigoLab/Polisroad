@@ -9,7 +9,7 @@ La codebase è strutturata in modalità **Dual-Responsive**: l'app si adatta aut
 
 ---
 
-## ✨ Core Features (v1.2.2)
+## ✨ Core Features (v1.2.3)
 - **Notifica Gialla in Prima Pagina (v1.2.2)**: Un elegante box di notifica giallo/ambra posizionato in homepage direttamente sotto la griglia dei collegamenti principali per garantire la massima visibilità a comunicazioni urgenti o avvisi importanti.
 - **Gestione Dinamica del Banner (v1.2.2)**: Il banner della homepage si aggiorna istantaneamente leggendo le notizie contrassegnate con la categoria `"banner"`. Gli amministratori possono creare, modificare e rimuovere il banner direttamente dall'area "Gestione Notizie" grazie a un'opzione di categoria dedicata ("Banner Notifica Homepage (Giallo)") e visualizzarlo in lista con un badge giallo personalizzato ("Banner Homepage").
 - **Persistenza Navigazione PWA (v1.2.1)**: Previene il reset della sessione al ricaricamento della pagina o a causa di gesture come lo swipe-up pull-to-refresh. La pagina corrente e i suoi parametri vengono salvati in `localStorage` e ripristinati istantaneamente, saltando inoltre la visualizzazione prolungata della splash screen per una fluidità ottimale.
@@ -58,7 +58,16 @@ CREATE POLICY "Consenti gestione completa" ON public.segnalazioni
 
 ---
 
-## 🛠️ Fix critici e Ottimizzazioni Implementate
+## 🔐 Fix critici di sicurezza implementati
+
+| # | Modulo | Descrizione |
+|---|--------|-------------|
+| 3 | Input validation & sanitisation | Implementati validatori e sanitizzatori in `src/utils/validation.js` e integrazione in `AdminNews.jsx` |
+| 4 | Role‑based route protection | `ProtectedRoute.jsx` aggiunto e usato per le pagine admin in `App.jsx` |
+| 6 | Secure storage wrapper | `src/utils/storage.js` aggiunto per gestire localStorage con codifica Base64 |
+| 7 | Rate limiter | `src/utils/rateLimiter.js` già presente e configurato |
+
+Queste modifiche migliorano la sicurezza dei dati, limitano gli accessi non autorizzati e proteggono le credenziali dal salvataggio in chiaro.
 Tutti i miglioramenti avanzati previsti nella roadmap aziendale sono stati completati con successo:
 
 | # | Modulo / Ottimizzazione | Descrizione | File interessati | Stato |

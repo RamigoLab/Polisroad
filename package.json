@@ -1,7 +1,7 @@
 {
   "name": "cds-pro",
   "private": true,
-  "version": "1.2.2",
+  "version": "1.2.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
+    "@types/dompurify": "^3.0.5",
+    "dompurify": "^3.4.5",
     "posthog-js": "^1.373.5",
     "react": "^19.2.5",
     "react-dom": "^19.2.5"

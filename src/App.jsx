@@ -6,6 +6,7 @@ import { BottomNav } from './components/layout/BottomNav';
 import { Sidebar } from './components/layout/Sidebar';
 import { Splash } from './components/layout/Splash';
 import { AdminLayout } from './pages/admin/AdminLayout';
+import { ProtectedRoute } from './components/ProtectedRoute';
 import { PageLoader } from './components/ui/PageLoader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 
@@ -29,17 +30,18 @@ const AdminNormativa = lazy(() => import('./pages/admin/AdminNormativa').then(m 
 const AdminSegnalazioni = lazy(() => import('./pages/admin/AdminSegnalazioni').then(m => ({ default: m.AdminSegnalazioni })));
 
 import { Toast } from './components/ui/Toast';
+import { getItem, setItem, removeItem } from './utils/storage';
 
 function App() {
   const { session, loading: authLoading } = useAuth();
   const { loading: dataLoading, error: dataError } = useData();
   const loading = authLoading || dataLoading;
   const [currentPage, setCurrentPage] = useState(() => {
-    const saved = localStorage.getItem('polisroad_current_page');
+    const saved = getItem('polisroad_current_page');
     return saved || 'home';
   });
   const [navigationParams, setNavigationParams] = useState(() => {
-    const saved = localStorage.getItem('polisroad_navigation_params');
+    const saved = getItem('polisroad_navigation_params');
     try {
       return saved ? JSON.parse(saved) : null;
     } catch (e) {
@@ -57,15 +59,15 @@ function App() {
   const navigate = (page, params = null) => {
     setCurrentPage(page);
     setNavigationParams(params);
-    localStorage.setItem('polisroad_current_page', page);
+    setItem('polisroad_current_page', page);
     if (params) {
-      localStorage.setItem('polisroad_navigation_params', JSON.stringify(params));
+      setItem('polisroad_navigation_params', JSON.stringify(params));
     } else {
-      localStorage.removeItem('polisroad_navigation_params');
+      removeItem('polisroad_navigation_params');
     }
   };
   const [showSplash, setShowSplash] = useState(() => {
-    const savedPage = localStorage.getItem('polisroad_current_page');
+    const savedPage = getItem('polisroad_current_page');
     if (savedPage && savedPage !== 'home') {
       return false;
     }
@@ -108,11 +110,31 @@ function App() {
       case 'operatore': return <Operatore {...props} />;
       
       // Admin Pages
-      case 'admin_dashboard': return <AdminLayout currentTab="dashboard" {...props}><AdminDashboard /></AdminLayout>;
-      case 'admin_segnalazioni': return <AdminLayout currentTab="segnalazioni" {...props}><AdminSegnalazioni /></AdminLayout>;
-      case 'admin_news': return <AdminLayout currentTab="news" {...props}><AdminNews /></AdminLayout>;
-      case 'admin_prontuario': return <AdminLayout currentTab="prontuario" {...props}><AdminProntuario /></AdminLayout>;
-      case 'admin_normativa': return <AdminLayout currentTab="normativa" {...props}><AdminNormativa /></AdminLayout>;
+      case 'admin_dashboard': return (
+        <ProtectedRoute requiredRole="admin">
+          <AdminLayout currentTab="dashboard" {...props}><AdminDashboard /></AdminLayout>
+        </ProtectedRoute>
+      );
+      case 'admin_segnalazioni': return (
+        <ProtectedRoute requiredRole="admin">
+          <AdminLayout currentTab="segnalazioni" {...props}><AdminSegnalazioni /></AdminLayout>
+        </ProtectedRoute>
+      );
+      case 'admin_news': return (
+        <ProtectedRoute requiredRole="admin">
+          <AdminLayout currentTab="news" {...props}><AdminNews /></AdminLayout>
+        </ProtectedRoute>
+      );
+      case 'admin_prontuario': return (
+        <ProtectedRoute requiredRole="admin">
+          <AdminLayout currentTab="prontuario" {...props}><AdminProntuario /></AdminLayout>
+        </ProtectedRoute>
+      );
+      case 'admin_normativa': return (
+        <ProtectedRoute requiredRole="admin">
+          <AdminLayout currentTab="normativa" {...props}><AdminNormativa /></AdminLayout>
+        </ProtectedRoute>
+      );
       
       default: return <Home {...props} />;
     }
