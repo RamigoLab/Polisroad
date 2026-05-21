@@ -1,10 +1,10 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import './index.css';
-import App from './App.jsx';
-import { AuthProvider } from './hooks/useAuth.jsx';
-import { DataProvider } from './context/DataContext.jsx';
-import { ToastProvider } from './components/ui/ToastManager.jsx';
+import App from './App';
+import { AuthProvider } from './hooks/useAuth';
+import { DataProvider } from './context/DataContext';
+import { ToastProvider } from './components/ui/ToastManager';
 import posthog from 'posthog-js';
 
 // Applica il tema salvato prima del render per evitare flash bianchi
