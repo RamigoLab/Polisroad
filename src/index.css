@@ -121,6 +121,11 @@ button {
   .app-main-content {
     height: 100vh;
     overflow-y: auto;
+    flex: 1;
+    max-width: 1200px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
   }
 
   .app-bottom-nav {
