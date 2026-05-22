@@ -13,7 +13,7 @@ export const PS = {
   homeHeader: {
     backgroundColor: C.primary,
     color: '#fff',
-    padding: 'max(24px, env(safe-area-inset-top)) 16px 24px 16px',
+    padding: '0 16px 24px 16px',
     borderBottomLeftRadius: '24px',
     borderBottomRightRadius: '24px',
   },
