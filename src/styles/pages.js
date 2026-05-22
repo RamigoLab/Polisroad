@@ -50,7 +50,7 @@ export const PS = {
     cursor: 'pointer',
   },
   homeQuickActions: {
-    marginTop: '20px',
+    marginTop: '0px',
     display: 'flex',
     gap: '12px',
   },

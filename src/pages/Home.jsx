@@ -12,7 +12,7 @@ export const Home = ({ onNavigate }) => {
   const bannerNews = newsList.find(n => n.categoria.toLowerCase() === 'banner' && n.pubblicato);
 
   return (
-    <PageWrapper style={{ padding: 0 }} hideLogo={true} onNavigate={onNavigate}>
+    <PageWrapper style={{ padding: 0, paddingTop: 0 }} hideLogo={true} onNavigate={onNavigate}>
       {/* Header */}
       <div style={PS.homeHeader}>
         <div style={PS.homeHeaderInner}>
