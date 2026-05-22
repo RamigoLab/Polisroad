@@ -111,27 +111,27 @@ function App() {
       
       // Admin Pages
       case 'admin_dashboard': return (
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="dashboard" {...props}><AdminDashboard /></AdminLayout>
         </ProtectedRoute>
       );
       case 'admin_segnalazioni': return (
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="segnalazioni" {...props}><AdminSegnalazioni /></AdminLayout>
         </ProtectedRoute>
       );
       case 'admin_news': return (
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="news" {...props}><AdminNews /></AdminLayout>
         </ProtectedRoute>
       );
       case 'admin_prontuario': return (
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="prontuario" {...props}><AdminProntuario /></AdminLayout>
         </ProtectedRoute>
       );
       case 'admin_normativa': return (
-        <ProtectedRoute requiredRole="admin">
+        <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="normativa" {...props}><AdminNormativa /></AdminLayout>
         </ProtectedRoute>
       );

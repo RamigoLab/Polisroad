@@ -3,25 +3,27 @@
 
 import React, { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
-import { useNavigate } from 'react-router-dom'; // Assuming react-router is used for navigation; if not, fallback to simple render.
 
 /**
  * Props:
  *   requiredRole?: string – role that the user must have (e.g., 'admin').
  *   fallback?: ReactNode – element to render while checking auth (default: null).
+ *   onNavigate?: function – custom navigation function
  *   children: ReactNode – protected component(s).
  */
-export const ProtectedRoute = ({ requiredRole, fallback = null, children }) => {
+export const ProtectedRoute = ({ requiredRole, fallback = null, onNavigate, children }) => {
   const { session, loading } = useAuth();
-  const navigate = useNavigate();
 
   // Session may be null while loading; we wait.
   useEffect(() => {
     if (!loading && (!session || (requiredRole && session.user?.role !== requiredRole))) {
-      // Redirect to login page (root will render Auth component)
-      navigate('/');
+      if (onNavigate) {
+        onNavigate('home');
+      } else {
+        window.location.href = '/';
+      }
     }
-  }, [loading, session, requiredRole, navigate]);
+  }, [loading, session, requiredRole, onNavigate]);
 
   if (loading) {
     return fallback;
