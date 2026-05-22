@@ -61,7 +61,8 @@ export const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [toast, setToast] = useState('');
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e) => {
+    if (e) e.preventDefault();
     setLoading(true);
     setToast('');
     if (isLogin) {
@@ -86,28 +87,30 @@ export const Auth = () => {
         <div style={authCardStyle}>
           <h2 style={authCardTitleStyle}>{isLogin ? 'Accedi' : 'Registrati'}</h2>
 
-          {!isLogin && (
-            <>
-              <TextInput label="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
-              <TextInput label="Cognome" value={cognome} onChange={(e) => setCognome(e.target.value)} />
-              <TextInput label="Grado" value={grado} onChange={(e) => setGrado(e.target.value)} />
-              <TextInput label="Forza di Polizia" value={forza} onChange={(e) => setForza(e.target.value)} />
-            </>
-          )}
+          <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
+            {!isLogin && (
+              <>
+                <TextInput label="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
+                <TextInput label="Cognome" value={cognome} onChange={(e) => setCognome(e.target.value)} />
+                <TextInput label="Grado" value={grado} onChange={(e) => setGrado(e.target.value)} />
+                <TextInput label="Forza di Polizia" value={forza} onChange={(e) => setForza(e.target.value)} />
+              </>
+            )}
 
-          <TextInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-          <TextInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <TextInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+            <TextInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
 
-          <button
-            onClick={handleSubmit}
-            disabled={loading}
-            style={{ ...S.btnPrimary, marginTop: '8px', opacity: loading ? 0.7 : 1 }}
-          >
-            {loading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Registrati')}
-          </button>
+            <button
+              type="submit"
+              disabled={loading}
+              style={{ ...S.btnPrimary, marginTop: '8px', opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Registrati')}
+            </button>
+          </form>
 
           <div style={authSwitchStyle}>
-            <button onClick={() => setIsLogin(!isLogin)} style={authSwitchBtnStyle}>
+            <button type="button" onClick={() => setIsLogin(!isLogin)} style={authSwitchBtnStyle}>
               {isLogin ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi'}
             </button>
           </div>
