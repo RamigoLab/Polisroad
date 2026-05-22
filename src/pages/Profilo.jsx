@@ -7,7 +7,7 @@ import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
-import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS } from '../config/constants';
+import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } from '../config/constants';
 
 const DataRow = ({ label, value, icon }) => (
   <div style={S.dataRow}>
@@ -95,7 +95,7 @@ export const Profilo = ({ onNavigate }) => {
       `--- SEGNALAZIONE PROBLEMA POLISROAD ---\n` +
       `Tipo: ${reportType}\n` +
       `Data: ${new Date().toLocaleString()}\n` +
-      `Versione App: 1.2.1\n` +
+      `Versione App: ${APP_VERSION}\n` +
       `Operatore: ${operatoreNome}\n` +
       `Email: ${operatoreEmail}\n` +
       `---------------------------------------\n\n` +
