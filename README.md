@@ -1,8 +1,8 @@
-# 🚔 PolisRoad – Smart Enforcement Tool v1.2.4
+# 🚔 PolisRoad – Smart Enforcement Tool v1.2.5
 
 **Una Progressive Web App moderna e performante per le forze dell'ordine.**
 
-[![Version](https://img.shields.io/badge/version-1.2.4-blue.svg)](https://github.com/tuo-username/PolisRoad)
+[![Version](https://img.shields.io/badge/version-1.2.5-blue.svg)](https://github.com/tuo-username/PolisRoad)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 [![React](https://img.shields.io/badge/react-19.2.5-61dafb.svg)](https://react.dev)
 [![Vite](https://img.shields.io/badge/vite-8.0.10-646cff.svg)](https://vitejs.dev)
@@ -33,13 +33,17 @@ L'applicazione è costruita con **React 19** + **Vite** per performance eccezion
 
 ---
 
-## 🌟 Novità in v1.2.4
+## 🌟 Novità in v1.2.5
 
 ### 🔧 Correzioni & Miglioramenti
-- ✅ **Fix grafica mobile PWA** - Eliminata linea bianca tra status bar e header
-- ✅ **Sincronizzazione versione automatica** - Script di build che aggiorna la versione da package.json
-- ✅ **Meta tag ottimizzati** - Migliore supporto su iOS e Android
-- ✅ **Viewport fit cover** - Sfrutta tutto lo schermo del dispositivo
+- ✅ **Fix Layout Desktop (Profilo)** - Risolto bug responsività del pulsante "Modifica Profilo" che veniva tagliato su schermi molto ampi a causa dello shrink flexbox.
+- ✅ **Fix Pannello Admin** - Corretto sistema di navigazione e accesso autorizzato per gli amministratori
+
+### 📋 v1.2.4
+- Fix grafica mobile PWA (eliminata linea bianca)
+- Sincronizzazione versione automatica con script di build
+- Meta tag ottimizzati
+- Viewport fit cover
 
 ### 📋 v1.2.3
 - Notifica gialla in homepage

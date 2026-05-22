@@ -12,18 +12,18 @@ import { useAuth } from '../hooks/useAuth';
  *   children: ReactNode – protected component(s).
  */
 export const ProtectedRoute = ({ requiredRole, fallback = null, onNavigate, children }) => {
-  const { session, loading } = useAuth();
+  const { session, profile, loading } = useAuth();
 
   // Session may be null while loading; we wait.
   useEffect(() => {
-    if (!loading && (!session || (requiredRole && session.user?.role !== requiredRole))) {
+    if (!loading && (!session || (requiredRole && profile?.ruolo !== requiredRole))) {
       if (onNavigate) {
         onNavigate('home');
       } else {
         window.location.href = '/';
       }
     }
-  }, [loading, session, requiredRole, onNavigate]);
+  }, [loading, session, profile, requiredRole, onNavigate]);
 
   if (loading) {
     return fallback;
@@ -31,7 +31,7 @@ export const ProtectedRoute = ({ requiredRole, fallback = null, onNavigate, chil
   if (!session) {
     return null; // navigation effect will handle redirect
   }
-  if (requiredRole && session.user?.role !== requiredRole) {
+  if (requiredRole && profile?.ruolo !== requiredRole) {
     return null; // unauthorized – navigation handled above
   }
   return <>{children}</>;

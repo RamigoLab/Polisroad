@@ -42,12 +42,14 @@ export const S = {
     padding: '16px',
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+    flexShrink: 0,
   },
   cardElevated: {
     backgroundColor: C.card,
     borderRadius: '16px',
     boxShadow: '0 4px 12px rgba(0,0,0,0.08)',
     overflow: 'hidden',
+    flexShrink: 0,
   },
   cardClickable: {
     backgroundColor: C.card,
@@ -55,6 +57,7 @@ export const S = {
     borderRadius: '12px',
     boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
     cursor: 'pointer',
+    flexShrink: 0,
   },
 
   // ─────────────────────────────────────────────
@@ -67,6 +70,7 @@ export const S = {
     display: 'flex',
     flexDirection: 'column',
     gap: '8px',
+    flexShrink: 0,
   },
   formHeader: {
     display: 'flex',

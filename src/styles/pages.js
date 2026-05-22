@@ -447,6 +447,7 @@ export const PS = {
     borderRadius: '12px',
     border: `1px solid ${C.border}`,
     marginBottom: '16px',
+    flexShrink: 0,
   },
   profileSysTitle: {
     color: C.text,
@@ -461,6 +462,7 @@ export const PS = {
     borderRadius: '12px',
     textAlign: 'center',
     border: `1px solid ${C.border}`,
+    flexShrink: 0,
   },
   profileDonateBtn: {
     display: 'inline-block',
