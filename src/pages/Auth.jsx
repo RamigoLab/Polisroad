@@ -90,15 +90,15 @@ export const Auth = () => {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column' }}>
             {!isLogin && (
               <>
-                <TextInput label="Nome" value={nome} onChange={(e) => setNome(e.target.value)} />
-                <TextInput label="Cognome" value={cognome} onChange={(e) => setCognome(e.target.value)} />
-                <TextInput label="Grado" value={grado} onChange={(e) => setGrado(e.target.value)} />
-                <TextInput label="Forza di Polizia" value={forza} onChange={(e) => setForza(e.target.value)} />
+                <TextInput label="Nome" value={nome} onChange={(e) => setNome(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
+                <TextInput label="Cognome" value={cognome} onChange={(e) => setCognome(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
+                <TextInput label="Grado" value={grado} onChange={(e) => setGrado(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
+                <TextInput label="Forza di Polizia" value={forza} onChange={(e) => setForza(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
               </>
             )}
 
-            <TextInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
-            <TextInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
+            <TextInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
+            <TextInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
 
             <button
               type="submit"
