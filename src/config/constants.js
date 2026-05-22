@@ -1,7 +1,7 @@
 // Imposta a false per disabilitare Supabase e usare i dati mock offline
 export const USE_SUPABASE = true;
 
-export const APP_VERSION = '1.2.3';
+export const APP_VERSION = '1.2.4';
 export const APP_NAME = 'PolisRoad';
 
 // Versioni dei Database
