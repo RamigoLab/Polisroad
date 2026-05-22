@@ -42,7 +42,7 @@ export const Profilo = ({ onNavigate }) => {
     email: profile?.email || '',
     telefono: profile?.telefono || '',
   });
-  const [loading, setLoading] = useState(false);
+  const [saveLoading, setSaveLoading] = useState(false);
   const { showToast } = useToast();
 
   const { isDarkMode, toggleTheme } = useTheme();
@@ -137,11 +137,11 @@ export const Profilo = ({ onNavigate }) => {
   };
 
   const handleSave = async () => {
-    setLoading(true);
-    const { error } = await updateProfile(formData);
-    if (error) showToast('Errore nel salvataggio: ' + error.message, 'error');
-    else { showToast('Profilo aggiornato!', 'success'); setIsEditing(false); }
-    setLoading(false);
+    setSaveLoading(true);
+      const { error } = await updateProfile(formData);
+      if (error) showToast('Errore nel salvataggio: ' + error.message, 'error');
+      else { showToast('Profilo aggiornato!', 'success'); setIsEditing(false); }
+      setSaveLoading(false);
   };
 
   const handleCancel = () => {
@@ -195,8 +195,8 @@ export const Profilo = ({ onNavigate }) => {
               <TextInput label="Telefono" type="tel" value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} />
               <div style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                 <button onClick={handleCancel} style={S.btnSecondary}>Annulla</button>
-                <button onClick={handleSave} disabled={loading} style={{ ...S.btnPrimary, flex: 2 }}>
-                  {loading ? 'Salvataggio...' : 'Salva Modifiche'}
+                <button onClick={handleSave} disabled={saveLoading} style={{ ...S.btnPrimary, flex: 2 }}>
+                  {saveLoading ? 'Salvataggio...' : 'Salva Modifiche'}
                 </button>
               </div>
             </div>
