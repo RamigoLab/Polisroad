@@ -1,10 +1,14 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
 import { useToast } from '../components/ui/ToastManager';
 import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
+import { useGamification } from '../hooks/useGamification';
+import { LevelProgress } from '../components/gamification/LevelProgress';
+import { StreakCounter } from '../components/gamification/StreakCounter';
+import { BadgeShowcase } from '../components/gamification/BadgeShowcase';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } from '../config/constants';
@@ -42,6 +46,31 @@ export const Profilo = ({ onNavigate }) => {
   const { showToast } = useToast();
 
   const { isDarkMode, toggleTheme } = useTheme();
+
+  // Gamification hook
+  const {
+    stats,
+    loading,
+    error,
+    addXP,
+    updateStreak,
+    getUnlockedBadges,
+    checkNewBadges,
+    setFeaturedBadge,
+    level,
+    xp,
+    currentStreak,
+    longestStreak,
+    featuredBadge,
+    unlockedBadges,
+  } = useGamification();
+
+  // Update daily streak on mount
+  useEffect(() => {
+    if (!loading && stats) {
+      updateStreak();
+    }
+  }, [loading, stats]);
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportType, setReportType] = useState('Problema Tecnico');
@@ -117,11 +146,24 @@ export const Profilo = ({ onNavigate }) => {
 
   const handleCancel = () => {
     setFormData({
-      grado: profile?.grado || '', nome: profile?.nome || '',
-      cognome: profile?.cognome || '', forza: profile?.forza || '',
-      email: profile?.email || '', telefono: profile?.telefono || '',
+      grado: profile?.grado || '',
+      nome: profile?.nome || '',
+      cognome: profile?.cognome || '',
+      forza: profile?.forza || '',
+      email: profile?.email || '',
+      telefono: profile?.telefono || '',
     });
     setIsEditing(false);
+  };
+
+  // Set featured badge
+  const handleBadgeSelect = async (badgeId) => {
+    try {
+      await setFeaturedBadge(badgeId);
+      showToast('Badge impostato come featured!', 'success');
+    } catch (e) {
+      showToast('Impossibile impostare il badge', 'error');
+    }
   };
 
 
@@ -323,6 +365,26 @@ export const Profilo = ({ onNavigate }) => {
           >
             Accedi ad Area Amministrativa
           </button>
+        </div>
+      )}
+
+      {/* Gamification Dashboard */}
+      {!loading && stats && (
+        <div style={{ ...S.cardElevated, marginBottom: '24px' }}>
+          <LevelProgress
+            level={level}
+            xp={xp}
+            nextLevelXp={stats.next_level_xp || (level + 1) * 100}
+          />
+          <StreakCounter
+            currentStreak={currentStreak}
+            longestStreak={longestStreak}
+          />
+          <BadgeShowcase
+            unlockedBadges={unlockedBadges}
+            featuredBadge={featuredBadge}
+            onSelect={handleBadgeSelect}
+          />
         </div>
       )}
 
