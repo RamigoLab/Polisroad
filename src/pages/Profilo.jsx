@@ -370,11 +370,21 @@ export const Profilo = ({ onNavigate }) => {
 
       {/* Gamification Dashboard */}
       {!loading && stats && (
-        <div style={{ ...S.cardElevated, marginBottom: '24px' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <h3 style={{
+            fontSize: '1.1rem',
+            fontWeight: '700',
+            color: C.text,
+            margin: '0 0 16px 0',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            🎮 Progressi e Gamification
+          </h3>
           <LevelProgress
             level={level}
             xp={xp}
-            nextLevelXp={stats.next_level_xp || (level + 1) * 100}
           />
           <StreakCounter
             currentStreak={currentStreak}
