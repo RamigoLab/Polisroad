@@ -1,4 +1,4 @@
-import { useData } from '../context/DataContext.jsx';
+import { useData } from '../context/DataContext';
 import { supabase } from '../config/supabase';
 import { USE_SUPABASE } from '../config/constants';
 
