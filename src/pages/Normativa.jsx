@@ -76,16 +76,13 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
 
   if (selectedItem) {
     return (
-      <PageWrapper style={{ padding: 0 }} hideLogo={true} onNavigate={onNavigate}>
-        <div style={PS.normativaDetailHeader}>
-          <button onClick={() => setSelectedItem(null)} style={{ fontSize: '1.2rem', padding: '4px' }}>⬅️</button>
-          <div style={{ flex: 1 }}>
-            <div style={PS.normativaDetailBadges}>
-              <Badge type="primary">{selectedItem.articolo}</Badge>
-            </div>
-            <h2 style={{ fontSize: '1.1rem', color: C.text, lineHeight: 1.3 }}>{cleanTitle(selectedItem.titolo)}</h2>
-          </div>
-        </div>
+      <PageWrapper
+        style={{ padding: 0 }}
+        title={cleanTitle(selectedItem.titolo)}
+        subtitle={selectedItem.articolo}
+        onNavigate={onNavigate}
+        headerLeftAction={<button onClick={() => setSelectedItem(null)} style={{ fontSize: '0.85rem', padding: '6px 8px', color: '#fff' }}>Indietro</button>}
+      >
         <div style={PS.normativaDetailBody}>
           {selectedItem.commi.map(c => (
             <div key={c.id} style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#fff', borderRadius: '12px', border: `1px solid ${C.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
@@ -99,9 +96,8 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   }
 
   return (
-    <PageWrapper onNavigate={onNavigate}>
+    <PageWrapper title="Normativa PolisRoad" subtitle="Codice della Strada" onNavigate={onNavigate}>
       <div style={{ marginBottom: '16px' }}>
-        <h2 style={S.sectionTitle}>Normativa PolisRoad</h2>
         <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cerca n° articolo o parola..." />
       </div>
 
@@ -133,3 +129,4 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     </PageWrapper>
   );
 };
+

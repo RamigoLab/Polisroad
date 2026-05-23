@@ -79,21 +79,20 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
     const itemNote = note[selectedItem.id] || '';
 
     return (
-      <PageWrapper style={{ padding: 0 }} hideLogo={true} onNavigate={onNavigate}>
-        {/* Header Dettaglio */}
-        <div style={PS.prontuarioDetailHeader}>
-          <button onClick={() => setSelectedItem(null)} style={{ fontSize: '1.2rem', padding: '4px' }}>⬅️</button>
-          <div style={{ flex: 1 }}>
-            <div style={PS.prontuarioDetailHeaderMeta}>
-              <Badge type="primary">{selectedItem.rif_normativo}</Badge>
-              <button onClick={() => handleToggleFavorite(selectedItem.id)} style={{ fontSize: '1.4rem' }}>
-                {isFav ? '⭐' : '☆'}
-              </button>
-            </div>
-            <h2 style={{ fontSize: '1.1rem', color: C.text, lineHeight: 1.3 }}>{selectedItem.titolo}</h2>
+      <PageWrapper
+        style={{ padding: 0 }}
+        title={selectedItem.titolo}
+        subtitle={selectedItem.rif_normativo}
+        onNavigate={onNavigate}
+        headerLeftAction={<button onClick={() => setSelectedItem(null)} style={{ fontSize: '0.85rem', padding: '6px 8px', color: '#fff' }}>Indietro</button>}
+        headerChildren={
+          <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
+            <button onClick={() => handleToggleFavorite(selectedItem.id)} style={{ fontSize: '1rem', color: '#fff', fontWeight: 'bold' }}>
+              {isFav ? 'Preferito' : 'Aggiungi preferito'}
+            </button>
           </div>
-        </div>
-
+        }
+      >
         <div style={PS.prontuarioDetailBody}>
           {/* Descrizione */}
           <div style={S.card}>
@@ -190,9 +189,8 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   }
 
   return (
-    <PageWrapper onNavigate={onNavigate}>
+    <PageWrapper title="Prontuario" subtitle="Archivio operativo" onNavigate={onNavigate}>
       <div style={{ marginBottom: '16px' }}>
-        <h2 style={S.sectionTitle}>Prontuario</h2>
         <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cerca articolo, titolo o codice..." />
       </div>
 
@@ -216,3 +214,4 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
     </PageWrapper>
   );
 };
+

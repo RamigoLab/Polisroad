@@ -1,7 +1,6 @@
 import React from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { C } from '../styles/theme';
-import { S } from '../styles/styles';
 
 const faviconUrl = (domain) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
 
@@ -133,8 +132,7 @@ const LinkLogo = ({ link }) => {
 };
 
 export const Links = ({ onNavigate }) => (
-  <PageWrapper onNavigate={onNavigate}>
-    <h2 style={S.sectionTitle}>Link Istituzionali</h2>
+  <PageWrapper title="Link Istituzionali" subtitle="Risorse ufficiali" onNavigate={onNavigate}>
     <div style={gridStyle}>
       {LINKS.map((link) => (
         <a key={link.url} href={link.url} target="_blank" rel="noreferrer" style={linkCardStyle}>

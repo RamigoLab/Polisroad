@@ -35,9 +35,7 @@ export const Calcolatore = ({ onNavigate }) => {
   const calcNotturnaScontata = min ? (parseFloat(calcNotturna) * 0.7).toFixed(2) : 0;
 
   return (
-    <PageWrapper onNavigate={onNavigate}>
-      <h2 style={S.sectionTitle}>Calcolatore Sanzioni</h2>
-
+    <PageWrapper title="Calcolatore Sanzioni" subtitle="Importi, sconti e maggiorazioni" onNavigate={onNavigate}>
       <div style={{ ...S.formCard, marginBottom: '16px' }}>
         <SelectInput
           label="Pre-compila da violazione (Opzionale)"

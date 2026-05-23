@@ -2,6 +2,8 @@
 
 Progressive Web App React/Vite per consultazione rapida del Codice della Strada, prontuario, preferiti, calcolo sanzioni, news, profilo operatore e funzioni admin.
 
+Versione corrente: **1.4.1**
+
 ## Stack
 
 - React 19
@@ -66,3 +68,9 @@ Su Vercel o servizi simili:
 3. Esegui build con `npm run build`.
 
 Output di produzione: `dist/`.
+
+## Note versione 1.4.1
+
+- Preparazione header unificato: la home e le pagine interne devono condividere lo stesso stile di barra superiore.
+- Logo PolisRoad coerente in alto a destra con navigazione alla home.
+- Documentazione tecnica in `docs/IMPLEMENTAZIONE_1.4.1_HEADER_UNIFICATO.md`.

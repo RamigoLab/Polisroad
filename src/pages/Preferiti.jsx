@@ -15,18 +15,12 @@ export const Preferiti = ({ onNavigate }) => {
     const isFav = preferiti.includes(itemId);
     await toggle(itemId);
     if (isFav) {
-      // L'utente sta rimuovendo da preferiti
-      // Non diamo penalità, soltanto non diamo XP
+      // L'utente sta rimuovendo da preferiti: nessuna penalità XP.
     }
   };
 
   return (
-    <PageWrapper onNavigate={onNavigate}>
-      <div style={{ ...S.pageHeader, marginBottom: '16px' }}>
-        <h2 style={S.pageTitle}>Preferiti</h2>
-        <Badge type="warning">⭐ {preferiti.length}</Badge>
-      </div>
-
+    <PageWrapper title="Preferiti" subtitle="Le voci salvate" meta={`${preferiti.length} preferiti`} onNavigate={onNavigate}>
       {loading ? (
         <div style={S.emptyState}>Caricamento in corso...</div>
       ) : preferitiList.length === 0 ? (

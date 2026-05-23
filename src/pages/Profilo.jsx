@@ -164,11 +164,12 @@ export const Profilo = ({ onNavigate }) => {
 
 
   return (
-    <PageWrapper onNavigate={onNavigate}>
-      <div style={{ ...S.pageHeader, marginBottom: '24px' }}>
-        <h2 style={S.pageTitle}>Profilo Operatore</h2>
-        <button onClick={signOut} style={PS.profileExitBtn}>Esci</button>
-      </div>
+    <PageWrapper
+      title="Profilo Operatore"
+      subtitle="Account, progressi e sistema"
+      onNavigate={onNavigate}
+      headerRightAction={<button onClick={signOut} style={PS.profileExitBtn}>Esci</button>}
+    >
 
       {/* Scheda Identità */}
       <div style={{ ...S.cardElevated, marginBottom: '24px', overflow: isEditing ? 'visible' : 'hidden' }}>

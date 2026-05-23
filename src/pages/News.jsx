@@ -25,10 +25,8 @@ export const News = ({ onNavigate }) => {
   ];
 
   return (
-    <PageWrapper onNavigate={onNavigate}>
+    <PageWrapper title="News Normative & CdS" subtitle="Aggiornamenti e comunicazioni" onNavigate={onNavigate}>
       <div style={{ marginBottom: '20px' }}>
-        <h2 style={{ ...S.sectionTitle, marginBottom: '12px' }}>News Normative & CdS</h2>
-        
         {/* Category Filter Pills */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>
           {filterPills.map(pill => {

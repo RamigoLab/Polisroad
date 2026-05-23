@@ -4,6 +4,19 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.4.1] - 23 Maggio 2026
+
+### UI/UX
+- Pianificata uniformazione dell'header: la barra blu della home diventera' componente condiviso per le pagine principali.
+- Logo PolisRoad coerente in alto a destra con ritorno alla home.
+- Mantenute come eccezioni intenzionali la modalita' Operatore e l'area Admin, che hanno layout dedicati.
+
+### Documentazione
+- Aggiunto `docs/IMPLEMENTAZIONE_1.4.1_HEADER_UNIFICATO.md` con file da creare, file da modificare, checklist test e note deploy.
+- Aggiornato README alla versione corrente 1.4.1.
+
+---
+
 ## [1.4.0] - 22 Maggio 2026
 
 ### 🎮 GAMIFICATION COMPLETA (NUOVO!)
@@ -280,4 +293,4 @@ Per problemi o domande:
 
 **PolisRoad Development Team** ❤️
 
-*Versione 1.4.0 — 22 Maggio 2026*
+*Versione 1.4.1 - 23 Maggio 2026*

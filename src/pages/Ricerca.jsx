@@ -34,9 +34,8 @@ export const Ricerca = ({ onNavigate }) => {
   const hasSearch = search.trim().length > 0;
 
   return (
-    <PageWrapper onNavigate={onNavigate}>
+    <PageWrapper title="Ricerca Globale" subtitle="Cerca in tutta PolisRoad" onNavigate={onNavigate}>
       <div style={{ marginBottom: '20px' }}>
-        <h2 style={S.sectionTitle}>Ricerca Globale</h2>
         <SearchBar 
           value={search} 
           onChange={(e) => setSearch(e.target.value)} 
