@@ -17,6 +17,7 @@ const LINKS = [
     subtitle: 'Sito istituzionale',
     url: 'https://www.carabinieri.it',
     domain: 'carabinieri.it',
+    logo: '/logos/carabinieri.svg',
     fallback: 'CC'
   },
   {
@@ -24,6 +25,7 @@ const LINKS = [
     subtitle: 'Sito istituzionale',
     url: 'https://www.gdf.gov.it',
     domain: 'gdf.gov.it',
+    logo: '/logos/gdf.svg',
     fallback: 'GdF'
   },
   {
@@ -31,6 +33,7 @@ const LINKS = [
     subtitle: 'Sito istituzionale',
     url: 'https://www.poliziapenitenziaria.gov.it',
     domain: 'poliziapenitenziaria.gov.it',
+    logo: '/logos/penitenziaria.png',
     fallback: 'PP'
   },
   {
@@ -45,6 +48,7 @@ const LINKS = [
     subtitle: 'Norme, comunicati e servizi',
     url: 'https://www.interno.gov.it',
     domain: 'interno.gov.it',
+    logo: '/logos/interno.svg',
     fallback: 'MI'
   },
   {
@@ -52,6 +56,7 @@ const LINKS = [
     subtitle: 'Mobilita e trasporti',
     url: 'https://www.mit.gov.it',
     domain: 'mit.gov.it',
+    logo: '/logos/mit.png',
     fallback: 'MIT'
   },
   {
@@ -59,7 +64,16 @@ const LINKS = [
     subtitle: 'Normativa pubblicata',
     url: 'https://www.gazzettaufficiale.it',
     domain: 'gazzettaufficiale.it',
+    logo: '/logos/gazzetta.png',
     fallback: 'GU'
+  },
+  {
+    title: 'Normattiva',
+    subtitle: 'Il portale della legge vigente',
+    url: 'https://www.normattiva.it',
+    domain: 'normattiva.it',
+    logo: '/logos/normattiva.svg',
+    fallback: 'NA'
   }
 ];
 
@@ -78,11 +92,12 @@ const linkCardStyle = {
   textDecoration: 'none',
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
+  alignItems: 'center',
+  justifyContent: 'center',
   boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
   color: C.text,
-  gap: '12px'
+  gap: '12px',
+  textAlign: 'center'
 };
 
 const logoWrapStyle = {
@@ -118,10 +133,12 @@ const LinkLogo = ({ link }) => {
     return <div style={fallbackLogoStyle}>{link.fallback}</div>;
   }
 
+  const src = link.logo || faviconUrl(link.domain);
+
   return (
     <div style={logoWrapStyle}>
       <img
-        src={faviconUrl(link.domain)}
+        src={src}
         alt={`Logo ${link.title}`}
         style={logoStyle}
         loading="lazy"
@@ -137,7 +154,7 @@ export const Links = ({ onNavigate }) => (
       {LINKS.map((link) => (
         <a key={link.url} href={link.url} target="_blank" rel="noreferrer" style={linkCardStyle}>
           <LinkLogo link={link} />
-          <div>
+          <div style={{ textAlign: 'center' }}>
             <h3 style={{ fontSize: '0.95rem', lineHeight: 1.25, color: C.text, marginBottom: '6px' }}>
               {link.title}
             </h3>
