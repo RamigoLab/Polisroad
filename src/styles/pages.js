@@ -61,9 +61,11 @@ export const PS = {
     display: 'flex',
     gap: '12px',
     width: '100%',
+    flex: 1,
   },
   homeSearchBtn: {
     flex: 1,
+    width: '100%',
     backgroundColor: C.card,
     color: C.primary,
     padding: '12px 16px',
