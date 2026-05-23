@@ -4,6 +4,19 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.4.2] - 23 Maggio 2026
+
+### UI/UX & Contenuti
+- Aggiunti i loghi ufficiali per le istituzioni (Arma dei Carabinieri, Guardia di Finanza, Polizia Penitenziaria, Ministero dell'Interno, Ministero delle Infrastrutture e dei Trasporti, Gazzetta Ufficiale, Normattiva).
+- Aggiunto il link ufficiale a "Normattiva" nella pagina Link Istituzionali.
+- Ottimizzato il layout delle schede nella pagina Link Istituzionali (centrato testi e loghi).
+
+### Funzionalità & Amministrazione
+- **Gestione News**: le notizie sincronizzate dai feed RSS vengono ora salvate automaticamente come "Bozze" (`pubblicato: false`) per consentire un controllo editoriale.
+- **Pulizia Automatica**: implementata la rimozione automatica dal sistema (sia interfaccia che database) delle notizie pubblicate più vecchie di 30 giorni per mantenere l'app ottimizzata e performante.
+
+---
+
 ## [1.4.1] - 23 Maggio 2026
 
 ### UI/UX
@@ -300,4 +313,4 @@ Per problemi o domande:
 
 **PolisRoad Development Team** ❤️
 
-*Versione 1.4.1 - 23 Maggio 2026*
+*Versione 1.4.2 - 23 Maggio 2026*

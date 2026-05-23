@@ -224,7 +224,7 @@ export const AdminNews = () => {
                 titolo: title,
                 contenuto: contentWithSource,
                 categoria: feed.categoria,
-                pubblicato: true,
+                pubblicato: false,
                 data_creazione: new Date(item.pubDate || Date.now()).toISOString()
               };
 

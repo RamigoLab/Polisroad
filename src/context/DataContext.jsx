@@ -81,7 +81,34 @@ export const DataProvider = ({ children }) => {
 
       setProntuario(prontuarioRes.data || mockProntuario);
       setNormativa(normativaRes.data || mockNormativa);
-      setNews(newsRes.data || mockNews);
+      
+      // Auto-delete published news older than 30 days
+      const fetchedNews = newsRes.data || mockNews;
+      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+      const now = Date.now();
+      
+      const validNews = [];
+      const idsToDelete = [];
+      
+      fetchedNews.forEach(item => {
+        if (item.pubblicato) {
+          const createdAt = new Date(item.data_creazione || item.created_at).getTime();
+          if ((now - createdAt) > THIRTY_DAYS_MS) {
+            idsToDelete.push(item.id);
+            return; // Skip adding to validNews
+          }
+        }
+        validNews.push(item);
+      });
+
+      // Background deletion from database if configured
+      if (isSupabaseConfigured && supabase && idsToDelete.length > 0) {
+        supabase.from('news').delete().in('id', idsToDelete).then(({ error }) => {
+          if (error) console.error("Error auto-deleting old news:", error);
+        });
+      }
+
+      setNews(validNews);
 
     } catch (err) {
       console.error('General Data Fetch Error:', err);
