@@ -1,5 +1,4 @@
 import React from 'react';
-import { C } from '../../styles/theme';
 import { APP_VERSION } from '../../config/constants';
 
 const TABS = [

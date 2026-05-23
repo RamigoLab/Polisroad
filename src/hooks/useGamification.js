@@ -10,6 +10,7 @@ import { BADGES } from '../config/badges';
  */
 export const useGamification = () => {
   const { session } = useAuth();
+  const userId = session?.user?.id;
   const [stats, setStats] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -18,7 +19,7 @@ export const useGamification = () => {
   // Fetch stats al mount
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    if (!session?.user?.id || !isSupabaseConfigured) {
+    if (!userId || !isSupabaseConfigured) {
       setLoading(false);
       return;
     }
@@ -27,13 +28,13 @@ export const useGamification = () => {
         const { data, error: err } = await supabase
           .from('gamification')
           .select('*')
-          .eq('user_id', session.user.id)
+          .eq('user_id', userId)
           .single();
         if (err && err.code === 'PGRST116') {
           // Nessuna riga: creane una nuova
           const { data: newData, error: errInsert } = await supabase
             .from('gamification')
-            .insert([{ user_id: session.user.id }])
+            .insert([{ user_id: userId }])
             .select()
             .single();
           if (errInsert) throw errInsert;
@@ -51,17 +52,30 @@ export const useGamification = () => {
       }
     };
     fetchStats();
-  }, [session?.user?.id]);
+  }, [userId]);
 
   // ---------------------------------------------------------------------------
   // Add XP (e eventuali aggiornamenti di contatori)
   // ---------------------------------------------------------------------------
   const addXP = useCallback(
     async (amount, action = 'general') => {
-      if (!session?.user?.id || !stats) return;
+      if (!userId || !stats || !isSupabaseConfigured || !supabase) return;
       try {
-        const currentXp = stats.xp || 0;
-        const newXp = currentXp + amount;
+        const safeAmount = Number(amount);
+        if (!Number.isFinite(safeAmount) || safeAmount <= 0 || safeAmount > 100) {
+          return { error: 'Invalid XP amount' };
+        }
+
+        const { data: latestStats, error: fetchError } = await supabase
+          .from('gamification')
+          .select('*')
+          .eq('user_id', userId)
+          .single();
+        if (fetchError) throw fetchError;
+
+        const currentStats = latestStats || stats;
+        const currentXp = currentStats.xp || 0;
+        const newXp = currentXp + safeAmount;
         const newLevel = Math.floor(Math.sqrt(newXp / 10)) + 1;
 
         // Aggiorna i contatori specifici basati sull'azione
@@ -70,10 +84,10 @@ export const useGamification = () => {
           level: newLevel,
           updated_at: new Date()
         };
-        if (action === 'search') updates.total_searches = (stats.total_searches || 0) + 1;
-        if (action === 'favorite') updates.total_favorites = (stats.total_favorites || 0) + 1;
-        if (action === 'calculator') updates.calculator_uses = (stats.calculator_uses || 0) + 1;
-        if (action === 'article') updates.total_articles_viewed = (stats.total_articles_viewed || 0) + 1;
+        if (action === 'search') updates.total_searches = (currentStats.total_searches || 0) + 1;
+        if (action === 'favorite') updates.total_favorites = (currentStats.total_favorites || 0) + 1;
+        if (action === 'calculator') updates.calculator_uses = (currentStats.calculator_uses || 0) + 1;
+        if (action === 'article') updates.total_articles_viewed = (currentStats.total_articles_viewed || 0) + 1;
         if (action === 'streak_bonus') {
           // lo streak_bonus è solo XP extra, niente contatore aggiuntivo
         }
@@ -81,12 +95,12 @@ export const useGamification = () => {
         const { error: err } = await supabase
           .from('gamification')
           .update(updates)
-          .eq('user_id', session.user.id);
+          .eq('user_id', userId);
         if (err) throw err;
 
         // Log to history
         await supabase.from('xp_history').insert([
-          { user_id: session.user.id, action, xp_earned: amount }
+          { user_id: userId, action, xp_earned: safeAmount }
         ]);
 
         // Aggiorna lo stato locale
@@ -101,20 +115,20 @@ export const useGamification = () => {
         }));
 
         // Ritorna informazioni di livello
-        return { leveledUp: newLevel > (stats?.level || 1), newLevel };
+        return { leveledUp: newLevel > (currentStats?.level || 1), newLevel };
       } catch (e) {
         console.error('addXP error:', e);
         return { error: e.message };
       }
     },
-    [session?.user?.id, stats]
+    [userId, stats]
   );
 
   // ---------------------------------------------------------------------------
   // Aggiorna lo streak giornaliero
   // ---------------------------------------------------------------------------
   const updateStreak = useCallback(async () => {
-    if (!session?.user?.id || !stats) return;
+    if (!userId || !stats) return;
     try {
       const today = new Date().toISOString().split('T')[0];
       const last = stats.last_activity_date;
@@ -133,7 +147,7 @@ export const useGamification = () => {
           last_activity_date: today,
           updated_at: new Date()
         })
-        .eq('user_id', session.user.id);
+        .eq('user_id', userId);
       if (err) throw err;
 
       setStats(prev => ({
@@ -152,7 +166,7 @@ export const useGamification = () => {
     } catch (e) {
       console.error('updateStreak error:', e);
     }
-  }, [session?.user?.id, stats, addXP]);
+  }, [userId, stats, addXP]);
 
   // ---------------------------------------------------------------------------
   // Badge handling
@@ -164,7 +178,7 @@ export const useGamification = () => {
   }, [stats]);
 
   const checkNewBadges = useCallback(async () => {
-    if (!stats) return [];
+    if (!userId || !stats || !isSupabaseConfigured || !supabase) return [];
     const unlockedSet = new Set(stats.unlocked_badges || []);
     const newlyUnlocked = [];
     Object.entries(BADGES).forEach(([key, badge]) => {
@@ -177,22 +191,22 @@ export const useGamification = () => {
       const { error: err } = await supabase
         .from('gamification')
         .update({ unlocked_badges: Array.from(unlockedSet), updated_at: new Date() })
-        .eq('user_id', session.user.id);
+        .eq('user_id', userId);
       if (err) throw err;
       setStats(prev => ({ ...prev, unlocked_badges: Array.from(unlockedSet) }));
     }
     return newlyUnlocked;
-  }, [stats, session?.user?.id]);
+  }, [userId, stats]);
 
   const setFeaturedBadge = useCallback(async badgeId => {
-    if (!session?.user?.id) return;
+    if (!userId) return;
     const { error: err } = await supabase
       .from('gamification')
       .update({ featured_badge: badgeId, updated_at: new Date() })
-      .eq('user_id', session.user.id);
+      .eq('user_id', userId);
     if (err) throw err;
     setStats(prev => ({ ...prev, featured_badge: badgeId }));
-  }, [session?.user?.id]);
+  }, [userId]);
 
   // ---------------------------------------------------------------------------
   // Expose helpers

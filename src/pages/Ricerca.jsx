@@ -15,7 +15,7 @@ import posthog from 'posthog-js';
 export const Ricerca = ({ onNavigate }) => {
   const { list: prontuarioList } = useProntuario();
   const { list: normativaList } = useNormativa();
-  const { search, setSearch, risultatiProntuario, risultatiNormativa, total } = useSearch(prontuarioList, normativaList, 3);
+  const { search, setSearch, risultatiProntuario, risultatiNormativa } = useSearch(prontuarioList, normativaList, 3);
   const { history, addSearch, removeSearch, clearHistory } = useSearchHistory();
   const { addXP } = useGamificationContext();
 

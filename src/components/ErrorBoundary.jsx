@@ -1,5 +1,4 @@
 import React from 'react';
-import { C } from '../styles/theme';
 
 export class ErrorBoundary extends React.Component {
   constructor(props) {

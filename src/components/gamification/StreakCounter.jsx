@@ -1,5 +1,4 @@
 import React from 'react';
-import { C } from '../../styles/theme';
 
 /**
  * Streak counter – due card affiancate come nel mockup.

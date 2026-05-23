@@ -5,6 +5,8 @@ import { Toast } from '../components/ui/Toast';
 import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { useAuth } from '../hooks/useAuth';
+import { loginRateLimiter } from '../utils/rateLimiter';
+import { sanitizers, validators } from '../utils/validation';
 
 const authPageStyle = {
   justifyContent: 'center',
@@ -63,13 +65,50 @@ export const Auth = () => {
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
+    const normalizedEmail = email.trim().toLowerCase();
+    const emailError = validators.email(normalizedEmail);
+    if (emailError) {
+      setToast(emailError);
+      return;
+    }
+    if (!password) {
+      setToast('Password obbligatoria');
+      return;
+    }
+
+    const attempt = loginRateLimiter.canAttempt(normalizedEmail);
+    if (isLogin && !attempt.allowed) {
+      setToast(attempt.reason);
+      return;
+    }
+
     setLoading(true);
     setToast('');
     if (isLogin) {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(normalizedEmail, password);
+      loginRateLimiter.recordAttempt(normalizedEmail, !error);
       if (error) setToast(error.message);
     } else {
-      const { error } = await signUp(email, password, { nome, cognome, grado, forza });
+      const passwordError = validators.password(password);
+      const requiredError =
+        validators.required(nome, 'Nome') ||
+        validators.required(cognome, 'Cognome') ||
+        validators.required(grado, 'Grado') ||
+        validators.required(forza, 'Forza di Polizia') ||
+        passwordError;
+
+      if (requiredError) {
+        setToast(requiredError);
+        setLoading(false);
+        return;
+      }
+
+      const { error } = await signUp(normalizedEmail, password, {
+        nome: sanitizers.text(nome),
+        cognome: sanitizers.text(cognome),
+        grado: sanitizers.text(grado),
+        forza: sanitizers.text(forza)
+      });
       if (error) setToast(error.message);
       else { setToast('Registrazione completata!'); setIsLogin(true); }
     }

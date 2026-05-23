@@ -109,7 +109,7 @@ export const AdminNormativa = () => {
         articolo_num: parsedNum,
         titolo: formattedTitle
       });
-    } catch (err) {
+    } catch {
       showToast('Errore durante il salvataggio dell\'intestazione', 'error');
     } finally {
       setLoading(false);
@@ -250,7 +250,7 @@ export const AdminNormativa = () => {
       const promises = group.commi.map(c => remove(c.id));
       await Promise.all(promises);
       showToast(`Articolo ${group.articolo_num} ed i suoi commi sono stati eliminati.`, 'success');
-    } catch (err) {
+    } catch {
       showToast('Errore durante l\'eliminazione dell\'articolo', 'error');
     } finally {
       setLoading(false);

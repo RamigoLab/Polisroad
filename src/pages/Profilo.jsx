@@ -51,11 +51,7 @@ export const Profilo = ({ onNavigate }) => {
   const {
     stats,
     loading,
-    error,
-    addXP,
     updateStreak,
-    getUnlockedBadges,
-    checkNewBadges,
     setFeaturedBadge,
     level,
     xp,
@@ -70,7 +66,7 @@ export const Profilo = ({ onNavigate }) => {
     if (!loading && stats) {
       updateStreak();
     }
-  }, [loading, stats]);
+  }, [loading, stats, updateStreak]);
 
   const [reportOpen, setReportOpen] = useState(false);
   const [reportType, setReportType] = useState('Problema Tecnico');
@@ -161,7 +157,7 @@ export const Profilo = ({ onNavigate }) => {
     try {
       await setFeaturedBadge(badgeId);
       showToast('Badge impostato come featured!', 'success');
-    } catch (e) {
+    } catch {
       showToast('Impossibile impostare il badge', 'error');
     }
   };

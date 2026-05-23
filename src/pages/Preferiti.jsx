@@ -5,12 +5,10 @@ import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
-import { useGamificationContext } from '../context/GamificationContext';
 
 export const Preferiti = ({ onNavigate }) => {
   const { list, loading } = useProntuario();
   const { preferiti, toggle } = usePreferiti();
-  const { addXP } = useGamificationContext();
   const preferitiList = list.filter(item => preferiti.includes(item.id));
 
   const handleToggleFavorite = async (itemId) => {

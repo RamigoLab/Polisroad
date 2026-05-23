@@ -6,7 +6,7 @@ import { TextInput } from '../../components/ui/TextInput';
 import { TextArea } from '../../components/ui/TextArea';
 import { useNews } from '../../hooks/useNews';
 import { useToast } from '../../components/ui/ToastManager';
-import { validators, sanitizers, validateAndSanitize } from '../../utils/validation';
+import { validators, sanitizers } from '../../utils/validation';
 
 // RSS Feed List configuration with metadata (using 100% reliable, active, CORS-friendly Italian traffic feeds)
 const FEEDS = [
@@ -97,7 +97,7 @@ export const AdminNews = () => {
     // Optional: validate source URL if provided
     if (formData.url_fonte) {
       // Ensure URL format is valid
-      const urlValid = validators.url(formData.url_fonte);
+      const urlValid = sanitizers.url(formData.url_fonte);
       if (!urlValid) {
         showToast('URL fonte non è valida.', 'error');
         return;
@@ -247,6 +247,7 @@ export const AdminNews = () => {
       
       console.log(`Sync completed. Added: ${addedCount}, Duplicates: ${skippedDuplicate}, Irrelevant: ${skippedIrrelevant}`);
     } catch (error) {
+      console.warn('RSS sync failed:', error);
       showToast('Errore generale durante la sincronizzazione feeds', 'error');
     } finally {
       setSyncing(false);

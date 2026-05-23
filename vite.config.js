@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
       devOptions: {
-        enabled: true
+        enabled: process.env.VITE_PWA_DEV === 'true'
       },
       includeAssets: ['icons/icon-192.png', 'icons/icon-512.png'],
       manifest: {

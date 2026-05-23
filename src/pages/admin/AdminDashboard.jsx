@@ -28,7 +28,7 @@ export const AdminDashboard = () => {
           } else {
             errorOccurred = true;
           }
-        } catch (e) {
+        } catch {
           errorOccurred = true;
         }
       } else {
@@ -40,7 +40,9 @@ export const AdminDashboard = () => {
           const local = localStorage.getItem('polisroad_local_segnalazioni');
           const list = local ? JSON.parse(local) : [];
           count = list.length;
-        } catch (e) {}
+        } catch {
+          count = 0;
+        }
       }
       setSegnalazioniCount(count);
     };

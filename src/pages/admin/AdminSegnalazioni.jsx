@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { C } from '../../styles/theme';
 import { S } from '../../styles/styles';
-import { PS } from '../../styles/pages';
 import { useToast } from '../../components/ui/ToastManager';
 import { supabase, isSupabaseConfigured } from '../../config/supabase';
 

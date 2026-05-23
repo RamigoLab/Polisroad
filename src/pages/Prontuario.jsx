@@ -54,7 +54,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
       await save(id, tempNote);
       showToast('Nota salvata!', 'success');
       posthog.capture('prontuario_note_saved', { prontuario_id: id });
-    } catch (err) {
+    } catch {
       showToast('Errore nel salvataggio della nota', 'error');
     }
     setEditNoteId(null);

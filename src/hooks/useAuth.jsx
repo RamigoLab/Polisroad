@@ -1,6 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 
+const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' && !import.meta.env.PROD;
+
 const DEMO_USER = {
   id: import.meta.env.VITE_DEMO_USER_ID || 'demo-1',
   email: import.meta.env.VITE_DEMO_USER_EMAIL || 'admin@polisroad.it',
@@ -55,6 +57,10 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
+      if (!isDemoMode) {
+        setLoading(false);
+        return;
+      }
       const localSession = localStorage.getItem('polisroad_demo_session');
       if (localSession) {
         setSession({ user: DEMO_USER });
@@ -86,7 +92,7 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     if (!isSupabaseConfigured || !supabase) {
-        if (import.meta.env.VITE_DEMO_MODE === 'true' &&
+        if (isDemoMode &&
             email === import.meta.env.VITE_DEMO_USER_EMAIL &&
             password === import.meta.env.VITE_DEMO_USER_PASSWORD) {
           localStorage.setItem('polisroad_demo_session', 'true');
@@ -94,7 +100,7 @@ export const AuthProvider = ({ children }) => {
           setProfile(DEMO_USER);
           return { error: null };
         }
-        return { error: { message: 'Credenziali errate. Usa le credenziali demo configurate.' } };
+        return { error: { message: 'Supabase non configurato. Controlla le variabili VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.' } };
     }
     try {
       return await supabase.auth.signInWithPassword({ email, password });
@@ -105,7 +111,7 @@ export const AuthProvider = ({ children }) => {
 
 
   const signUp = async (email, password, userData) => {
-    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Registrazione disabilitata in demo mode' } };
+    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Registrazione non disponibile: Supabase non configurato.' } };
     
     const { data, error } = await supabase.auth.signUp({ email, password });
     if (error) return { error };

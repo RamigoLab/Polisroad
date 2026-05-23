@@ -49,7 +49,7 @@ function App() {
     const saved = getItem('polisroad_navigation_params');
     try {
       return saved ? JSON.parse(saved) : null;
-    } catch (e) {
+    } catch {
       return null;
     }
   });
