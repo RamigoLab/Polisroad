@@ -9,6 +9,7 @@ import { useProntuario } from '../hooks/useProntuario';
 import { useNormativa } from '../hooks/useNormativa';
 import { useSearch } from '../hooks/useSearch';
 import { useSearchHistory } from '../hooks/useSearchHistory';
+import { useGamificationContext } from '../context/GamificationContext';
 import posthog from 'posthog-js';
 
 export const Ricerca = ({ onNavigate }) => {
@@ -16,17 +17,19 @@ export const Ricerca = ({ onNavigate }) => {
   const { list: normativaList } = useNormativa();
   const { search, setSearch, risultatiProntuario, risultatiNormativa, total } = useSearch(prontuarioList, normativaList, 3);
   const { history, addSearch, removeSearch, clearHistory } = useSearchHistory();
+  const { addXP } = useGamificationContext();
 
   // Automatically save queries to search history after a delay
   useEffect(() => {
     if (search.trim().length >= 3) {
-      const timer = setTimeout(() => {
-        addSearch(search);
+      const timer = setTimeout(async () => {
+        await addSearch(search);
+        await addXP(10, 'search');
         posthog.capture('search_executed', { query: search });
       }, 1500); // 1.5 seconds after user stops typing
       return () => clearTimeout(timer);
     }
-  }, [search, addSearch]);
+  }, [search, addSearch, addXP]);
 
   const hasSearch = search.trim().length > 0;
 

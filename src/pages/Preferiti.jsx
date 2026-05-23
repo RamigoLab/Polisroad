@@ -5,11 +5,22 @@ import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
+import { useGamificationContext } from '../context/GamificationContext';
 
 export const Preferiti = ({ onNavigate }) => {
   const { list, loading } = useProntuario();
   const { preferiti, toggle } = usePreferiti();
+  const { addXP } = useGamificationContext();
   const preferitiList = list.filter(item => preferiti.includes(item.id));
+
+  const handleToggleFavorite = async (itemId) => {
+    const isFav = preferiti.includes(itemId);
+    await toggle(itemId);
+    if (isFav) {
+      // L'utente sta rimuovendo da preferiti
+      // Non diamo penalità, soltanto non diamo XP
+    }
+  };
 
   return (
     <PageWrapper onNavigate={onNavigate}>
@@ -40,7 +51,7 @@ export const Preferiti = ({ onNavigate }) => {
             <div key={item.id} style={S.card}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <Badge>{item.rif_normativo}</Badge>
-                <button onClick={() => toggle(item.id)} style={{ fontSize: '1.2rem' }}>⭐</button>
+                <button onClick={() => handleToggleFavorite(item.id)} style={{ fontSize: '1.2rem' }}>⭐</button>
               </div>
               <h3 style={{ fontSize: '1rem', color: C.text, marginBottom: '8px', lineHeight: 1.3 }}>{item.titolo}</h3>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: C.textLight }}>

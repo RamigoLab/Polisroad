@@ -5,7 +5,7 @@ import { useToast } from '../components/ui/ToastManager';
 import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
-import { useGamification } from '../hooks/useGamification';
+import { useGamificationContext } from '../context/GamificationContext';
 import { LevelProgress } from '../components/gamification/LevelProgress';
 import { StreakCounter } from '../components/gamification/StreakCounter';
 import { BadgeShowcase } from '../components/gamification/BadgeShowcase';
@@ -47,7 +47,7 @@ export const Profilo = ({ onNavigate }) => {
 
   const { isDarkMode, toggleTheme } = useTheme();
 
-  // Gamification hook
+  // Gamification context
   const {
     stats,
     loading,
@@ -63,7 +63,7 @@ export const Profilo = ({ onNavigate }) => {
     longestStreak,
     featuredBadge,
     unlockedBadges,
-  } = useGamification();
+  } = useGamificationContext();
 
   // Update daily streak on mount
   useEffect(() => {

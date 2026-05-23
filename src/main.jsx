@@ -5,6 +5,7 @@ import App from './App';
 import { AuthProvider } from './hooks/useAuth';
 import { DataProvider } from './context/DataContext';
 import { ToastProvider } from './components/ui/ToastManager';
+import { GamificationProvider } from './context/GamificationContext';
 import posthog from 'posthog-js';
 
 // Applica il tema salvato prima del render per evitare flash bianchi
@@ -30,7 +31,9 @@ createRoot(document.getElementById('root')).render(
     <AuthProvider>
       <DataProvider>
         <ToastProvider>
-          <App />
+          <GamificationProvider>
+            <App />
+          </GamificationProvider>
         </ToastProvider>
       </DataProvider>
     </AuthProvider>

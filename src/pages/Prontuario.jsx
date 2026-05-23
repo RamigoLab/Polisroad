@@ -9,6 +9,7 @@ import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
 import { useToast } from '../components/ui/ToastManager';
+import { useGamificationContext } from '../context/GamificationContext';
 import { ProntuarioItem } from '../components/ProntuarioItem';
 import posthog from 'posthog-js';
 import { useDebounce } from '../hooks/useDebounce';
@@ -18,6 +19,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   const { preferiti, toggle } = usePreferiti();
   const { note, save } = useNote();
   const { showToast } = useToast();
+  const { addXP } = useGamificationContext();
 
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -58,8 +60,17 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
     setEditNoteId(null);
   };
 
-  const handleSelectItem = (item) => {
+  const handleToggleFavorite = async (itemId) => {
+    const isFav = preferiti.includes(itemId);
+    await toggle(itemId);
+    if (!isFav) {
+      await addXP(15, 'favorite');
+    }
+  };
+
+  const handleSelectItem = async (item) => {
     setSelectedItem(item);
+    await addXP(5, 'article');
     posthog.capture('prontuario_item_selected', { prontuario_id: item.id, titolo: item.titolo });
   };
 
@@ -75,7 +86,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
           <div style={{ flex: 1 }}>
             <div style={PS.prontuarioDetailHeaderMeta}>
               <Badge type="primary">{selectedItem.rif_normativo}</Badge>
-              <button onClick={() => toggle(selectedItem.id)} style={{ fontSize: '1.4rem' }}>
+              <button onClick={() => handleToggleFavorite(selectedItem.id)} style={{ fontSize: '1.4rem' }}>
                 {isFav ? '⭐' : '☆'}
               </button>
             </div>

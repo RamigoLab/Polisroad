@@ -6,19 +6,22 @@ import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useProntuario } from '../hooks/useProntuario';
+import { useGamificationContext } from '../context/GamificationContext';
 
 export const Calcolatore = ({ onNavigate }) => {
   const { list } = useProntuario();
+  const { addXP } = useGamificationContext();
   const [selectedId, setSelectedId] = useState('');
   const [min, setMin] = useState('');
   const [max, setMax] = useState('');
   const [punti, setPunti] = useState('');
 
-  const handleSelect = (e) => {
+  const handleSelect = async (e) => {
     const id = e.target.value;
     setSelectedId(id);
     const item = list.find(p => p.id === id);
     if (item) {
+      await addXP(20, 'calculator');
       const baseValue = item.pmr || item.edittale_min;
       setMin(baseValue ? baseValue.toString() : '');
       setMax(item.edittale_max ? item.edittale_max.toString() : '');

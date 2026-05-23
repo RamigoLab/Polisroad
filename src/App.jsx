@@ -1,6 +1,7 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useData } from './context/DataContext';
+import { useInitializeGamification } from './hooks/useInitializeGamification';
 import { Auth } from './pages/Auth';
 import { BottomNav } from './components/layout/BottomNav';
 import { Sidebar } from './components/layout/Sidebar';
@@ -35,6 +36,10 @@ import { getItem, setItem, removeItem } from './utils/storage';
 function App() {
   const { session, loading: authLoading } = useAuth();
   const { loading: dataLoading, error: dataError } = useData();
+  
+  // Initialize gamification on app load
+  useInitializeGamification();
+  
   const loading = authLoading || dataLoading;
   const [currentPage, setCurrentPage] = useState(() => {
     const saved = getItem('polisroad_current_page');

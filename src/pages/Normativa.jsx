@@ -6,10 +6,12 @@ import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useNormativa } from '../hooks/useNormativa';
+import { useGamificationContext } from '../context/GamificationContext';
 import { useDebounce } from '../hooks/useDebounce';
 
 export const Normativa = ({ onNavigate, navigationParams }) => {
   const { list, loading } = useNormativa();
+  const { addXP } = useGamificationContext();
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
 
@@ -108,7 +110,10 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
       ) : (
         <div style={S.list}>
           {filteredList.map(group => (
-            <div key={group.id} onClick={() => setSelectedItem(group)} style={PS.normativaItemRow}>
+            <div key={group.id} onClick={async () => {
+              await addXP(5, 'article');
+              setSelectedItem(group);
+            }} style={PS.normativaItemRow}>
               <div style={PS.normativaItemNum}>
                 <span style={PS.normativaItemNumPrefix}>{(group.articolo || 'Art.').split('.')[0].toUpperCase()}</span>
                 <span style={PS.normativaItemNumValue}>{group.articolo_num || '?'}</span>
