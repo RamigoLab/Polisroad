@@ -58,9 +58,9 @@ export const PS = {
     cursor: 'pointer',
   },
   homeQuickActions: {
-    marginTop: '16px',
     display: 'flex',
     gap: '12px',
+    width: '100%',
   },
   homeSearchBtn: {
     flex: 1,

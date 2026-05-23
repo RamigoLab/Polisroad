@@ -82,6 +82,7 @@ export const LS = {
     marginTop: '16px',
     display: 'flex',
     gap: '12px',
+    width: '100%',
   },
   appHeaderLeftAction: {
     flexShrink: 0,
