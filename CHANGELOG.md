@@ -7,13 +7,20 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 ## [1.4.1] - 23 Maggio 2026
 
 ### UI/UX
-- Pianificata uniformazione dell'header: la barra blu della home diventera' componente condiviso per le pagine principali.
-- Logo PolisRoad coerente in alto a destra con ritorno alla home.
+- Implementato header blu condiviso per Home, Prontuario, Normativa, Ricerca, Calcolatore, News, Links, Preferiti e Profilo.
+- Aggiunto `AppHeader` e integrato in `PageWrapper` per gestire titolo, sottotitolo, meta, logo home, azioni e pulsante indietro.
+- Home aggiornata mantenendo saluto operatore, logo PolisRoad e pulsante "Ricerca Rapida" a tutta larghezza.
+- Pagine elenco aggiornate rimuovendo i titoli duplicati e usando l'header condiviso.
+- Dettagli Prontuario e Normativa aggiornati con stile coerente e azione "Indietro".
 - Mantenute come eccezioni intenzionali la modalita' Operatore e l'area Admin, che hanno layout dedicati.
 
 ### Documentazione
-- Aggiunto `docs/IMPLEMENTAZIONE_1.4.1_HEADER_UNIFICATO.md` con file da creare, file da modificare, checklist test e note deploy.
+- Aggiunto `docs/IMPLEMENTAZIONE_1.4.1_HEADER_UNIFICATO.md` con riepilogo tecnico, file coinvolti, checklist test e note deploy.
 - Aggiornato README alla versione corrente 1.4.1.
+
+### Verifica
+- `npm run lint`
+- `npm run build`
 
 ---
 
