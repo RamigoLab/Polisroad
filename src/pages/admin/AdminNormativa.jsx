@@ -19,11 +19,19 @@ export const AdminNormativa = () => {
   // Form states for modifying article header
   const [artNum, setArtNum] = useState('');
   const [artTitle, setArtTitle] = useState('');
+  const [titoloNum, setTitoloNum] = useState('');
+  const [titoloNome, setTitoloNome] = useState('');
+  const [capoNum, setCapoNum] = useState('');
+  const [capoNome, setCapoNome] = useState('');
 
   // Form state for creating a brand new article
   const [newArt, setNewArt] = useState({
+    titolo_numero: '',
+    titolo_nome: '',
+    capo_numero: '',
+    capo_nome: '',
     articolo_num: '',
-    titolo: '',
+    titolo_articolo: '',
     comma: '1',
     testo: ''
   });
@@ -40,7 +48,11 @@ export const AdminNormativa = () => {
           id: `art_${art}`,
           articolo: item.articolo,
           articolo_num: item.articolo_num,
-          titolo: item.titolo,
+          titolo_articolo: item.titolo_articolo || item.titolo,
+          titolo_numero: item.titolo_numero,
+          titolo_nome: item.titolo_nome,
+          capo_numero: item.capo_numero,
+          capo_nome: item.capo_nome,
           commi: []
         };
       }
@@ -61,7 +73,11 @@ export const AdminNormativa = () => {
   const handleEditArticle = (group) => {
     setSelectedArticle(group);
     setArtNum(group.articolo_num);
-    setArtTitle(cleanTitle(group.titolo));
+    setArtTitle(cleanTitle(group.titolo_articolo));
+    setTitoloNum(group.titolo_numero || '');
+    setTitoloNome(group.titolo_nome || '');
+    setCapoNum(group.capo_numero || '');
+    setCapoNome(group.capo_nome || '');
     
     // Initialize temporary comma edits state
     const edits = {};
@@ -80,7 +96,7 @@ export const AdminNormativa = () => {
     setEditingId(null);
   };
 
-  // Save the article's core metadata (number & title) across all its commi
+  // Save the article's core metadata across all its commi
   const handleSaveArticleMeta = async () => {
     if (!artNum) {
       showToast('Il numero articolo è obbligatorio', 'error');
@@ -89,14 +105,18 @@ export const AdminNormativa = () => {
     setLoading(true);
     const parsedNum = parseInt(artNum);
     const artString = `Art. ${parsedNum}.`;
-    const formattedTitle = `(${artTitle}).`;
 
     try {
       const promises = selectedArticle.commi.map(c => 
         update(c.id, {
           articolo: artString,
           articolo_num: parsedNum,
-          titolo: formattedTitle
+          titolo_articolo: artTitle,
+          titolo: artTitle, // keep fallback
+          titolo_numero: titoloNum,
+          titolo_nome: titoloNome,
+          capo_numero: capoNum,
+          capo_nome: capoNome
         })
       );
       await Promise.all(promises);
@@ -107,7 +127,11 @@ export const AdminNormativa = () => {
         ...selectedArticle,
         articolo: artString,
         articolo_num: parsedNum,
-        titolo: formattedTitle
+        titolo_articolo: artTitle,
+        titolo_numero: titoloNum,
+        titolo_nome: titoloNome,
+        capo_numero: capoNum,
+        capo_nome: capoNome
       });
     } catch {
       showToast('Errore durante il salvataggio dell\'intestazione', 'error');
@@ -174,9 +198,14 @@ export const AdminNormativa = () => {
     const nextCommaNum = maxCommaNum + 1;
 
     const newCommaItem = {
+      titolo_numero: selectedArticle.titolo_numero,
+      titolo_nome: selectedArticle.titolo_nome,
+      capo_numero: selectedArticle.capo_numero,
+      capo_nome: selectedArticle.capo_nome,
       articolo: selectedArticle.articolo,
       articolo_num: selectedArticle.articolo_num,
-      titolo: selectedArticle.titolo,
+      titolo_articolo: selectedArticle.titolo_articolo,
+      titolo: selectedArticle.titolo_articolo, // fallback
       comma: `${nextCommaNum}.`,
       comma_num: nextCommaNum,
       testo: 'Inserisci qui il testo del nuovo comma...',
@@ -188,11 +217,7 @@ export const AdminNormativa = () => {
 
     if (!error) {
       showToast(`Nuovo Comma ${nextCommaNum} aggiunto! Ora puoi modificarne il testo.`, 'success');
-      
-      // We need to find the newly created item in the updated list to append it to selectedArticle
-      // Since list changes trigger regrouping, we can look for it in the main database list
       setTimeout(() => {
-        // Refresh editor view with the newly fetched data
         const updatedGroup = groupedList.find(g => g.articolo_num === selectedArticle.articolo_num);
         if (updatedGroup) {
           handleEditArticle(updatedGroup);
@@ -205,22 +230,26 @@ export const AdminNormativa = () => {
 
   // Create a brand new article with its first comma
   const handleCreateNewArticle = async () => {
-    if (!newArt.articolo_num || !newArt.titolo || !newArt.testo) {
-      showToast('Tutti i campi (articolo, titolo, testo) sono obbligatori', 'error');
+    if (!newArt.articolo_num || !newArt.titolo_articolo || !newArt.testo) {
+      showToast('I campi (articolo, titolo, testo) sono obbligatori', 'error');
       return;
     }
 
     setLoading(true);
     const parsedNum = parseInt(newArt.articolo_num);
     const artString = `Art. ${parsedNum}.`;
-    const formattedTitle = `(${newArt.titolo}).`;
     const commaString = `${newArt.comma}.`;
     const commaNum = parseInt(newArt.comma) || 1;
 
     const item = {
+      titolo_numero: newArt.titolo_numero,
+      titolo_nome: newArt.titolo_nome,
+      capo_numero: newArt.capo_numero,
+      capo_nome: newArt.capo_nome,
       articolo: artString,
       articolo_num: parsedNum,
-      titolo: formattedTitle,
+      titolo_articolo: newArt.titolo_articolo,
+      titolo: newArt.titolo_articolo, // fallback
       comma: commaString,
       comma_num: commaNum,
       testo: newArt.testo,
@@ -234,7 +263,7 @@ export const AdminNormativa = () => {
       showToast('Nuovo articolo creato con successo!', 'success');
       setEditingId(null);
       // Reset form
-      setNewArt({ articolo_num: '', titolo: '', comma: '1', testo: '' });
+      setNewArt({ titolo_numero: '', titolo_nome: '', capo_numero: '', capo_nome: '', articolo_num: '', titolo_articolo: '', comma: '1', testo: '' });
     } else {
       showToast('Errore durante la creazione: ' + error.message, 'error');
     }
@@ -262,7 +291,7 @@ export const AdminNormativa = () => {
     const query = search.toLowerCase();
     return (
       (group.articolo_num?.toString() || '').includes(query) ||
-      (group.titolo || '').toLowerCase().includes(query) ||
+      (group.titolo_articolo || '').toLowerCase().includes(query) ||
       (group.articolo || '').toLowerCase().includes(query)
     );
   });
@@ -276,6 +305,15 @@ export const AdminNormativa = () => {
           <button onClick={handleBackToList} style={S.btnCancel}>Annulla</button>
         </div>
         <div style={S.formCard}>
+          <div style={PS.adminSanzioniGrid}>
+            <TextInput label="Titolo (Es. Titolo I)" value={newArt.titolo_numero} onChange={e => setNewArt({ ...newArt, titolo_numero: e.target.value })} />
+            <TextInput label="Nome del Titolo" value={newArt.titolo_nome} onChange={e => setNewArt({ ...newArt, titolo_nome: e.target.value })} />
+          </div>
+          <div style={PS.adminSanzioniGrid}>
+            <TextInput label="Capo (Es. Capo I)" value={newArt.capo_numero} onChange={e => setNewArt({ ...newArt, capo_numero: e.target.value })} />
+            <TextInput label="Nome del Capo" value={newArt.capo_nome} onChange={e => setNewArt({ ...newArt, capo_nome: e.target.value })} />
+          </div>
+          
           <TextInput 
             label="Articolo (Numero)" 
             type="number" 
@@ -284,9 +322,9 @@ export const AdminNormativa = () => {
             placeholder="Es. 186"
           />
           <TextInput 
-            label="Titolo / Rubrica (senza parentesi)" 
-            value={newArt.titolo} 
-            onChange={e => setNewArt({ ...newArt, titolo: e.target.value })} 
+            label="Nome/Rubrica dell'Articolo" 
+            value={newArt.titolo_articolo} 
+            onChange={e => setNewArt({ ...newArt, titolo_articolo: e.target.value })} 
             placeholder="Es. Guida sotto l'influenza dell'alcool"
           />
           <TextInput 
@@ -319,7 +357,7 @@ export const AdminNormativa = () => {
     return (
       <div>
         <div style={S.formHeader}>
-          <button onClick={handleBackToList} style={{ fontSize: '1.2rem', padding: '6px', marginRight: '8px' }}>⬅️ Torna alla Lista</button>
+          <button onClick={handleBackToList} style={{ fontSize: '1.2rem', padding: '6px', marginRight: '8px', cursor: 'pointer', background: 'none', border: 'none' }}>⬅️ Torna alla Lista</button>
           <h2 style={S.sectionTitle}>Modifica Articolo {selectedArticle.articolo_num}</h2>
         </div>
 
@@ -327,6 +365,15 @@ export const AdminNormativa = () => {
         <div style={{ ...S.formCard, marginBottom: '24px', borderLeft: `4px solid ${C.primary}` }}>
           <h3 style={{ ...S.infoBoxTitle, marginBottom: '12px' }}>⚙️ Intestazione dell'Articolo</h3>
           <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
+            <div style={PS.adminSanzioniGrid}>
+              <TextInput label="Titolo (Es. Titolo I)" value={titoloNum} onChange={e => setTitoloNum(e.target.value)} />
+              <TextInput label="Nome del Titolo" value={titoloNome} onChange={e => setTitoloNome(e.target.value)} />
+            </div>
+            <div style={PS.adminSanzioniGrid}>
+              <TextInput label="Capo (Es. Capo I)" value={capoNum} onChange={e => setCapoNum(e.target.value)} />
+              <TextInput label="Nome del Capo" value={capoNome} onChange={e => setCapoNome(e.target.value)} />
+            </div>
+
             <TextInput 
               label="Articolo (Numero)" 
               type="number" 
@@ -334,7 +381,7 @@ export const AdminNormativa = () => {
               onChange={e => setArtNum(e.target.value)} 
             />
             <TextInput 
-              label="Titolo / Rubrica" 
+              label="Nome dell'Articolo" 
               value={artTitle} 
               onChange={e => setArtTitle(e.target.value)} 
             />
@@ -373,7 +420,7 @@ export const AdminNormativa = () => {
                       />
                     </div>
                     <span style={{ fontSize: '0.8rem', color: C.textLight, marginTop: '16px' }}>
-                      ID Database: {c.id}
+                      ID: {c.id}
                     </span>
                   </div>
 
@@ -427,18 +474,11 @@ export const AdminNormativa = () => {
       <div style={{ ...S.list, marginTop: '16px' }}>
         {filteredGroups.map(group => (
           <div key={group.id} style={S.card}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <span style={PS.adminItemRefSuccess}>ARTICOLO {group.articolo_num}</span>
-                <h3 style={PS.adminItemTitle}>{cleanTitle(group.titolo)}</h3>
-                <span style={{ fontSize: '0.8rem', color: C.textLight }}>
-                  Contiene <strong>{group.commi.length}</strong> {group.commi.length === 1 ? 'comma' : 'commi'}
-                </span>
-              </div>
-            </div>
-            <div style={{ ...PS.adminListItemActions, marginTop: '12px' }}>
-              <button onClick={() => handleEditArticle(group)} style={S.btnAccent}>Modifica Articolo & Commi</button>
-              <button onClick={() => handleDeleteArticle(group)} style={S.btnDanger}>Elimina Intero Articolo</button>
+            <span style={PS.adminItemRef}>ART. {group.articolo_num}</span>
+            <h3 style={PS.adminItemTitle}>{cleanTitle(group.titolo_articolo) || 'Senza Nome'}</h3>
+            <div style={PS.adminListItemActions}>
+              <button onClick={() => handleEditArticle(group)} style={S.btnAccent}>Modifica</button>
+              <button onClick={() => handleDeleteArticle(group)} style={S.btnDanger}>Elimina</button>
             </div>
           </div>
         ))}
