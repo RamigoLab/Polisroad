@@ -4,6 +4,16 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.4.3] - 24 Maggio 2026
+
+### UI/UX & Navigazione
+- **Normativa**: Strutturata la visualizzazione del Codice della Strada in formato gerarchico (Titoli > Capi > Articoli > Commi) basata sul modello Brocardi.
+- Aggiunti breadcrumbs (percorsi di navigazione) nell'intestazione e nelle viste di dettaglio della Normativa.
+- Mantenuto il supporto alla ricerca globale tramite testo o numero articolo, che mostra dinamicamente una lista dei risultati.
+- Gamification (+5 XP per articolo) preservata nella nuova visualizzazione gerarchica.
+
+---
+
 ## [1.4.2] - 23 Maggio 2026
 
 ### UI/UX & Contenuti
@@ -313,4 +323,4 @@ Per problemi o domande:
 
 **PolisRoad Development Team** ❤️
 
-*Versione 1.4.2 - 23 Maggio 2026*
+*Versione 1.4.3 - 24 Maggio 2026*
