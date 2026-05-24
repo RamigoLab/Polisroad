@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { APP_VERSION } from '../../config/constants';
 
 const TABS = [
@@ -14,6 +14,21 @@ const TABS = [
 ];
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, []);
+
   return (
     <aside className="app-sidebar">
       <div className="sidebar-logo-container" onClick={() => onNavigate('home')}>
@@ -38,8 +53,8 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
       </nav>
 
       <div className="sidebar-footer">
-        <span className="sidebar-status-dot" />
-        <span className="sidebar-status-text">Operativo | v{APP_VERSION}</span>
+        <span className="sidebar-status-dot" style={{ backgroundColor: isOnline ? '#2ecc71' : '#e74c3c' }} />
+        <span className="sidebar-status-text">{isOnline ? 'Online' : 'Offline'} | v{APP_VERSION}</span>
       </div>
     </aside>
   );

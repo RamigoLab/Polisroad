@@ -4,6 +4,16 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.4.4] - 24 Maggio 2026
+
+### UI/UX & Bugfixes
+- **Pulsante Indietro**: Migliorato lo stile del pulsante 'Indietro' nella visualizzazione Normativa per un design più coerente e moderno.
+- **Ricerca Intelligente**: Implementata la ricerca per parole parziali (es. "Ministero Infrastrutture" ora trova anche "Ministero delle Infrastrutture").
+- **Risultati Ricerca Normativa**: I risultati della ricerca ora mostrano correttamente il titolo dell'articolo e un mini estratto (snippet) del testo trovato che contiene la parola chiave ricercata.
+- **Stato Connessione**: L'indicatore "Operativo" nella Sidebar desktop è stato aggiornato in un indicatore live "Online" / "Offline" basato sull'effettivo stato della connessione di rete.
+
+---
+
 ## [1.4.3] - 24 Maggio 2026
 
 ### UI/UX & Navigazione
@@ -323,4 +333,4 @@ Per problemi o domande:
 
 **PolisRoad Development Team** ❤️
 
-*Versione 1.4.3 - 24 Maggio 2026*
+*Versione 1.4.4 - 24 Maggio 2026*

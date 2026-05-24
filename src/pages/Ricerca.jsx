@@ -12,6 +12,20 @@ import { useSearchHistory } from '../hooks/useSearchHistory';
 import { useGamificationContext } from '../context/GamificationContext';
 import posthog from 'posthog-js';
 
+const getSnippet = (text, searchTerms) => {
+  if (!text) return '';
+  const lowerText = text.toLowerCase();
+  const firstTerm = searchTerms[0] || '';
+  if (!firstTerm) return text.substring(0, 100) + '...';
+  
+  const idx = lowerText.indexOf(firstTerm);
+  if (idx === -1) return text.substring(0, 100) + '...';
+  
+  const start = Math.max(0, idx - 40);
+  const end = Math.min(text.length, idx + 80);
+  return (start > 0 ? '...' : '') + text.substring(start, end) + '...';
+};
+
 export const Ricerca = ({ onNavigate }) => {
   const { list: prontuarioList } = useProntuario();
   const { list: normativaList } = useNormativa();
@@ -151,10 +165,14 @@ export const Ricerca = ({ onNavigate }) => {
               <div style={S.list}>
                 {risultatiNormativa.slice(0, 5).map(item => (
                   <div key={item.id} onClick={() => onNavigate('normativa', { selectedId: item.id })} style={PS.ricercaResultItem}>
-                    <div style={{ marginBottom: '4px' }}>
+                    <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
                       <Badge type="success" style={{ fontSize: '0.65rem' }}>{item.articolo}</Badge>
+                      {item.comma && <span style={{ fontSize: '0.7rem', color: C.textLight, fontWeight: 'bold' }}>Comma {item.comma.replace(/\.$/, '')}</span>}
                     </div>
-                    <p style={PS.ricercaResultTitle}>{item.titolo}</p>
+                    <p style={PS.ricercaResultTitle}>{item.titolo_articolo || item.titolo || 'Articolo Codice della Strada'}</p>
+                    <p style={{ fontSize: '0.75rem', color: C.textLight, marginTop: '6px', fontStyle: 'italic', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', lineHeight: 1.4 }}>
+                      "...{getSnippet(item.testo, search.toLowerCase().split(/\s+/).filter(Boolean))}..."
+                    </p>
                   </div>
                 ))}
                 {risultatiNormativa.length > 5 && (

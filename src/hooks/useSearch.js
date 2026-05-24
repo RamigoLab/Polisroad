@@ -19,23 +19,20 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
 
   const risultatiProntuario = useMemo(() => {
     if (debouncedSearch.length < minChars) return [];
-    const term = debouncedSearch.toLowerCase();
-    return prontuarioList.filter(item =>
-      (item.titolo && item.titolo.toLowerCase().includes(term)) ||
-      (item.descrizione && item.descrizione.toLowerCase().includes(term)) ||
-      (item.rif_normativo && item.rif_normativo.toLowerCase().includes(term))
-    );
+    const terms = debouncedSearch.toLowerCase().split(/\s+/).filter(Boolean);
+    return prontuarioList.filter(item => {
+      const text = `${item.titolo || ''} ${item.descrizione || ''} ${item.rif_normativo || ''}`.toLowerCase();
+      return terms.every(term => text.includes(term));
+    });
   }, [debouncedSearch, prontuarioList, minChars]);
 
   const risultatiNormativa = useMemo(() => {
     if (debouncedSearch.length < minChars) return [];
-    const term = debouncedSearch.toLowerCase();
-    return normativaList.filter(item =>
-      (item.titolo && item.titolo.toLowerCase().includes(term)) ||
-      (item.testo && item.testo.toLowerCase().includes(term)) ||
-      (item.articolo && item.articolo.toLowerCase().includes(term)) ||
-      (item.articolo_num && item.articolo_num.toString() === debouncedSearch)
-    );
+    const terms = debouncedSearch.toLowerCase().split(/\s+/).filter(Boolean);
+    return normativaList.filter(item => {
+      const text = `${item.titolo || ''} ${item.titolo_articolo || ''} ${item.testo || ''} ${item.articolo || ''}`.toLowerCase();
+      return terms.every(term => text.includes(term)) || (item.articolo_num && item.articolo_num.toString() === debouncedSearch);
+    });
   }, [debouncedSearch, normativaList, minChars]);
 
   const total = risultatiProntuario.length + risultatiNormativa.length;

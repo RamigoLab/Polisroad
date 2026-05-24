@@ -144,6 +144,20 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     else if (selectedTitolo) setSelectedTitolo(null);
   };
 
+  const backBtnStyle = {
+    fontSize: '0.85rem',
+    padding: '6px 12px',
+    color: '#fff',
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '6px',
+    fontWeight: 'bold',
+  };
+
   const renderArticleRow = (art) => (
     <div key={art.id} onClick={async () => {
       await addXP(5, 'article');
@@ -189,7 +203,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
         title={cleanTitle(selectedArticolo.titolo_articolo)}
         subtitle={breadcrumb}
         onNavigate={onNavigate}
-        headerLeftAction={<button onClick={handleBack} style={{ fontSize: '0.85rem', padding: '6px 8px', color: '#fff', background: 'transparent', border: 'none', cursor: 'pointer' }}>Indietro</button>}
+        headerLeftAction={<button onClick={handleBack} style={backBtnStyle}><span>←</span> Indietro</button>}
       >
         <div style={PS.normativaDetailBody}>
           {selectedArticolo.commi.map(c => (
@@ -204,7 +218,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   }
 
   const isDeep = selectedTitolo || selectedCapo;
-  const backAction = isDeep ? <button onClick={handleBack} style={{ fontSize: '0.85rem', padding: '6px 8px', color: '#fff', background: 'transparent', border: 'none', cursor: 'pointer' }}>Indietro</button> : null;
+  const backAction = isDeep ? <button onClick={handleBack} style={backBtnStyle}><span>←</span> Indietro</button> : null;
 
   let viewContent;
   if (loading) {
