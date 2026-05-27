@@ -1,6 +1,7 @@
 import React from 'react';
 import { LS } from '../../styles/layout';
 import { useGamificationContext } from '../../context/GamificationContext';
+import { BADGES } from '../../config/badges';
 
 export const AppHeader = ({
   title,
@@ -12,13 +13,11 @@ export const AppHeader = ({
   leftAction,
   rightAction,
 }) => {
-  let featuredBadge = null;
-  try {
-    const context = useGamificationContext();
-    featuredBadge = context?.featuredBadge;
-  } catch (e) {
-    // Silently ignore if not in GamificationProvider
-  }
+  const { featuredBadge: featuredBadgeId } = useGamificationContext();
+  // featuredBadge nel context è un ID stringa (es. 'novice'); lo risolviamo nell'oggetto badge completo
+  const featuredBadge = featuredBadgeId
+    ? Object.values(BADGES).find(b => b.id === featuredBadgeId) || null
+    : null;
 
   const hasText = subtitle || title || meta;
 

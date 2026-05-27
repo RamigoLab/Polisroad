@@ -9,6 +9,7 @@ import { useGamificationContext } from '../context/GamificationContext';
 import { LevelProgress } from '../components/gamification/LevelProgress';
 import { StreakCounter } from '../components/gamification/StreakCounter';
 import { BadgeShowcase } from '../components/gamification/BadgeShowcase';
+import { BADGES } from '../config/badges';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } from '../config/constants';
@@ -57,9 +58,14 @@ export const Profilo = ({ onNavigate }) => {
     xp,
     currentStreak,
     longestStreak,
-    featuredBadge,
+    featuredBadge: featuredBadgeId,
     unlockedBadges,
   } = useGamificationContext();
+
+  // featuredBadge nel context è una stringa ID; lo risolviamo nell'oggetto badge completo
+  const featuredBadge = featuredBadgeId
+    ? Object.values(BADGES).find(b => b.id === featuredBadgeId) || null
+    : null;
 
   // Update daily streak on mount
   useEffect(() => {
