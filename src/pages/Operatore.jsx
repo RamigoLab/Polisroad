@@ -1,10 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { SearchBar } from '../components/ui/SearchBar';
 import { PS } from '../styles/pages';
+import { C } from '../styles/theme';
 import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
 import { useAuth } from '../hooks/useAuth';
+import { useGamificationContext } from '../context/GamificationContext';
+import { useToast } from '../components/ui/ToastManager';
 
 export const Operatore = ({ onNavigate }) => {
   const { list } = useProntuario();
@@ -12,9 +15,20 @@ export const Operatore = ({ onNavigate }) => {
   const { note } = useNote();
   const { profile } = useAuth();
 
+  const { addXP } = useGamificationContext();
+  const { showToast } = useToast();
+
   const [search, setSearch] = useState('');
   const [time, setTime] = useState(new Date());
   const [expandedId, setExpandedId] = useState(null);
+  const [registering, setRegistering] = useState(false);
+
+  const handleRegistraContestazione = async (item) => {
+    setRegistering(true);
+    await addXP(20, 'contestazione');
+    showToast(`Contestazione registrata: ${item.rif_normativo}`, 'success');
+    setRegistering(false);
+  };
 
   useEffect(() => {
     const timer = setInterval(() => setTime(new Date()), 1000);
@@ -113,6 +127,32 @@ export const Operatore = ({ onNavigate }) => {
                         <span style={PS.operatoreTextSm}>{itemNote}</span>
                       </div>
                     )}
+
+                    {/* Registra Contestazione */}
+                    <button
+                      onClick={() => handleRegistraContestazione(item)}
+                      disabled={registering}
+                      style={{
+                        marginTop: '12px',
+                        width: '100%',
+                        padding: '12px',
+                        backgroundColor: C.danger,
+                        color: '#fff',
+                        border: 'none',
+                        borderRadius: '10px',
+                        fontWeight: 'bold',
+                        fontSize: '0.95rem',
+                        cursor: registering ? 'not-allowed' : 'pointer',
+                        opacity: registering ? 0.7 : 1,
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        gap: '8px',
+                        boxShadow: `0 4px 12px ${C.danger}40`
+                      }}
+                    >
+                      ✍️ {registering ? 'Registrazione...' : 'Registra Contestazione'}
+                    </button>
                   </div>
                 )}
               </div>

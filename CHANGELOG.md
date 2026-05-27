@@ -6,17 +6,30 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ## [1.4.5] - 27 Maggio 2026
 
-### 🚀 Nuove Funzionalità & Gamification
-- **Contestazioni**: Aggiunto un tasto nel Prontuario per registrare contestazioni effettuate. Aggiunti nuovi traguardi (50, 100, 200).
-- **Nuove Pagine**: Aggiunta la sezione "Guide Pratiche" e aggiornati i "Link Utili".
-- **Notifiche Avanzate**: Modale di notifica all'avvio e lista comunicazioni in Home gestibile dall'admin.
-- **Offline & App Update**: Sistema di rilevamento aggiornamenti integrato (PWA Update popup) per scaricare nuove versioni di Prontuario e Normativa in modo statico e veloce.
-- **Supporto Normative Multiple**: Predisposta la UI per ospitare Codice Penale, Regolamenti, ecc., oltre al Codice della Strada.
+### 🚀 Nuove Funzionalità
+- **Guide Pratiche**: Aggiunta nuova pagina "Guide Pratiche" accessibile da menu mobile, sidebar desktop e Home. Attualmente mostra una schermata "Work in Progress" con anteprima dei contenuti futuri (monopattini, merci, Art. 186, ecc.).
+- **Notifiche Popup**: Aggiunta categoria `popup` nella gestione news — mostra una modale all'avvio app (una volta sola, memorizza il "visto" in localStorage). Gestibile dall'Admin Dashboard.
+- **Notifiche In-Home**: Aggiunta categoria `notifica` nella gestione news — le comunicazioni pubblicate appaiono come lista in Home sotto i Quick Actions. Gestibile dall'Admin Dashboard.
+- **Normativa Multi-Categoria**: La pagina Normativa ora mostra una schermata radice con macro-categorie (Codice della Strada, Regolamento di Attuazione, Codice Penale, Costituzione Italiana). Le categorie future mostreranno "lavori in corso" fino all'aggiunta dei dati.
+- **Links Utili Espansi**: Aggiunto alla pagina Link Istituzionali i seguenti servizi del Portale dell'Automobilista: Controlla Assicurazione (RCA), Controlla Revisione, Veicoli Rubati (Banca Dati Interforze), Classe Ambientale, Limiti Guida Neopatentati, Massa Supplementare.
 
-### 🔧 UI/UX & Bugfixes
-- **Tasto Indietro Android**: Il tasto indietro hardware ora naviga correttamente le pagine interne senza uscire dall'app.
-- **Tema Scuro**: Corretta la visibilità della freccia della barra inferiore su mobile.
-- **Badge Showcase**: Il badge selezionato ("featured") ora è visibile nell'intestazione principale e nel profilo.
+### 🎮 Gamification & Badge
+- **Registra Contestazione**: Aggiunto tasto dedicato "✍️ Registra Contestazione" nella schermata di dettaglio del Prontuario. Ogni contestazione registrata vale +20 XP.
+- **Nuovi Badge Contestazioni**: Aggiunti 3 nuovi traguardi sbloccabili: 🚨 *Pattuglia Attiva* (50 contestazioni), 🚔 *Operatore Scelto* (100 contestazioni), 🦅 *Veterano della Strada* (200 contestazioni).
+- **Contatore Contestazioni in Profilo**: Il totale delle contestazioni registrate è ora visibile in un box dedicato nella pagina Profilo.
+- **Badge Featured in AppHeader**: Il badge selezionato come "featured" ora viene mostrato con la sua icona direttamente accanto al titolo nell'intestazione di tutte le schermate dell'app.
+- **Badge Featured sull'Avatar**: Il badge featured viene visualizzato come overlay sull'avatar nella pagina Profilo.
+- **Fix Bug Badge**: Risolto bug critico per cui `featuredBadge` nel context era una stringa ID e non veniva risolto nell'oggetto badge corretto — le icone ora appaiono correttamente in AppHeader e Profilo.
+
+### 🔧 UI/UX & Miglioramenti
+- **Tasto Indietro Android**: Integrata la History API (`pushState`/`popstate`) in `App.jsx`. Premendo il tasto indietro hardware su Android l'app ora naviga alla schermata precedente invece di chiudersi.
+- **Indicatore Rete Mobile**: L'indicatore "Online/Offline" con numero di versione (prima visibile solo nella Sidebar desktop) è ora presente anche nella barra di navigazione inferiore del mobile, posizionato in basso a destra in modo ordinato e non invasivo.
+- **Aggiornamento App (PWA)**: La configurazione PWA è passata da `autoUpdate` a `prompt`. Creato il componente `PwaUpdater` che mostra un popup elegante quando è disponibile un aggiornamento, con il tasto "Riavvia & Aggiorna".
+- **Frecce BottomNav - Tema Scuro**: Corretta la visibilità della freccia laterale nella barra di navigazione inferiore in modalità scura (ora usa il colore primario dell'app invece del bianco).
+- **Footer Home**: Aggiunto footer in basso nella Home con testo legale/credits aggiornato e sintetico: crediti Ramigolab, disclaimer dati normativi e responsabilità organi accertatori.
+- **Normativa - Fix "Titolo Sconosciuto"**: Eliminata la schermata intermedia con "Titolo Sconosciuto / Senza Nome" quando i dati non hanno struttura gerarchica; in questo caso gli articoli vengono mostrati direttamente.
+- **Normativa - Rimozione conteggio titoli**: Rimossa la scritta "N Titoli disponibili" dalle card delle categorie nella schermata radice Normativa.
+- **Dati Statici**: `DataContext` aggiornato per non effettuare più chiamate a Supabase per Prontuario e Normativa; questi dati vengono caricati esclusivamente da file JSON statici locali per massima velocità e funzionamento offline.
 
 ---
 
