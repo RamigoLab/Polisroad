@@ -1,5 +1,6 @@
 import React from 'react';
 import { LS } from '../../styles/layout';
+import { useGamificationContext } from '../../context/GamificationContext';
 
 export const AppHeader = ({
   title,
@@ -11,6 +12,14 @@ export const AppHeader = ({
   leftAction,
   rightAction,
 }) => {
+  let featuredBadge = null;
+  try {
+    const context = useGamificationContext();
+    featuredBadge = context?.featuredBadge;
+  } catch (e) {
+    // Silently ignore if not in GamificationProvider
+  }
+
   const hasText = subtitle || title || meta;
 
   return (
@@ -30,9 +39,19 @@ export const AppHeader = ({
           }}
         >
           {subtitle && <p style={LS.appHeaderSubtitle}>{subtitle}</p>}
-          {title && <h2 style={LS.appHeaderTitle}>{title}</h2>}
+          {title && (
+            <h2 style={LS.appHeaderTitle}>
+              {title}
+              {featuredBadge && <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>}
+            </h2>
+          )}
           {meta && <p style={LS.appHeaderMeta}>{meta}</p>}
-          {!hasText && <h2 style={LS.appHeaderTitle}>PolisRoad</h2>}
+          {!hasText && (
+            <h2 style={LS.appHeaderTitle}>
+              PolisRoad
+              {featuredBadge && <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>}
+            </h2>
+          )}
         </div>
         {rightAction}
         <button

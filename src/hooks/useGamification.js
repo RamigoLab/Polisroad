@@ -88,6 +88,7 @@ export const useGamification = () => {
         if (action === 'favorite') updates.total_favorites = (currentStats.total_favorites || 0) + 1;
         if (action === 'calculator') updates.calculator_uses = (currentStats.calculator_uses || 0) + 1;
         if (action === 'article') updates.total_articles_viewed = (currentStats.total_articles_viewed || 0) + 1;
+        if (action === 'contestazione') updates.total_contestazioni = (currentStats.total_contestazioni || 0) + 1;
         if (action === 'streak_bonus') {
           // lo streak_bonus è solo XP extra, niente contatore aggiuntivo
         }
@@ -111,7 +112,8 @@ export const useGamification = () => {
           total_searches: updates.total_searches ?? prev.total_searches,
           total_favorites: updates.total_favorites ?? prev.total_favorites,
           calculator_uses: updates.calculator_uses ?? prev.calculator_uses,
-          total_articles_viewed: updates.total_articles_viewed ?? prev.total_articles_viewed
+          total_articles_viewed: updates.total_articles_viewed ?? prev.total_articles_viewed,
+          total_contestazioni: updates.total_contestazioni ?? prev.total_contestazioni
         }));
 
         // Ritorna informazioni di livello

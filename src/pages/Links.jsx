@@ -74,6 +74,48 @@ const LINKS = [
     domain: 'normattiva.it',
     logo: '/logos/normattiva.svg',
     fallback: 'NA'
+  },
+  {
+    title: 'Controlla Assicurazione',
+    subtitle: 'Verifica copertura RCA',
+    url: 'https://www.ilportaledellautomobilista.it/web/portale-automobilista/verifica-copertura-rc',
+    domain: 'ilportaledellautomobilista.it',
+    fallback: 'RCA'
+  },
+  {
+    title: 'Controlla Revisione',
+    subtitle: 'Verifica ultima revisione',
+    url: 'https://www.ilportaledellautomobilista.it/web/portale-automobilista/verifica-ultima-revisione',
+    domain: 'ilportaledellautomobilista.it',
+    fallback: 'REV'
+  },
+  {
+    title: 'Veicoli Rubati',
+    subtitle: 'Banca Dati Interforze',
+    url: 'https://www.crimnet.dcpc.interno.gov.it/interforze/pubblico/ricerca',
+    domain: 'crimnet.dcpc.interno.gov.it',
+    fallback: 'RUB'
+  },
+  {
+    title: 'Classe Ambientale',
+    subtitle: 'Verifica classe Euro',
+    url: 'https://www.ilportaledellautomobilista.it/web/portale-automobilista/verifica-classe-ambientale-veicolo',
+    domain: 'ilportaledellautomobilista.it',
+    fallback: 'AMB'
+  },
+  {
+    title: 'Limiti Neopatentati',
+    subtitle: 'Verifica guida veicoli',
+    url: 'https://www.ilportaledellautomobilista.it/web/portale-automobilista/limiti-guida-neopatentati',
+    domain: 'ilportaledellautomobilista.it',
+    fallback: 'NEO'
+  },
+  {
+    title: 'Massa Supplementare',
+    subtitle: 'Verifica veicoli PTT',
+    url: 'https://www.ilportaledellautomobilista.it/web/portale-automobilista/',
+    domain: 'ilportaledellautomobilista.it',
+    fallback: 'MAS'
   }
 ];
 

@@ -10,6 +10,7 @@ import { AdminLayout } from './pages/admin/AdminLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PageLoader } from './components/ui/PageLoader';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { PwaUpdater } from './components/PwaUpdater';
 
 // Lazy loading pages for high performance & smaller initial bundle size
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
@@ -22,6 +23,7 @@ const News = lazy(() => import('./pages/News').then(m => ({ default: m.News })))
 const Links = lazy(() => import('./pages/Links').then(m => ({ default: m.Links })));
 const Profilo = lazy(() => import('./pages/Profilo').then(m => ({ default: m.Profilo })));
 const Operatore = lazy(() => import('./pages/Operatore').then(m => ({ default: m.Operatore })));
+const GuidePratiche = lazy(() => import('./pages/GuidePratiche').then(m => ({ default: m.GuidePratiche })));
 
 // Lazy loading admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
@@ -61,7 +63,35 @@ function App() {
     }
   }, [dataError]);
   
+  useEffect(() => {
+    // Inizializza history allo stato corrente se non è presente
+    if (!window.history.state) {
+      window.history.replaceState({ page: currentPage, params: navigationParams }, '', `?page=${currentPage}`);
+    }
+
+    const handlePopState = (e) => {
+      if (e.state && e.state.page) {
+        setCurrentPage(e.state.page);
+        setNavigationParams(e.state.params || null);
+        setItem('polisroad_current_page', e.state.page);
+        if (e.state.params) {
+          setItem('polisroad_navigation_params', JSON.stringify(e.state.params));
+        } else {
+          removeItem('polisroad_navigation_params');
+        }
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
   const navigate = (page, params = null) => {
+    // Aggiungi un nuovo stato nella history solo se la pagina cambia o i parametri cambiano
+    if (page !== currentPage || JSON.stringify(params) !== JSON.stringify(navigationParams)) {
+      window.history.pushState({ page, params }, '', `?page=${page}`);
+    }
+    
     setCurrentPage(page);
     setNavigationParams(params);
     setItem('polisroad_current_page', page);
@@ -113,6 +143,7 @@ function App() {
       case 'links': return <Links {...props} />;
       case 'profilo': return <Profilo {...props} />;
       case 'operatore': return <Operatore {...props} />;
+      case 'guide': return <GuidePratiche {...props} />;
       
       // Admin Pages
       case 'admin_dashboard': return (
@@ -149,6 +180,7 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <PwaUpdater />
       <Suspense fallback={<PageLoader />}>
         <div className="app-viewport-container">
           {showNav && <Sidebar currentPage={currentPage} onNavigate={navigate} />}

@@ -9,6 +9,7 @@ const TABS = [
   { id: 'preferiti', icon: '⭐', label: 'Preferiti' },
   { id: 'ricerca', icon: '🔍', label: 'Cerca' },
   { id: 'calcolatore', icon: '🧮', label: 'Calcolatore' },
+  { id: 'guide', icon: '📚', label: 'Guide Pratiche' },
   { id: 'news', icon: '📰', label: 'News' },
   { id: 'links', icon: '🔗', label: 'Links' },
   { id: 'profilo', icon: '👤', label: 'Profilo' },
@@ -66,7 +67,7 @@ export const BottomNav = ({ currentPage, onNavigate }) => {
 
       {showRightFade && (
         <div style={LS.navFadeRight}>
-          <span style={{ ...LS.navArrow, animation: 'bounceRight 1.5s infinite' }}>
+          <span style={{ ...LS.navArrow, animation: 'bounceRight 1.5s infinite', color: 'var(--color-primary)' }}>
             ›
           </span>
         </div>

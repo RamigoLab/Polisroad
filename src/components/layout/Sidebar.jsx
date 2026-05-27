@@ -8,6 +8,7 @@ const TABS = [
   { id: 'preferiti', icon: '⭐', label: 'Preferiti' },
   { id: 'ricerca', icon: '🔍', label: 'Cerca' },
   { id: 'calcolatore', icon: '🧮', label: 'Calcolatore' },
+  { id: 'guide', icon: '📚', label: 'Guide Pratiche' },
   { id: 'news', icon: '📰', label: 'News' },
   { id: 'links', icon: '🔗', label: 'Links' },
   { id: 'profilo', icon: '👤', label: 'Profilo' },

@@ -174,7 +174,20 @@ export const Profilo = ({ onNavigate }) => {
       {/* Scheda Identità */}
       <div style={{ ...S.cardElevated, marginBottom: '24px', overflow: isEditing ? 'visible' : 'hidden' }}>
         <div style={PS.profileHeaderBg}>
-          <div style={PS.profileAvatar}>👮</div>
+          <div style={PS.profileAvatar}>
+            👮
+            {featuredBadge && (
+              <div style={{
+                position: 'absolute',
+                bottom: '-10px',
+                right: '-10px',
+                fontSize: '1.8rem',
+                filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))'
+              }}>
+                {featuredBadge.icon}
+              </div>
+            )}
+          </div>
           <div>
             <h3 style={PS.profileHeaderName}>{profile?.nome} {profile?.cognome}</h3>
             <p style={PS.profileHeaderGrado}>{profile?.grado || 'Operatore'}</p>
@@ -205,6 +218,9 @@ export const Profilo = ({ onNavigate }) => {
               <DataRow label="Corpo / Forza" value={profile?.forza} icon="🏢" />
               <DataRow label="Email di Servizio" value={profile?.email} icon="📧" />
               <DataRow label="Contatto Telefonico" value={profile?.telefono} icon="📱" />
+              <div style={{ margin: '16px 0', padding: '16px', backgroundColor: C.accentLight, borderRadius: '12px' }}>
+                <DataRow label="Contestazioni Effettuate" value={stats?.total_contestazioni || 0} icon="🚨" />
+              </div>
               <button onClick={() => setIsEditing(true)} style={S.btnOutline}>⚙️ Modifica Profilo</button>
             </>
           )}

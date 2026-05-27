@@ -14,6 +14,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   const { addXP } = useGamificationContext();
   const [search, setSearch] = useState('');
   
+  const [selectedCategory, setSelectedCategory] = useState(null);
   const [selectedTitolo, setSelectedTitolo] = useState(null);
   const [selectedCapo, setSelectedCapo] = useState(null);
   const [selectedArticolo, setSelectedArticolo] = useState(null);
@@ -142,6 +143,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     if (selectedArticolo) setSelectedArticolo(null);
     else if (selectedCapo) setSelectedCapo(null);
     else if (selectedTitolo) setSelectedTitolo(null);
+    else if (selectedCategory) setSelectedCategory(null);
   };
 
   const backBtnStyle = {
@@ -195,6 +197,17 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     </div>
   );
 
+  const renderCategoryRow = (id, title, desc, count) => (
+    <div key={id} onClick={() => setSelectedCategory(id)} style={{...PS.normativaItemRow, marginBottom: '12px', padding: '16px'}}>
+      <div style={{ flex: 1 }}>
+        <h3 style={{...PS.normativaItemTitle, fontSize: '1.1rem', color: C.primary}}>{title}</h3>
+        {desc && <p style={{ fontSize: '0.85rem', color: C.textLight, marginTop: '4px' }}>{desc}</p>}
+        {count !== undefined && <div style={{ fontSize: '0.75rem', marginTop: '8px', fontWeight: 'bold', color: C.accent }}>{count} Titoli disponibili</div>}
+      </div>
+      <span style={{ color: C.textLight, fontSize: '1.5rem' }}>›</span>
+    </div>
+  );
+
   if (selectedArticolo) {
     const breadcrumb = `${selectedArticolo.titolo_numero || ''}${selectedArticolo.capo_numero ? ' > ' + selectedArticolo.capo_numero : ''} > ${selectedArticolo.articolo}`;
     return (
@@ -217,7 +230,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     );
   }
 
-  const isDeep = selectedTitolo || selectedCapo;
+  const isDeep = selectedCategory || selectedTitolo || selectedCapo;
   const backAction = isDeep ? <button onClick={handleBack} style={backBtnStyle}><span>←</span> Indietro</button> : null;
 
   let viewContent;
@@ -254,18 +267,46 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
         {selectedTitolo.articoli.map(renderArticleRow)}
       </div>
     );
+  } else if (selectedCategory === 'cds') {
+    viewContent = (
+      <div style={S.list}>
+        <div style={{ marginBottom: '16px', padding: '0 4px', fontSize: '0.85rem', color: C.textLight }}>
+          <span onClick={() => setSelectedCategory(null)} style={{cursor: 'pointer', textDecoration: 'underline'}}>Categorie</span>
+          {' > '}
+          <span style={{fontWeight: 'bold', color: C.text}}>Codice della Strada</span>
+        </div>
+        {hierarchy.tree.map(renderTitoloRow)}
+      </div>
+    );
+  } else if (selectedCategory) {
+    viewContent = (
+      <div style={S.list}>
+        <div style={{ marginBottom: '16px', padding: '0 4px', fontSize: '0.85rem', color: C.textLight }}>
+          <span onClick={() => setSelectedCategory(null)} style={{cursor: 'pointer', textDecoration: 'underline'}}>Categorie</span>
+          {' > '}
+          <span style={{fontWeight: 'bold', color: C.text}}>Lavori in corso</span>
+        </div>
+        <div style={{ ...S.emptyState, marginTop: '40px' }}>
+          <span style={{ fontSize: '2rem', display: 'block', marginBottom: '12px' }}>🚧</span>
+          Stiamo lavorando per aggiungere questa normativa.<br/>Torna presto!
+        </div>
+      </div>
+    );
   } else {
     viewContent = (
       <div style={S.list}>
-        {hierarchy.tree.map(renderTitoloRow)}
+        {renderCategoryRow('cds', 'Codice della Strada', 'Decreto Legislativo 30 aprile 1992 n. 285', hierarchy.tree.length)}
+        {renderCategoryRow('regolamento', 'Regolamento di Attuazione', 'D.P.R. 16 dicembre 1992, n. 495')}
+        {renderCategoryRow('penale', 'Codice Penale', 'Regio Decreto 19 ottobre 1930, n. 1398')}
+        {renderCategoryRow('costituzione', 'Costituzione Italiana', 'Principi fondamentali')}
       </div>
     );
   }
 
   return (
     <PageWrapper 
-      title="Normativa PolisRoad" 
-      subtitle="Codice della Strada" 
+      title="Normative" 
+      subtitle={selectedCategory === 'cds' ? "Codice della Strada" : "Testi di Legge"} 
       onNavigate={onNavigate}
       headerLeftAction={backAction}
     >

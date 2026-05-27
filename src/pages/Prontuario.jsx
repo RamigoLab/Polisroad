@@ -74,6 +74,12 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
     posthog.capture('prontuario_item_selected', { prontuario_id: item.id, titolo: item.titolo });
   };
 
+  const handleRegistraContestazione = async () => {
+    await addXP(20, 'contestazione');
+    showToast('Contestazione registrata con successo!', 'success');
+    posthog.capture('prontuario_contestazione', { prontuario_id: selectedItem?.id });
+  };
+
   if (selectedItem) {
     const isFav = preferiti.includes(selectedItem.id);
     const itemNote = note[selectedItem.id] || '';
@@ -182,6 +188,26 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
                 {itemNote || 'Nessuna nota salvata. Clicca su Modifica per aggiungerne una.'}
               </p>
             )}
+          </div>
+          
+          {/* Contestazione */}
+          <div style={{ marginTop: '24px', textAlign: 'center' }}>
+            <button 
+              onClick={handleRegistraContestazione}
+              style={{
+                ...S.btnPrimary,
+                backgroundColor: C.danger,
+                padding: '12px 24px',
+                fontSize: '1.1rem',
+                borderRadius: '12px',
+                boxShadow: `0 4px 12px ${C.danger}40`
+              }}
+            >
+              ✍️ Registra Contestazione
+            </button>
+            <p style={{ fontSize: '0.8rem', color: C.textLight, marginTop: '8px' }}>
+              Registra questa contestazione nel tuo profilo per sbloccare traguardi e statistiche.
+            </p>
           </div>
         </div>
       </PageWrapper>

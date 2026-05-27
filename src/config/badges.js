@@ -89,5 +89,34 @@ export const BADGES = {
       (stats.calculator_uses || 0) >= 100,
     tier: 'platinum',
     color: '#e5e4e2'
+  },
+
+  // Contestazioni
+  CONTESTAZIONI_50: {
+    id: 'cont_50',
+    name: 'Pattuglia Attiva',
+    icon: '🚨',
+    description: 'Registra 50 contestazioni',
+    unlockCondition: (stats) => (stats.total_contestazioni || 0) >= 50,
+    tier: 'bronze',
+    color: '#cd7f32'
+  },
+  CONTESTAZIONI_100: {
+    id: 'cont_100',
+    name: 'Operatore Scelto',
+    icon: '🚔',
+    description: 'Registra 100 contestazioni',
+    unlockCondition: (stats) => (stats.total_contestazioni || 0) >= 100,
+    tier: 'silver',
+    color: '#c0c0c0'
+  },
+  CONTESTAZIONI_200: {
+    id: 'cont_200',
+    name: 'Veterano della Strada',
+    icon: '🦅',
+    description: 'Registra 200 contestazioni',
+    unlockCondition: (stats) => (stats.total_contestazioni || 0) >= 200,
+    tier: 'gold',
+    color: '#ffd700'
   }
 };

@@ -49,21 +49,19 @@ export const DataProvider = ({ children }) => {
     };
 
     try {
-      // Fetch impaginate automatiche per bypassare i blocchi del server
-      const [prontuarioRes, normativaRes, newsRes] = await Promise.all([
-        fetchAllRows('prontuario', 'rif_normativo'),
-        fetchAllRows('codice_strada', 'ordine'),
-        supabase.from('news').select('*').order('created_at', { ascending: false }).limit(100)
-      ]);
+      // Fetch impaginate automatiche per bypassare i blocchi del server (SOLO per news)
+      const { data: newsData, error: newsError } = await supabase
+        .from('news')
+        .select('*')
+        .order('created_at', { ascending: false })
+        .limit(100);
 
-      if (prontuarioRes.error || normativaRes.error || newsRes.error) {
+      if (newsError) {
         console.error('Data Fetch Errors:', {
-          prontuario: prontuarioRes.error,
-          normativa: normativaRes.error,
-          news: newsRes.error
+          news: newsError
         });
         
-        const anyError = prontuarioRes.error || normativaRes.error || newsRes.error;
+        const anyError = newsError;
         let userMsg = "Si è verificato un errore durante il caricamento dei dati.";
         
         if (anyError.message?.includes('fetch') || anyError.message?.includes('Network')) {
@@ -79,11 +77,11 @@ export const DataProvider = ({ children }) => {
         setError(userMsg);
       }
 
-      setProntuario(prontuarioRes.data || mockProntuario);
-      setNormativa(normativaRes.data || mockNormativa);
+      setProntuario(mockProntuario);
+      setNormativa(mockNormativa);
       
       // Auto-delete published news older than 30 days
-      const fetchedNews = newsRes.data || mockNews;
+      const fetchedNews = newsData || mockNews;
       const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
       const now = Date.now();
       

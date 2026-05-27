@@ -4,6 +4,22 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.4.5] - 27 Maggio 2026
+
+### 🚀 Nuove Funzionalità & Gamification
+- **Contestazioni**: Aggiunto un tasto nel Prontuario per registrare contestazioni effettuate. Aggiunti nuovi traguardi (50, 100, 200).
+- **Nuove Pagine**: Aggiunta la sezione "Guide Pratiche" e aggiornati i "Link Utili".
+- **Notifiche Avanzate**: Modale di notifica all'avvio e lista comunicazioni in Home gestibile dall'admin.
+- **Offline & App Update**: Sistema di rilevamento aggiornamenti integrato (PWA Update popup) per scaricare nuove versioni di Prontuario e Normativa in modo statico e veloce.
+- **Supporto Normative Multiple**: Predisposta la UI per ospitare Codice Penale, Regolamenti, ecc., oltre al Codice della Strada.
+
+### 🔧 UI/UX & Bugfixes
+- **Tasto Indietro Android**: Il tasto indietro hardware ora naviga correttamente le pagine interne senza uscire dall'app.
+- **Tema Scuro**: Corretta la visibilità della freccia della barra inferiore su mobile.
+- **Badge Showcase**: Il badge selezionato ("featured") ora è visibile nell'intestazione principale e nel profilo.
+
+---
+
 ## [1.4.4] - 24 Maggio 2026
 
 ### UI/UX & Bugfixes

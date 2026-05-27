@@ -2,7 +2,7 @@
 
 Progressive Web App React/Vite per consultazione rapida del Codice della Strada, prontuario, preferiti, calcolo sanzioni, news, profilo operatore e funzioni admin.
 
-Versione corrente: **1.4.1**
+Versione corrente: **1.4.5**
 
 ## Stack
 
@@ -69,7 +69,7 @@ Su Vercel o servizi simili:
 
 Output di produzione: `dist/`.
 
-## Note versione 1.4.1
+## Note versione 1.4.5
 
 - Header blu unificato su Home, Prontuario, Normativa, Ricerca, Calcolatore, News, Links, Preferiti e Profilo.
 - Nuovo componente condiviso `src/components/layout/AppHeader.jsx`, integrato in `PageWrapper`.
