@@ -39,33 +39,6 @@ export const PwaUpdater = () => {
 
   return (
     <>
-      {/* Indicatore Stato Rete Mobile (visible everywhere in alto) */}
-      <div style={{
-        position: 'fixed',
-        top: '6px',
-        right: '6px',
-        zIndex: 9999,
-        display: 'flex',
-        alignItems: 'center',
-        gap: '6px',
-        backgroundColor: 'rgba(0,0,0,0.6)',
-        backdropFilter: 'blur(4px)',
-        padding: '4px 8px',
-        borderRadius: '12px',
-        pointerEvents: 'none'
-      }}>
-        <div style={{
-          width: '8px',
-          height: '8px',
-          borderRadius: '50%',
-          backgroundColor: isOnline ? C.success : C.danger,
-          boxShadow: `0 0 6px ${isOnline ? C.success : C.danger}`
-        }} />
-        <span style={{ fontSize: '0.65rem', color: '#fff', fontWeight: 'bold' }}>
-          {isOnline ? 'Online' : 'Offline'} | v{APP_VERSION}
-        </span>
-      </div>
-
       {/* Popup Aggiornamento PWA */}
       { (offlineReady || needRefresh) && (
         <div style={{

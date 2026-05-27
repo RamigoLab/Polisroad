@@ -202,7 +202,6 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
       <div style={{ flex: 1 }}>
         <h3 style={{...PS.normativaItemTitle, fontSize: '1.1rem', color: C.primary}}>{title}</h3>
         {desc && <p style={{ fontSize: '0.85rem', color: C.textLight, marginTop: '4px' }}>{desc}</p>}
-        {count !== undefined && <div style={{ fontSize: '0.75rem', marginTop: '8px', fontWeight: 'bold', color: C.accent }}>{count} Titoli disponibili</div>}
       </div>
       <span style={{ color: C.textLight, fontSize: '1.5rem' }}>›</span>
     </div>
@@ -268,6 +267,8 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
       </div>
     );
   } else if (selectedCategory === 'cds') {
+    const showOnlyArticles = hierarchy.tree.length === 1 && hierarchy.tree[0].numero === 'Titolo Sconosciuto';
+    
     viewContent = (
       <div style={S.list}>
         <div style={{ marginBottom: '16px', padding: '0 4px', fontSize: '0.85rem', color: C.textLight }}>
@@ -275,7 +276,10 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
           {' > '}
           <span style={{fontWeight: 'bold', color: C.text}}>Codice della Strada</span>
         </div>
-        {hierarchy.tree.map(renderTitoloRow)}
+        {showOnlyArticles 
+          ? hierarchy.tree[0].articoli.map(renderArticleRow)
+          : hierarchy.tree.map(renderTitoloRow)
+        }
       </div>
     );
   } else if (selectedCategory) {

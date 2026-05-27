@@ -110,20 +110,22 @@ export const Home = ({ onNavigate }) => {
         borderTop: `1px solid ${C.border}`,
         fontSize: '0.75rem',
         color: C.textLight,
-        lineHeight: '1.5'
+        lineHeight: '1.6'
       }}>
         <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-          Applicazione SVILUPPATA DA Ramigolab<br/>
-          © 2026 POLIsroad – All rights reserved
+          2026 Polisroad – Applicazione sviluppata da Ramigolab
         </p>
-        <p style={{ textAlign: 'justify' }}>
-          Il presente sito web è uno strumento di supporto operativo rivolto agli appartenenti alle forze di polizia, finalizzato alla verifica di coperture assicurative di responsabilità civile verso terzi, della revisione obbligatoria dei veicoli e della validità delle patenti di guida, limitatamente agli Stati indicati.
+        <p style={{ marginBottom: '4px' }}>
+          Sistema informativo di supporto alle attività di controllo in materia di circolazione stradale.
         </p>
-        <p style={{ textAlign: 'justify', marginTop: '8px' }}>
-          Il sito si avvale di collegamenti a servizi web di terze parti per l'accesso alle relative banche dati. I gestori del sito non garantiscono la completezza, l’accuratezza o l’aggiornamento dei dati consultati tramite tali collegamenti e non assumono alcuna responsabilità per l’esito delle verifiche effettuate né per eventuali sanzioni amministrative o penali, comprese quelle relative alla contestazione di violazioni al Codice della Strada o al Codice Penale, che possano derivare dall’utilizzo delle informazioni ottenute tramite il sito.
+        <p style={{ marginBottom: '4px' }}>
+          I dati normativi sono tratti da fonti ufficiali (es. Normattiva) e hanno finalità informativa.
         </p>
-        <p style={{ textAlign: 'justify', marginTop: '8px' }}>
-          L’utilizzo del sito è riservato a operatori qualificati, che restano responsabili in via esclusiva della corretta interpretazione e applicazione dei dati consultati ai fini dell’attività accertativa.
+        <p style={{ marginBottom: '4px' }}>
+          Le verifiche e le eventuali contestazioni restano di esclusiva responsabilità degli organi accertatori.
+        </p>
+        <p>
+          Non è garantita la completezza o l’aggiornamento dei dati provenienti da servizi di terze parti.
         </p>
       </div>
 

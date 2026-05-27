@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { LS } from '../../styles/layout';
+import { APP_VERSION } from '../../config/constants';
 
 
 const TABS = [
@@ -18,6 +19,7 @@ const TABS = [
 export const BottomNav = ({ currentPage, onNavigate }) => {
   const [showRightFade, setShowRightFade] = useState(true);
   const [showLeftFade, setShowLeftFade] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const scrollRef = useRef(null);
 
   const handleScroll = () => {
@@ -43,8 +45,16 @@ export const BottomNav = ({ currentPage, onNavigate }) => {
       scrollContainer.addEventListener('wheel', handleWheel, { passive: false });
     }
 
+    const handleOnline = () => setIsOnline(true);
+    const handleOffline = () => setIsOnline(false);
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
     return () => {
       window.removeEventListener('resize', handleScroll);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
       if (scrollContainer) {
         scrollContainer.removeEventListener('wheel', handleWheel);
       }
@@ -63,6 +73,27 @@ export const BottomNav = ({ currentPage, onNavigate }) => {
         `}
       </style>
       
+      {/* Network Status Header above tabs */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-end',
+        padding: '6px 16px 2px 16px',
+        gap: '6px',
+        fontSize: '0.65rem',
+        color: 'var(--color-text-light)',
+        borderBottom: '1px solid rgba(0,0,0,0.02)'
+      }}>
+        <div style={{
+          width: '6px',
+          height: '6px',
+          borderRadius: '50%',
+          backgroundColor: isOnline ? '#2ecc71' : '#e74c3c',
+          boxShadow: `0 0 6px ${isOnline ? '#2ecc71' : '#e74c3c'}`
+        }} />
+        <span style={{ fontWeight: 'bold' }}>{isOnline ? 'Online' : 'Offline'} | v{APP_VERSION}</span>
+      </div>
+
       {showLeftFade && <div style={LS.navFadeLeft} />}
 
       {showRightFade && (
