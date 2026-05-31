@@ -19,7 +19,7 @@ const DataRow = ({ label, value, icon }) => (
     <div style={S.dataRowIcon}>{icon}</div>
     <div style={{ flex: 1 }}>
       <div style={S.dataRowLabel}>{label}</div>
-      <div style={S.dataRowValue}>{value || 'Non specificato'}</div>
+      <div style={S.dataRowValue}>{value !== undefined && value !== null ? value : 'Non specificato'}</div>
     </div>
   </div>
 );
@@ -408,11 +408,6 @@ export const Profilo = ({ onNavigate }) => {
           <StreakCounter
             currentStreak={currentStreak}
             longestStreak={longestStreak}
-          />
-          <BadgeShowcase
-            unlockedBadges={unlockedBadges}
-            featuredBadge={featuredBadge}
-            onSelect={handleBadgeSelect}
           />
         </div>
       )}
