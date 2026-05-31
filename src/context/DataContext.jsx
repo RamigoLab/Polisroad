@@ -78,7 +78,7 @@ export const DataProvider = ({ children }) => {
       }
 
         // Fetch normative data with pagination
-        const { data: normativaData, error: normativaError } = await fetchAllRows('normativa', 'ordine');
+        const { data: normativaData, error: normativaError } = await fetchAllRows('codice_strada', 'ordine');
         if (normativaError) {
           console.error('Normativa fetch error:', normativaError);
           setError('Errore nel caricamento della normativa.');
