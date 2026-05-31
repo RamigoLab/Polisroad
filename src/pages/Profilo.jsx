@@ -8,7 +8,7 @@ import { PS } from '../styles/pages';
 import { useGamificationContext } from '../context/GamificationContext';
 import { LevelProgress } from '../components/gamification/LevelProgress';
 import { StreakCounter } from '../components/gamification/StreakCounter';
-import { BadgeShowcase } from '../components/gamification/BadgeShowcase';
+
 import { BADGES } from '../config/badges';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
@@ -158,15 +158,6 @@ export const Profilo = ({ onNavigate }) => {
     setIsEditing(false);
   };
 
-  // Set featured badge
-  const handleBadgeSelect = async (badgeId) => {
-    try {
-      await setFeaturedBadge(badgeId);
-      showToast('Badge impostato come featured!', 'success');
-    } catch {
-      showToast('Impossibile impostare il badge', 'error');
-    }
-  };
 
 
   return (

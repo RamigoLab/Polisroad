@@ -1,6 +1,6 @@
 import React from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
-import { S } from '../styles/styles';
+
 import { C } from '../styles/theme';
 
 export const GuidePratiche = ({ onNavigate }) => {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
-import { APP_VERSION } from '../config/constants';
+
 import { C } from '../styles/theme';
 
 export const PwaUpdater = () => {
@@ -9,7 +9,7 @@ export const PwaUpdater = () => {
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
-    onRegistered(r) {
+    onRegistered() {
       // Puoi fare polling periodico qui se vuoi
     },
     onRegisterError(error) {
@@ -17,20 +17,7 @@ export const PwaUpdater = () => {
     },
   });
 
-  const [isOnline, setIsOnline] = useState(navigator.onLine);
 
-  useEffect(() => {
-    const handleOnline = () => setIsOnline(true);
-    const handleOffline = () => setIsOnline(false);
-
-    window.addEventListener('online', handleOnline);
-    window.addEventListener('offline', handleOffline);
-
-    return () => {
-      window.removeEventListener('online', handleOnline);
-      window.removeEventListener('offline', handleOffline);
-    };
-  }, []);
 
   const close = () => {
     setOfflineReady(false);

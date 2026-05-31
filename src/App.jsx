@@ -63,28 +63,7 @@ function App() {
     }
   }, [dataError]);
   
-  useEffect(() => {
-    // Inizializza history allo stato corrente se non è presente
-    if (!window.history.state) {
-      window.history.replaceState({ page: currentPage, params: navigationParams }, '', `?page=${currentPage}`);
-    }
 
-    const handlePopState = (e) => {
-      if (e.state && e.state.page) {
-        setCurrentPage(e.state.page);
-        setNavigationParams(e.state.params || null);
-        setItem('polisroad_current_page', e.state.page);
-        if (e.state.params) {
-          setItem('polisroad_navigation_params', JSON.stringify(e.state.params));
-        } else {
-          removeItem('polisroad_navigation_params');
-        }
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
-  }, []);
 
   const navigate = (page, params = null) => {
     // Aggiungi un nuovo stato nella history solo se la pagina cambia o i parametri cambiano
