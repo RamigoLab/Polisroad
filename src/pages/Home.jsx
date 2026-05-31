@@ -113,7 +113,7 @@ export const Home = ({ onNavigate }) => {
         lineHeight: '1.6'
       }}>
         <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-          2026 Polisroad – Applicazione sviluppata da Ramigolab
+          2026 Polisroad – Applicazione sviluppata da Giorgio Raimondi
         </p>
         <p style={{ marginBottom: '4px' }}>
           Sistema informativo di supporto alle attività di controllo in materia di circolazione stradale.

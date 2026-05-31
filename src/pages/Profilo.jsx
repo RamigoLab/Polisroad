@@ -8,6 +8,7 @@ import { PS } from '../styles/pages';
 import { useGamificationContext } from '../context/GamificationContext';
 import { LevelProgress } from '../components/gamification/LevelProgress';
 import { StreakCounter } from '../components/gamification/StreakCounter';
+import { BadgeShowcase } from '../components/gamification/BadgeShowcase';
 
 import { BADGES } from '../config/badges';
 import { useAuth } from '../hooks/useAuth';
@@ -400,6 +401,13 @@ export const Profilo = ({ onNavigate }) => {
             currentStreak={currentStreak}
             longestStreak={longestStreak}
           />
+          <div style={{ marginTop: '16px' }}>
+            <BadgeShowcase
+              unlockedBadges={unlockedBadges || []}
+              featuredBadge={featuredBadgeId}
+              onSelect={setFeaturedBadge}
+            />
+          </div>
         </div>
       )}
 
