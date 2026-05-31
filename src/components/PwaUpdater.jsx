@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 
 import { C } from '../styles/theme';
 
-export const PwaUpdater = () => {
+
+
+
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],

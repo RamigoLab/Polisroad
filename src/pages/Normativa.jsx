@@ -197,7 +197,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     </div>
   );
 
-  const renderCategoryRow = (id, title, desc, count) => (
+  const renderCategoryRow = (id, title, desc) => (
     <div key={id} onClick={() => setSelectedCategory(id)} style={{...PS.normativaItemRow, marginBottom: '12px', padding: '16px'}}>
       <div style={{ flex: 1 }}>
         <h3 style={{...PS.normativaItemTitle, fontSize: '1.1rem', color: C.primary}}>{title}</h3>

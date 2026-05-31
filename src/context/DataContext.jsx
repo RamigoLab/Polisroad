@@ -77,11 +77,21 @@ export const DataProvider = ({ children }) => {
         setError(userMsg);
       }
 
-      setProntuario(mockProntuario);
-      setNormativa(mockNormativa);
-      
-      // Auto-delete published news older than 30 days
-      const fetchedNews = newsData || mockNews;
+        // Fetch normative data with pagination
+        const { data: normativaData, error: normativaError } = await fetchAllRows('normativa', 'ordine');
+        if (normativaError) {
+          console.error('Normativa fetch error:', normativaError);
+          setError('Errore nel caricamento della normativa.');
+          setNormativa(mockNormativa);
+        } else {
+          setNormativa(normativaData);
+        }
+
+        // Set prontuario (still using mock data)
+        setProntuario(mockProntuario);
+
+        // Auto-delete published news older than 30 days
+        const fetchedNews = newsData || mockNews;
       const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
       const now = Date.now();
       

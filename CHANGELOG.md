@@ -4,6 +4,12 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.4.6] - 31 Maggio 2026
+
+### 🚀 Nuove Funzionalità
+
+- (Placeholder for future changes)
+
 ## [1.4.5] - 27 Maggio 2026
 
 ### 🚀 Nuove Funzionalità

@@ -2,7 +2,7 @@
 
 Progressive Web App React/Vite per consultazione rapida del Codice della Strada, prontuario, preferiti, calcolo sanzioni, news, profilo operatore e funzioni admin.
 
-Versione corrente: **1.4.5**
+Versione corrente: **1.4.6**
 
 ## Stack
 
