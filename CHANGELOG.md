@@ -4,11 +4,25 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
-## [1.4.6] - 31 Maggio 2026
+## [1.4.7] - 31 Maggio 2026
 
 ### 🚀 Nuove Funzionalità
 
-- (Placeholder for future changes)
+- Rimossa la cancellazione automatica delle news dal client: le news pubblicate piu' vecchie di 30 giorni vengono filtrate in lettura senza eseguire delete dal browser.
+- Aggiunta migrazione `20260531_secure_segnalazioni_rls.sql` per creare/proteggere `segnalazioni` con RLS e gestione admin.
+- Aggiornato lo snippet SQL mostrato nell'area admin per evitare policy permissive `FOR ALL USING (true)`.
+- Evitato il fallback locale come "finto successo" quando Supabase rifiuta modifiche admin per policy RLS.
+- Aggiunta validazione e sanitizzazione dei campi profilo operatore e delle segnalazioni utente.
+- Migliorata la gestione degli errori Supabase in note e preferiti.
+- Aggiunta GitHub Action CI con `npm ci`, lint, test e build.
+- Aggiunto `docs/TASKS_MIGLIORAMENTI.md` con checklist Vercel/Supabase e backlog tecnico.
+- Sincronizzata la versione app a `1.4.7`.
+
+## [1.4.6] - 31 Maggio 2026
+
+### Manutenzione
+
+- Versione preparatoria con aggiornamenti interni e sincronizzazione di versione.
 
 ## [1.4.5] - 27 Maggio 2026
 

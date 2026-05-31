@@ -90,31 +90,19 @@ export const DataProvider = ({ children }) => {
         // Set prontuario (still using mock data)
         setProntuario(mockProntuario);
 
-        // Auto-delete published news older than 30 days
-        const fetchedNews = newsData || mockNews;
+      const fetchedNews = newsData || mockNews;
       const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
       const now = Date.now();
       
-      const validNews = [];
-      const idsToDelete = [];
-      
-      fetchedNews.forEach(item => {
+      const validNews = fetchedNews.filter(item => {
         if (item.pubblicato) {
           const createdAt = new Date(item.data_creazione || item.created_at).getTime();
-          if ((now - createdAt) > THIRTY_DAYS_MS) {
-            idsToDelete.push(item.id);
-            return; // Skip adding to validNews
+          if (Number.isFinite(createdAt) && (now - createdAt) > THIRTY_DAYS_MS) {
+            return false;
           }
         }
-        validNews.push(item);
+        return true;
       });
-
-      // Background deletion from database if configured
-      if (isSupabaseConfigured && supabase && idsToDelete.length > 0) {
-        supabase.from('news').delete().in('id', idsToDelete).then(({ error }) => {
-          if (error) console.error("Error auto-deleting old news:", error);
-        });
-      }
 
       setNews(validNews);
 

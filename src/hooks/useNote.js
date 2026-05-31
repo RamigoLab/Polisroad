@@ -7,15 +7,22 @@ import { useSyncQueue } from './useSyncQueue';
 export const useNote = () => {
   const { session } = useAuth();
   const [note, setNote] = useState({});
+  const [error, setError] = useState(null);
   const { addToQueue } = useSyncQueue();
 
   useEffect(() => {
     const loadNote = async () => {
-      const { data } = await supabase.from('note').select('prontuario_id, testo').eq('user_id', session.user.id);
+      const { data, error } = await supabase.from('note').select('prontuario_id, testo').eq('user_id', session.user.id);
+      if (error) {
+        console.error('Failed to load notes:', error);
+        setError(error);
+        return;
+      }
       if (data) {
         const noteMap = {};
         data.forEach(n => noteMap[n.prontuario_id] = n.testo);
         setNote(noteMap);
+        setError(null);
       }
     };
 
@@ -44,10 +51,10 @@ export const useNote = () => {
         localStorage.setItem('cds_note', JSON.stringify(updated));
         return updated;
       });
-      return;
+      return { error: null };
     }
 
-    if (!session?.user) return;
+    if (!session?.user) return { error: { message: 'Utente non loggato' } };
 
     if (!navigator.onLine) {
       setNote(prev => {
@@ -56,28 +63,40 @@ export const useNote = () => {
         return updated;
       });
       addToQueue('SAVE_NOTE', { prontuarioId, testo });
-      return;
+      return { error: null };
     }
     
     if (!testo || testo.trim() === '') {
-      await supabase.from('note').delete().match({ user_id: session.user.id, prontuario_id: prontuarioId });
+      const { error } = await supabase.from('note').delete().match({ user_id: session.user.id, prontuario_id: prontuarioId });
+      if (error) {
+        console.error('Failed to delete note:', error);
+        setError(error);
+        return { error };
+      }
       setNote(prev => {
         const updated = { ...prev };
         delete updated[prontuarioId];
         return updated;
       });
+      setError(null);
+      return { error: null };
     } else {
       const { error } = await supabase.from('note').upsert(
         { user_id: session.user.id, prontuario_id: prontuarioId, testo: testo },
         { onConflict: 'user_id, prontuario_id' }
       );
-      if (!error) {
-        setNote(prev => ({ ...prev, [prontuarioId]: testo }));
+      if (error) {
+        console.error('Failed to save note:', error);
+        setError(error);
+        return { error };
       }
+      setNote(prev => ({ ...prev, [prontuarioId]: testo }));
+      setError(null);
+      return { error: null };
     }
   };
 
   const getNota = (prontuarioId) => note[prontuarioId] || '';
 
-  return { note, save: salvaNota, getNota, salvaNota };
+  return { note, error, save: salvaNota, getNota, salvaNota };
 };

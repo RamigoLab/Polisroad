@@ -62,11 +62,14 @@ export const AdminSegnalazioni = () => {
     fetchSegnalazioni();
   }, []);
 
+  const isLocalReport = (id) => id?.toString().startsWith('local_');
+
   const handleToggleRisolto = async (item) => {
     const nextRisolto = !item.risolto;
     let success = false;
+    let shouldUseLocalFallback = !isSupabaseConfigured || !supabase || dbError || isLocalReport(item.id);
 
-    if (isSupabaseConfigured && supabase && !dbError) {
+    if (!shouldUseLocalFallback) {
       try {
         const { error } = await supabase
           .from('segnalazioni')
@@ -77,13 +80,15 @@ export const AdminSegnalazioni = () => {
           success = true;
         } else {
           console.warn("Failed to update in Supabase:", error);
+          showToast('Supabase ha rifiutato la modifica. Controlla le policy RLS.', 'error');
         }
       } catch (err) {
         console.error("Supabase toggle exception:", err);
+        shouldUseLocalFallback = true;
       }
     }
 
-    if (!success) {
+    if (!success && shouldUseLocalFallback) {
       // Local or fallback update
       try {
         const local = localStorage.getItem('polisroad_local_segnalazioni');
@@ -107,8 +112,9 @@ export const AdminSegnalazioni = () => {
   const handleDelete = async (id) => {
     if (!window.confirm('Sei sicuro di voler eliminare questa segnalazione?')) return;
     let success = false;
+    let shouldUseLocalFallback = !isSupabaseConfigured || !supabase || dbError || isLocalReport(id);
 
-    if (isSupabaseConfigured && supabase && !dbError) {
+    if (!shouldUseLocalFallback) {
       try {
         const { error } = await supabase
           .from('segnalazioni')
@@ -119,13 +125,15 @@ export const AdminSegnalazioni = () => {
           success = true;
         } else {
           console.warn("Failed to delete in Supabase:", error);
+          showToast('Supabase ha rifiutato l\'eliminazione. Controlla le policy RLS.', 'error');
         }
       } catch (err) {
         console.error("Supabase delete exception:", err);
+        shouldUseLocalFallback = true;
       }
     }
 
-    if (!success) {
+    if (!success && shouldUseLocalFallback) {
       // Local or fallback delete
       try {
         const local = localStorage.getItem('polisroad_local_segnalazioni');
@@ -166,12 +174,48 @@ export const AdminSegnalazioni = () => {
 -- Abilita RLS
 ALTER TABLE public.segnalazioni ENABLE ROW LEVEL SECURITY;
 
--- Criteri di Sicurezza (Policy)
--- 1. Consenti a chiunque di inserire
-CREATE POLICY "Inserimento segnalazioni" ON public.segnalazioni FOR INSERT WITH CHECK (true);
+-- Helper admin: richiede tabella profiles con colonna ruolo
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean
+LANGUAGE sql
+SECURITY DEFINER
+SET search_path = public
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.profiles
+    WHERE id = auth.uid()
+      AND ruolo = 'admin'
+  );
+$$;
 
--- 2. Consenti gestione completa
-CREATE POLICY "Gestione segnalazioni" ON public.segnalazioni FOR ALL USING (true);`;
+-- Criteri di Sicurezza (Policy)
+-- 1. Consenti agli utenti autenticati di inviare segnalazioni
+CREATE POLICY "Inserimento segnalazioni autenticati"
+ON public.segnalazioni
+FOR INSERT
+TO authenticated
+WITH CHECK (true);
+
+-- 2. Consenti lettura e gestione solo agli admin
+CREATE POLICY "Lettura segnalazioni admin"
+ON public.segnalazioni
+FOR SELECT
+TO authenticated
+USING (public.is_admin());
+
+CREATE POLICY "Aggiornamento segnalazioni admin"
+ON public.segnalazioni
+FOR UPDATE
+TO authenticated
+USING (public.is_admin())
+WITH CHECK (public.is_admin());
+
+CREATE POLICY "Eliminazione segnalazioni admin"
+ON public.segnalazioni
+FOR DELETE
+TO authenticated
+USING (public.is_admin());`;
 
   return (
     <div>

@@ -14,6 +14,7 @@ import { BADGES } from '../config/badges';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } from '../config/constants';
+import { sanitizers, validators } from '../utils/validation';
 
 const DataRow = ({ label, value, icon }) => (
   <div style={S.dataRow}>
@@ -82,14 +83,21 @@ export const Profilo = ({ onNavigate }) => {
 
   const handleSendReport = async (e) => {
     e.preventDefault();
-    if (!reportDetails.trim()) return;
+    const detailsRequiredError = validators.required(reportDetails, 'Dettagli');
+    const detailsLengthError = validators.maxLength(reportDetails, 1000, 'Dettagli');
+    if (detailsRequiredError || detailsLengthError) {
+      showToast(detailsRequiredError || detailsLengthError, 'error');
+      return;
+    }
     setReportSending(true);
 
-    const operatoreNome = `${profile?.grado || ''} ${profile?.nome || ''} ${profile?.cognome || ''}`.trim() || 'Operatore Anonimo';
-    const operatoreEmail = profile?.email || 'Nessuna';
+    const safeReportType = sanitizers.text(reportType);
+    const safeReportDetails = sanitizers.text(reportDetails);
+    const operatoreNome = sanitizers.text(`${profile?.grado || ''} ${profile?.nome || ''} ${profile?.cognome || ''}`) || 'Operatore Anonimo';
+    const operatoreEmail = profile?.email ? sanitizers.text(profile.email) : 'Nessuna';
     const reportData = {
-      tipo: reportType,
-      dettagli: reportDetails,
+      tipo: safeReportType,
+      dettagli: safeReportDetails,
       email: operatoreEmail,
       operatore: operatoreNome,
       created_at: new Date().toISOString(),
@@ -122,16 +130,16 @@ export const Profilo = ({ onNavigate }) => {
     showToast('Segnalazione registrata con successo!', 'success');
 
     // Prepara e lancia mailto
-    const subject = encodeURIComponent(`[PolisRoad Segnalazione] ${reportType}`);
+    const subject = encodeURIComponent(`[PolisRoad Segnalazione] ${safeReportType}`);
     const body = encodeURIComponent(
       `--- SEGNALAZIONE PROBLEMA POLISROAD ---\n` +
-      `Tipo: ${reportType}\n` +
+      `Tipo: ${safeReportType}\n` +
       `Data: ${new Date().toLocaleString()}\n` +
       `Versione App: ${APP_VERSION}\n` +
       `Operatore: ${operatoreNome}\n` +
       `Email: ${operatoreEmail}\n` +
       `---------------------------------------\n\n` +
-      `Dettagli:\n${reportDetails}\n`
+      `Dettagli:\n${safeReportDetails}\n`
     );
     window.location.href = `mailto:admin@polisroad.it?subject=${subject}&body=${body}`;
 
@@ -140,8 +148,35 @@ export const Profilo = ({ onNavigate }) => {
   };
 
   const handleSave = async () => {
+    const emailError = formData.email ? validators.email(formData.email.trim().toLowerCase()) : null;
+    const requiredError =
+      validators.required(formData.nome, 'Nome') ||
+      validators.required(formData.cognome, 'Cognome') ||
+      validators.required(formData.grado, 'Grado') ||
+      validators.required(formData.forza, 'Forza di Polizia');
+    const lengthError =
+      validators.maxLength(formData.nome, 80, 'Nome') ||
+      validators.maxLength(formData.cognome, 80, 'Cognome') ||
+      validators.maxLength(formData.grado, 80, 'Grado') ||
+      validators.maxLength(formData.forza, 120, 'Forza di Polizia') ||
+      validators.maxLength(formData.telefono || '', 30, 'Telefono');
+
+    if (requiredError || emailError || lengthError) {
+      showToast(requiredError || emailError || lengthError, 'error');
+      return;
+    }
+
+    const sanitizedProfile = {
+      grado: sanitizers.text(formData.grado),
+      nome: sanitizers.text(formData.nome),
+      cognome: sanitizers.text(formData.cognome),
+      forza: sanitizers.text(formData.forza),
+      email: formData.email.trim().toLowerCase(),
+      telefono: sanitizers.text(formData.telefono || ''),
+    };
+
     setSaveLoading(true);
-      const { error } = await updateProfile(formData);
+      const { error } = await updateProfile(sanitizedProfile);
       if (error) showToast('Errore nel salvataggio: ' + error.message, 'error');
       else { showToast('Profilo aggiornato!', 'success'); setIsEditing(false); }
       setSaveLoading(false);

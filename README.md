@@ -2,7 +2,7 @@
 
 Progressive Web App React/Vite per consultazione rapida del Codice della Strada, prontuario, preferiti, calcolo sanzioni, news, profilo operatore e funzioni admin.
 
-Versione corrente: **1.4.6**
+Versione corrente: **1.4.7**
 
 ## Stack
 
@@ -69,12 +69,11 @@ Su Vercel o servizi simili:
 
 Output di produzione: `dist/`.
 
-## Note versione 1.4.5
+## Note versione 1.4.7
 
-- Header blu unificato su Home, Prontuario, Normativa, Ricerca, Calcolatore, News, Links, Preferiti e Profilo.
-- Nuovo componente condiviso `src/components/layout/AppHeader.jsx`, integrato in `PageWrapper`.
-- Logo PolisRoad sempre disponibile nell'header per tornare alla home.
-- Home mantenuta con saluto operatore e pulsante "Ricerca Rapida" a tutta larghezza.
-- Dettagli Prontuario e Normativa aggiornati con header coerente e pulsante indietro.
-- Modalita' Operatore e Area Admin restano volutamente con layout dedicato.
-- Documentazione tecnica in `docs/IMPLEMENTAZIONE_1.4.1_HEADER_UNIFICATO.md`.
+- Rafforzata la gestione Supabase/Vercel: migrazione RLS per `segnalazioni` e snippet SQL admin non permissivo.
+- Rimossa la cancellazione automatica delle news dal client: le news scadute vengono filtrate in lettura.
+- Aggiunta validazione/sanitizzazione per profilo operatore e segnalazioni.
+- Migliorata la gestione errori per note e preferiti.
+- Aggiunta GitHub Action CI con lint, test e build.
+- Aggiunto documento operativo `docs/TASKS_MIGLIORAMENTI.md`.

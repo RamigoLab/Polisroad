@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { C } from '../styles/theme';
+import { APP_VERSION } from '../config/constants';
 
 const PwaUpdater = () => {
   const {
@@ -51,7 +52,7 @@ const PwaUpdater = () => {
               <span>
                 <strong style={{ color: C.primary }}>🚀 Nuovo aggiornamento disponibile!</strong>
                 <br />
-                <small>Scarica le nuove normative e correzioni (v1.4.6)</small>
+                <small>Scarica le nuove normative e correzioni (v{APP_VERSION})</small>
               </span>
             )}
           </div>
