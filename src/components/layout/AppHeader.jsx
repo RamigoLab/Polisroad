@@ -41,7 +41,9 @@ export const AppHeader = ({
           {title && (
             <h2 style={LS.appHeaderTitle}>
               {title}
-              {featuredBadge && <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>}
+              {featuredBadge && title !== "Profilo Operatore" && (
+                <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>
+              )}
             </h2>
           )}
           {meta && <p style={LS.appHeaderMeta}>{meta}</p>}
