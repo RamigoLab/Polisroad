@@ -431,6 +431,7 @@ export const PS = {
     alignItems: 'center',
     fontSize: '2rem',
     boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+    position: 'relative',
   },
   profileHeaderName: {
     color: '#fff',
