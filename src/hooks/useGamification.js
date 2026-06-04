@@ -210,6 +210,30 @@ export const useGamification = () => {
     setStats(prev => ({ ...prev, featured_badge: badgeId }));
   }, [userId]);
 
+  const resetContestazioni = useCallback(async () => {
+    if (!userId || !stats || !isSupabaseConfigured || !supabase) {
+      setStats(prev => prev ? { ...prev, total_contestazioni: 0 } : prev);
+      return { error: null };
+    }
+
+    try {
+      const { error: err } = await supabase
+        .from('gamification')
+        .update({
+          total_contestazioni: 0,
+          updated_at: new Date()
+        })
+        .eq('user_id', userId);
+      if (err) throw err;
+
+      setStats(prev => ({ ...prev, total_contestazioni: 0 }));
+      return { error: null };
+    } catch (e) {
+      console.error('resetContestazioni error:', e);
+      return { error: e };
+    }
+  }, [userId, stats]);
+
   // ---------------------------------------------------------------------------
   // Expose helpers
   // ---------------------------------------------------------------------------
@@ -222,6 +246,7 @@ export const useGamification = () => {
     getUnlockedBadges,
     checkNewBadges,
     setFeaturedBadge,
+    resetContestazioni,
     level: stats?.level || 1,
     xp: stats?.xp || 0,
     currentStreak: stats?.current_streak || 0,

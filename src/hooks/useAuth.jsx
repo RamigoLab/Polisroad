@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [userCount, setUserCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   const fetchUserCount = async () => {
     if (!isSupabaseConfigured || !supabase) {
@@ -76,7 +77,8 @@ export const AuthProvider = ({ children }) => {
       else setLoading(false);
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      setPasswordRecovery(event === 'PASSWORD_RECOVERY');
       setSession(session);
       if (session) fetchProfile(session.user.id);
       else {
@@ -125,6 +127,34 @@ export const AuthProvider = ({ children }) => {
     return { data, error: null };
   };
 
+  const resetPassword = async (email) => {
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: { message: 'Recupero password non disponibile: Supabase non configurato.' } };
+    }
+
+    try {
+      return await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin,
+      });
+    } catch {
+      return { error: { message: 'Errore durante la richiesta di recupero password.' } };
+    }
+  };
+
+  const updatePassword = async (password) => {
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: { message: 'Aggiornamento password non disponibile: Supabase non configurato.' } };
+    }
+
+    try {
+      const result = await supabase.auth.updateUser({ password });
+      if (!result.error) setPasswordRecovery(false);
+      return result;
+    } catch {
+      return { error: { message: 'Errore durante l\'aggiornamento della password.' } };
+    }
+  };
+
   const signOut = async () => {
     if (!isSupabaseConfigured || !supabase) {
       localStorage.removeItem('polisroad_demo_session');
@@ -154,7 +184,21 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ session, profile, userCount, loading, signIn, signUp, signOut, updateProfile, refreshUserCount: fetchUserCount }}>
+    <AuthContext.Provider value={{
+      session,
+      profile,
+      userCount,
+      loading,
+      passwordRecovery,
+      signIn,
+      signUp,
+      signOut,
+      resetPassword,
+      updatePassword,
+      updateProfile,
+      clearPasswordRecovery: () => setPasswordRecovery(false),
+      refreshUserCount: fetchUserCount
+    }}>
       {children}
     </AuthContext.Provider>
   );

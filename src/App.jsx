@@ -36,7 +36,7 @@ import { Toast } from './components/ui/Toast';
 import { getItem, setItem, removeItem } from './utils/storage';
 
 function App() {
-  const { session, loading: authLoading } = useAuth();
+  const { session, loading: authLoading, passwordRecovery } = useAuth();
   const { loading: dataLoading, error: dataError } = useData();
   
   // Initialize gamification on app load
@@ -106,6 +106,10 @@ function App() {
 
   if (!session) {
     return <Auth />;
+  }
+
+  if (passwordRecovery) {
+    return <Auth passwordUpdateMode />;
   }
 
   const renderPage = () => {

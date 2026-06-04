@@ -46,6 +46,7 @@ export const Profilo = ({ onNavigate }) => {
     telefono: profile?.telefono || '',
   });
   const [saveLoading, setSaveLoading] = useState(false);
+  const [resetContestazioniLoading, setResetContestazioniLoading] = useState(false);
   const { showToast } = useToast();
 
   const { isDarkMode, toggleTheme } = useTheme();
@@ -62,6 +63,7 @@ export const Profilo = ({ onNavigate }) => {
     longestStreak,
     featuredBadge: featuredBadgeId,
     unlockedBadges,
+    resetContestazioni,
   } = useGamificationContext();
 
   // featuredBadge nel context è una stringa ID; lo risolviamo nell'oggetto badge completo
@@ -197,6 +199,24 @@ export const Profilo = ({ onNavigate }) => {
     setIsEditing(false);
   };
 
+  const handleResetContestazioni = async () => {
+    const total = stats?.total_contestazioni || 0;
+    if (total <= 0) {
+      showToast('Il contatore contestazioni e gia a zero.', 'success');
+      return;
+    }
+
+    const confirmed = window.confirm('Vuoi azzerare le contestazioni effettuate? Questa operazione aggiorna il tuo profilo.');
+    if (!confirmed) return;
+
+    setResetContestazioniLoading(true);
+    const { error } = await resetContestazioni();
+    setResetContestazioniLoading(false);
+
+    if (error) showToast('Errore durante l\'azzeramento: ' + error.message, 'error');
+    else showToast('Contestazioni azzerate.', 'success');
+  };
+
 
 
   return (
@@ -256,6 +276,20 @@ export const Profilo = ({ onNavigate }) => {
               <DataRow label="Contatto Telefonico" value={profile?.telefono} icon="📱" />
               <div style={{ margin: '16px 0', padding: '16px', backgroundColor: C.accentLight, borderRadius: '12px' }}>
                 <DataRow label="Contestazioni Effettuate" value={stats?.total_contestazioni || 0} icon="🚨" />
+                <button
+                  onClick={handleResetContestazioni}
+                  disabled={resetContestazioniLoading || loading}
+                  style={{
+                    ...S.btnDanger,
+                    width: '100%',
+                    marginTop: '12px',
+                    padding: '10px 12px',
+                    opacity: resetContestazioniLoading || loading ? 0.7 : 1,
+                    cursor: resetContestazioniLoading || loading ? 'not-allowed' : 'pointer'
+                  }}
+                >
+                  {resetContestazioniLoading ? 'Azzeramento...' : 'Azzera contestazioni'}
+                </button>
               </div>
               <button onClick={() => setIsEditing(true)} style={S.btnOutline}>⚙️ Modifica Profilo</button>
             </>

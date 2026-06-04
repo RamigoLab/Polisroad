@@ -4,6 +4,22 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.4.9] - 4 Giugno 2026
+
+### Sicurezza & Supabase
+- **Recupero Password**: Aggiunto il flusso Supabase per richiesta reset password e impostazione della nuova password al rientro dal link email.
+- **Conferma Email**: Aggiornata l'esperienza di registrazione per supportare account che richiedono conferma email prima del primo accesso.
+- **RLS Gamification**: Aggiunta migrazione `20260604_secure_gamification_rls.sql` per proteggere `gamification` e `xp_history`, limitando lettura, inserimento e aggiornamento ai dati del proprio utente.
+
+### Profilo & Gamification
+- **Azzeramento Contestazioni**: Aggiunto nella pagina Profilo il pulsante per azzerare le "Contestazioni Effettuate", con conferma utente e aggiornamento persistente su Supabase.
+- **Stato UI Coerente**: Aggiornato lo stato locale della gamification dopo l'azzeramento per riflettere subito il valore corretto senza refresh.
+
+### Correzioni UX
+- **Toast Auth**: I messaggi positivi di registrazione, recupero password e aggiornamento password ora vengono mostrati come notifiche di successo invece che come errore.
+
+---
+
 ## [1.4.8] - 4 Giugno 2026
 
 ### 🛡️ Sicurezza
@@ -402,4 +418,4 @@ Per problemi o domande:
 
 **PolisRoad Development Team** ❤️
 
-*Versione 1.4.8 - 4 Giugno 2026*
+*Versione 1.4.9 - 4 Giugno 2026*

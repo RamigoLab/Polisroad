@@ -15,6 +15,7 @@ export const GamificationProvider = ({ children }) => {
     checkNewBadges,
     getUnlockedBadges,
     setFeaturedBadge,
+    resetContestazioni,
     level,
     xp,
     currentStreak,
@@ -57,7 +58,8 @@ export const GamificationProvider = ({ children }) => {
     updateStreak,
     checkNewBadges,
     getUnlockedBadges,
-    setFeaturedBadge
+    setFeaturedBadge,
+    resetContestazioni
   };
 
   return (
