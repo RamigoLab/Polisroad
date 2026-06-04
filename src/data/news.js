@@ -12,8 +12,8 @@ export const mockNews = [
   },
   {
     id: "nw2",
-    titolo: "Aggiornamento Prontuario 2024",
-    contenuto: "Sono stati aggiornati gli importi delle sanzioni pecuniarie per le violazioni al Codice della Strada in vigore dal 1 gennaio 2024.",
+    titolo: "Aggiornamento Prontuario 2026",
+    contenuto: "Sono stati aggiornati gli importi delle sanzioni pecuniarie per le violazioni al Codice della Strada in vigore dal 1 gennaio 2026.",
     fonte: "Gazzetta Ufficiale",
     url_fonte: "https://www.gazzettaufficiale.it",
     categoria: "Aggiornamenti",

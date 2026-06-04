@@ -7,6 +7,7 @@ import { useProntuario } from '../../hooks/useProntuario';
 import { useNormativa } from '../../hooks/useNormativa';
 import { useAuth } from '../../hooks/useAuth';
 import { DB_VERSION_CDS, SYSTEM_STATUS } from '../../config/constants';
+import { supabase, isSupabaseConfigured } from '../../config/supabase';
 
 export const AdminDashboard = () => {
   const { list: newsList } = useNews();
@@ -75,8 +76,10 @@ export const AdminDashboard = () => {
             <span style={S.valueSuccess}>{SYSTEM_STATUS}</span>
           </div>
           <div style={S.infoRow}>
-            <span style={{ color: C.textLight }}>Ultimo Backup:</span>
-            <span style={S.valueText}>Oggi, 03:00 AM</span>
+            <span style={{ color: C.textLight }}>Stato Backup:</span>
+            <span style={S.valueText}>
+              {isSupabaseConfigured && supabase ? 'Gestito da Supabase (Giornaliero automatico)' : 'Non disponibile (Database locale / Demo)'}
+            </span>
           </div>
         </div>
       </div>

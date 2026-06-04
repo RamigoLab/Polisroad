@@ -4,6 +4,26 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.4.8] - 4 Giugno 2026
+
+### 🛡️ Sicurezza
+- **Rate Limiter Persistente**: Salvataggio dei tentativi di login e del blocco temporaneo in `localStorage` per evitare bypass tramite ricaricamento della pagina.
+- **Protezione Ruolo Admin (Supabase)**: Aggiunta migrazione `20260604_secure_profiles_rls.sql` contenente trigger e policy RLS per bloccare l'auto-assegnazione del ruolo amministratore via API client.
+- **Lettura Segnalazioni Personali**: Aggiornata la policy RLS su `segnalazioni` consentendo agli operatori autenticati di consultare le proprie segnalazioni oltre agli admin.
+- **Race Condition in ProtectedRoute**: Risolto il problema di visualizzazione momentanea dell'area amministrativa attendendo il caricamento del profilo se c'è una sessione attiva.
+
+### 🔧 Correzioni & Incongruenze Funzionali
+- **Ritardo Invio Segnalazione**: Aggiunto un ritardo di 1 secondo prima del redirect `mailto:` per garantire la visualizzazione del toast di successo.
+- **Stato Backup Dinamico**: Sostituito il testo hardcoded del backup nella dashboard admin con un'indicazione reale dello stato (attivo su Supabase o non disponibile in locale/demo).
+- **Snippet SQL Aggiornato**: Corretto lo snippet SQL visualizzato in `AdminSegnalazioni.jsx` per includere le nuove policy di lettura personale.
+- **Aggiornamento Mock News al 2026**: Spostata la data e il titolo delle news di fallback dal 2024 al 2026.
+- **Onesto Fallback Conteggio Utenti**: Sostituito il fallback di `userCount` da 124 a `1` (se in demo mode) o `0`.
+
+### 🧹 Pulizia del Repository
+- Rimosse le utility non utilizzate e i file di debug dalla root: `scratch_colors.js`, `scratch_colors.cjs` e `fetch_normativa.js`.
+
+---
+
 ## [1.4.7] - 31 Maggio 2026
 
 ### 🚀 Nuove Funzionalità
@@ -382,4 +402,4 @@ Per problemi o domande:
 
 **PolisRoad Development Team** ❤️
 
-*Versione 1.4.4 - 24 Maggio 2026*
+*Versione 1.4.8 - 4 Giugno 2026*

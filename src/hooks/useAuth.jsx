@@ -24,7 +24,7 @@ export const AuthProvider = ({ children }) => {
 
   const fetchUserCount = async () => {
     if (!isSupabaseConfigured || !supabase) {
-      setUserCount(124);
+      setUserCount(isDemoMode ? 1 : 0);
       return;
     }
     try {

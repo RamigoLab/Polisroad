@@ -1,7 +1,7 @@
 // Set VITE_USE_SUPABASE=false in .env to force local mock data.
 export const USE_SUPABASE = import.meta.env.VITE_USE_SUPABASE !== 'false';
 
-export const APP_VERSION = '1.4.7';
+export const APP_VERSION = '1.4.8';
 export const APP_NAME = 'PolisRoad';
 
 // Versioni dei Database

@@ -41,7 +41,7 @@ CREATE POLICY "Lettura segnalazioni admin"
 ON public.segnalazioni
 FOR SELECT
 TO authenticated
-USING (public.is_admin());
+USING (public.is_admin() OR email = (auth.jwt() ->> 'email'));
 
 CREATE POLICY "Aggiornamento segnalazioni admin"
 ON public.segnalazioni

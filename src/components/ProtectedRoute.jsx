@@ -13,19 +13,20 @@ import { useAuth } from '../hooks/useAuth';
  */
 export const ProtectedRoute = ({ requiredRole, fallback = null, onNavigate, children }) => {
   const { session, profile, loading } = useAuth();
+  const isProfileLoading = session && !profile;
 
   // Session may be null while loading; we wait.
   useEffect(() => {
-    if (!loading && (!session || (requiredRole && profile?.ruolo !== requiredRole))) {
+    if (!loading && !isProfileLoading && (!session || (requiredRole && profile?.ruolo !== requiredRole))) {
       if (onNavigate) {
         onNavigate('home');
       } else {
         window.location.href = '/';
       }
     }
-  }, [loading, session, profile, requiredRole, onNavigate]);
+  }, [loading, isProfileLoading, session, profile, requiredRole, onNavigate]);
 
-  if (loading) {
+  if (loading || isProfileLoading) {
     return fallback;
   }
   if (!session) {

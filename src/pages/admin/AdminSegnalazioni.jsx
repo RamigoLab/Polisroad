@@ -197,12 +197,12 @@ FOR INSERT
 TO authenticated
 WITH CHECK (true);
 
--- 2. Consenti lettura e gestione solo agli admin
-CREATE POLICY "Lettura segnalazioni admin"
+-- 2. Consenti lettura agli admin e le proprie segnalazioni agli utenti
+CREATE POLICY "Lettura segnalazioni admin e proprie"
 ON public.segnalazioni
 FOR SELECT
 TO authenticated
-USING (public.is_admin());
+USING (public.is_admin() OR email = (auth.jwt() ->> 'email'));
 
 CREATE POLICY "Aggiornamento segnalazioni admin"
 ON public.segnalazioni

@@ -129,22 +129,25 @@ export const Profilo = ({ onNavigate }) => {
     setReportSending(false);
     showToast('Segnalazione registrata con successo!', 'success');
 
-    // Prepara e lancia mailto
-    const subject = encodeURIComponent(`[PolisRoad Segnalazione] ${safeReportType}`);
-    const body = encodeURIComponent(
-      `--- SEGNALAZIONE PROBLEMA POLISROAD ---\n` +
-      `Tipo: ${safeReportType}\n` +
-      `Data: ${new Date().toLocaleString()}\n` +
-      `Versione App: ${APP_VERSION}\n` +
-      `Operatore: ${operatoreNome}\n` +
-      `Email: ${operatoreEmail}\n` +
-      `---------------------------------------\n\n` +
-      `Dettagli:\n${safeReportDetails}\n`
-    );
-    window.location.href = `mailto:admin@polisroad.it?subject=${subject}&body=${body}`;
-
+    // Reset immediato dei dettagli del form e chiusura
     setReportDetails('');
     setReportOpen(false);
+
+    // Prepara e lancia mailto dopo un breve delay per mostrare il toast
+    setTimeout(() => {
+      const subject = encodeURIComponent(`[PolisRoad Segnalazione] ${safeReportType}`);
+      const body = encodeURIComponent(
+        `--- SEGNALAZIONE PROBLEMA POLISROAD ---\n` +
+        `Tipo: ${safeReportType}\n` +
+        `Data: ${new Date().toLocaleString()}\n` +
+        `Versione App: ${APP_VERSION}\n` +
+        `Operatore: ${operatoreNome}\n` +
+        `Email: ${operatoreEmail}\n` +
+        `---------------------------------------\n\n` +
+        `Dettagli:\n${safeReportDetails}\n`
+      );
+      window.location.href = `mailto:admin@polisroad.it?subject=${subject}&body=${body}`;
+    }, 1000);
   };
 
   const handleSave = async () => {

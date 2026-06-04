@@ -1,16 +1,36 @@
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 
-export const loginRateLimiter = {
-  // Memorizza tentativi falliti
-  attempts: new Map(),
+const getStorageAttempts = () => {
+  try {
+    const raw = localStorage.getItem('polisroad_login_attempts');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      return new Map(Object.entries(parsed));
+    }
+  } catch (e) {
+    console.error("Error reading rate limit attempts:", e);
+  }
+  return new Map();
+};
 
+const saveStorageAttempts = (map) => {
+  try {
+    const obj = Object.fromEntries(map.entries());
+    localStorage.setItem('polisroad_login_attempts', JSON.stringify(obj));
+  } catch (e) {
+    console.error("Error saving rate limit attempts:", e);
+  }
+};
+
+export const loginRateLimiter = {
   canAttempt: (emailOrIp) => {
     const key = emailOrIp;
     const now = Date.now();
+    const attempts = getStorageAttempts();
 
-    if (loginRateLimiter.attempts.has(key)) {
-      const { count, lockedUntil } = loginRateLimiter.attempts.get(key);
+    if (attempts.has(key)) {
+      const { count, lockedUntil } = attempts.get(key);
 
       if (now < lockedUntil) {
         return {
@@ -21,7 +41,8 @@ export const loginRateLimiter = {
 
       // Reset after lockout
       if (count >= MAX_LOGIN_ATTEMPTS) {
-        loginRateLimiter.attempts.delete(key);
+        attempts.delete(key);
+        saveStorageAttempts(attempts);
         return { allowed: true };
       }
     }
@@ -32,27 +53,31 @@ export const loginRateLimiter = {
   recordAttempt: (emailOrIp, success) => {
     const key = emailOrIp;
     const now = Date.now();
+    const attempts = getStorageAttempts();
 
     if (success) {
       // Cancella tentativi falliti dopo login riuscito
-      loginRateLimiter.attempts.delete(key);
+      attempts.delete(key);
+      saveStorageAttempts(attempts);
       return;
     }
 
     // Registra tentativo fallito
-    const current = loginRateLimiter.attempts.get(key) || { count: 0, lockedUntil: 0 };
+    const current = attempts.get(key) || { count: 0, lockedUntil: 0 };
     const newCount = current.count + 1;
 
     if (newCount >= MAX_LOGIN_ATTEMPTS) {
-      loginRateLimiter.attempts.set(key, {
+      attempts.set(key, {
         count: newCount,
         lockedUntil: now + LOCKOUT_DURATION
       });
     } else {
-      loginRateLimiter.attempts.set(key, {
+      attempts.set(key, {
         count: newCount,
         lockedUntil: current.lockedUntil
       });
     }
+    saveStorageAttempts(attempts);
   }
 };
+
