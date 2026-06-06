@@ -543,15 +543,8 @@ export const PS = {
     fontWeight: 'bold',
     fontSize: '1.2rem',
   },
-  operatoreExitBtn: {
-  backgroundColor: 'rgba(0,0,0,0.3)',
-  color: '#fff',
-  fontSize: '0.8rem',
-  padding: '6px 12px',
-  borderRadius: '4px',
-  fontWeight: 'bold',
-},
-    backgroundColor: 'rgba(255,255,255,0.2)',
+operatoreExitBtn: {
+    backgroundColor: 'rgba(0,0,0,0.3)',
     color: '#fff',
     fontSize: '0.8rem',
     padding: '6px 12px',
