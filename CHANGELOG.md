@@ -6,27 +6,40 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ## [1.5.0] - 6 Giugno 2026
 
-### Bug Dark Mode
-- **Sfondo Frecce BottomNav**: Sostituiti i gradienti hardcodati con la variabile CSS `--bg-card` per la corretta trasparenza in dark mode (`src/styles/layout.js`).
-- **Home Comunicazioni & Popups**: Cambiato lo sfondo delle notifiche e dei popup in `C.card` (`src/pages/Home.jsx`).
-- **Normativa & Links**: Sostituiti sfondi bianchi inline con `C.card` nei commi e nella lista link (`src/pages/Normativa.jsx`, `src/pages/Links.jsx`).
-- **Auth & Admin**: Aggiornato il box del form di login/registrazione e le card di amministrazione normativa per usare `C.card` (`src/pages/Auth.jsx`, `src/pages/admin/AdminNormativa.jsx`).
+### ⚖️ GDPR & Compliance
 
-### UX & Navigazione
-- **BottomNav**: Aumentata la dimensione del font delle label dei tab a `0.7rem`.
-- **Pagina Operatore**: Aumentato lo spazio sopra l'intestazione dei preferiti (`src/styles/pages.js`).
-- **Normativa**: Aggiunto un pulsante in linea "← Indietro" in cima al contenuto delle sezioni Capo ed Articolo per facilitare la navigazione.
+- **Privacy Policy**: Aggiunta pagina `Privacy.jsx` con informativa completa ai sensi del GDPR (Reg. UE 2016/679), accessibile dalla Home e dal Profilo.
+- **Termini di Servizio**: Aggiunta pagina `TerminiServizio.jsx` con termini d'uso, limitazione di responsabilità sul contenuto normativo e legge applicabile.
+- **Consenso alla Registrazione**: Aggiunto checkbox obbligatorio nel form di registrazione con link a Privacy Policy e Termini di Servizio — il pulsante "Registrati" è disabilitato finché l'utente non accetta.
+- **Link Legali in Login**: Aggiunto in fondo al form di login un link discreto a Privacy Policy e Termini di Servizio.
+- **Card Legale in Home**: Aggiunta in fondo alla Home una card con link a Privacy Policy, Termini di Servizio e versione app.
+- **Documenti Legali in Profilo**: Aggiunta sezione "Documenti legali" in Profilo con link alle due pagine.
+- **Eliminazione Account**: Aggiunta sezione "Zona pericolosa" in Profilo con flusso di eliminazione account a doppia conferma — cancella profilo, gamification e cronologia XP da Supabase e disconnette l'utente.
+- **RLS Supabase — Cancellazione**: Aggiunte tre policy RLS per consentire agli utenti autenticati di cancellare esclusivamente i propri record su `profiles`, `gamification` e `xp_history`.
 
-### GDPR & Policy
-- **Pagine Legali**: Create le nuove pagine dedicate `Privacy Policy` e `Termini di Servizio` (`src/pages/Privacy.jsx`, `src/pages/TerminiServizio.jsx`).
-- **Card Informazioni Legali**: Aggiunta una card con i link a Privacy e Termini in fondo alla Homepage.
-- **Checkbox di Consenso**: Aggiunto un checkbox obbligatorio per l'accettazione dei termini e della privacy durante la registrazione ed un disclaimer con link nella schermata di login (`src/pages/Auth.jsx`).
-- **Eliminazione Account**: Aggiunta una sezione "Zona Pericolosa" nel profilo con conferma in due passaggi e cancellazione client-side dei record associati all'utente (`profiles`, `gamification`, `xp_history`).
+### 🌙 Dark Mode — Correzioni
 
-### Grafica & Estetica
-- **Animazione Pulsante Operatore**: Aggiunto un keyframe animato `operatorePulse` per un effetto pulsazione sul pulsante "ATTIVA MODALITÀ OPERATORE".
-- **Font Sora**: Importato Google Fonts Sora ed impostato su `--font-display` per i titoli principali.
-- **Accento Gamification**: Introdotta la variabile `--color-xp` per colorare gli elementi di gamification in modo coerente e caldo (barre progresso livello, streak e badge).
+- **Frecce BottomNav**: Corretti i gradient `navFadeLeft` e `navFadeRight` in `layout.js` — sostituito `rgba(255,255,255,1)` con `var(--bg-card)` per eliminare l'alone bianco visibile in dark mode.
+- **Card Notifiche Home**: Sostituito `backgroundColor: '#fff'` hardcodato con `C.card` nelle card delle comunicazioni.
+- **Blocchi Commi Normativa**: Sostituito `backgroundColor: '#fff'` hardcodato con `C.card` nei blocchi dei commi degli articoli.
+- **Card Links**: Sostituito `backgroundColor: '#fff'` hardcodato con `C.card` nelle card della pagina Link Istituzionali.
+- **Form Auth**: Sostituito `backgroundColor: '#fff'` hardcodato con `C.card` nel contenitore del form di login e registrazione.
+- **Card Commi AdminNormativa**: Rimosso `backgroundColor: '#fff'` dall'override inline della riga 409 — lo stile `C.card` ereditato è ora corretto in entrambi i temi.
+
+### 🎨 Grafica & Stile
+
+- **Accento XP Warm**: Aggiunta variabile CSS `--color-xp` (`#e8a020` in light, `#f5b942` in dark) applicata ai componenti `LevelProgress`, `StreakCounter` e `BadgeShowcase` per differenziare visivamente la gamification dal resto dell'interfaccia.
+- **Pulse Pulsante Operatore**: Aggiunta animazione `operatorePulse` al pulsante "Attiva Modalità Operatore" in Home per migliorare la visibilità dell'azione principale.
+- **Font Display Sora**: Aggiunto import Google Fonts `Sora` (700, 800) e variabile `--font-display` applicata ai titoli principali delle sezioni.
+
+### 🔧 UX
+
+- **Label BottomNav**: Aumentata la dimensione del testo delle label da `0.65rem` a `0.7rem` per migliorare la leggibilità in condizioni operative.
+- **Auth con onNavigate**: Il componente `Auth` ora riceve `onNavigate` come prop da `App.jsx`, abilitando la navigazione verso Privacy Policy e Termini direttamente dalla schermata di accesso.
+
+### 📦 Configurazione
+
+- Versione aggiornata a `1.5.0` in `package.json` e `constants.js`.
 
 ---
 
