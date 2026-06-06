@@ -1,5 +1,13 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.5.1] - 6 Giugno 2026
+
+### 🔎 Ricerca Normativa migliorata
+- Quando la barra di ricerca contiene **solo numeri** (es. `186`), l’articolo corrispondente viene mostrato **primo** nella sezione **Articoli Normativa**, seguito dagli altri risultati.
+- Implementato ri‑ordinamento dei risultati in `src/hooks/useSearch.js`.
+
+## [1.5.0] - 6 Giugno 2026
+
 Tutte le modifiche significative a questo progetto saranno documentate in questo file.
 
 ---

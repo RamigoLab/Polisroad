@@ -29,10 +29,19 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
   const risultatiNormativa = useMemo(() => {
     if (debouncedSearch.length < minChars) return [];
     const terms = debouncedSearch.toLowerCase().split(/\s+/).filter(Boolean);
-    return normativaList.filter(item => {
+    const filtered = normativaList.filter(item => {
       const text = `${item.titolo || ''} ${item.titolo_articolo || ''} ${item.testo || ''} ${item.articolo || ''}`.toLowerCase();
       return terms.every(term => text.includes(term)) || (item.articolo_num && item.articolo_num.toString() === debouncedSearch);
     });
+    // If the search is a pure numeric string, prioritize the exact article match
+    if (/^\d+$/.test(debouncedSearch)) {
+      const exactIndex = filtered.findIndex(item => item.articolo_num && item.articolo_num.toString() === debouncedSearch);
+      if (exactIndex > 0) {
+        const [exactItem] = filtered.splice(exactIndex, 1);
+        filtered.unshift(exactItem);
+      }
+    }
+    return filtered;
   }, [debouncedSearch, normativaList, minChars]);
 
   const total = risultatiProntuario.length + risultatiNormativa.length;
