@@ -58,13 +58,13 @@ export const BadgeShowcase = ({ unlockedBadges, featuredBadge, onSelect }) => {
                   gap: '6px',
                   padding: '14px 8px',
                   backgroundColor: isFeatured
-                    ? '#1a7a5e'
+                    ? 'var(--color-xp)'
                     : isUnlocked
                       ? '#f0faf5'
                       : '#f5f5f5',
                   color: isFeatured ? '#fff' : isUnlocked ? C.text : '#bbb',
                   border: isFeatured
-                    ? '2px solid #15664d'
+                    ? '2px solid var(--color-xp)'
                     : isUnlocked
                       ? `1px solid ${C.border}`
                       : '1px solid #e0e0e0',
@@ -74,7 +74,7 @@ export const BadgeShowcase = ({ unlockedBadges, featuredBadge, onSelect }) => {
                   transition: 'all 0.2s ease',
                   position: 'relative',
                   boxShadow: isFeatured
-                    ? '0 4px 12px rgba(26, 122, 94, 0.3)'
+                    ? '0 4px 12px rgba(232, 160, 32, 0.35)'
                     : isUnlocked
                       ? '0 1px 4px rgba(0,0,0,0.06)'
                       : 'none',
@@ -151,7 +151,7 @@ export const BadgeShowcase = ({ unlockedBadges, featuredBadge, onSelect }) => {
           <div style={{
             fontSize: '0.75rem',
             fontWeight: '700',
-            color: '#1a7a5e',
+            color: 'var(--color-xp)',
             marginBottom: '4px',
             textTransform: 'uppercase',
             letterSpacing: '0.5px'

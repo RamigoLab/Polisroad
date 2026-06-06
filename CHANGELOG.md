@@ -4,6 +4,32 @@ Tutte le modifiche significative a questo progetto saranno documentate in questo
 
 ---
 
+## [1.5.0] - 6 Giugno 2026
+
+### Bug Dark Mode
+- **Sfondo Frecce BottomNav**: Sostituiti i gradienti hardcodati con la variabile CSS `--bg-card` per la corretta trasparenza in dark mode (`src/styles/layout.js`).
+- **Home Comunicazioni & Popups**: Cambiato lo sfondo delle notifiche e dei popup in `C.card` (`src/pages/Home.jsx`).
+- **Normativa & Links**: Sostituiti sfondi bianchi inline con `C.card` nei commi e nella lista link (`src/pages/Normativa.jsx`, `src/pages/Links.jsx`).
+- **Auth & Admin**: Aggiornato il box del form di login/registrazione e le card di amministrazione normativa per usare `C.card` (`src/pages/Auth.jsx`, `src/pages/admin/AdminNormativa.jsx`).
+
+### UX & Navigazione
+- **BottomNav**: Aumentata la dimensione del font delle label dei tab a `0.7rem`.
+- **Pagina Operatore**: Aumentato lo spazio sopra l'intestazione dei preferiti (`src/styles/pages.js`).
+- **Normativa**: Aggiunto un pulsante in linea "← Indietro" in cima al contenuto delle sezioni Capo ed Articolo per facilitare la navigazione.
+
+### GDPR & Policy
+- **Pagine Legali**: Create le nuove pagine dedicate `Privacy Policy` e `Termini di Servizio` (`src/pages/Privacy.jsx`, `src/pages/TerminiServizio.jsx`).
+- **Card Informazioni Legali**: Aggiunta una card con i link a Privacy e Termini in fondo alla Homepage.
+- **Checkbox di Consenso**: Aggiunto un checkbox obbligatorio per l'accettazione dei termini e della privacy durante la registrazione ed un disclaimer con link nella schermata di login (`src/pages/Auth.jsx`).
+- **Eliminazione Account**: Aggiunta una sezione "Zona Pericolosa" nel profilo con conferma in due passaggi e cancellazione client-side dei record associati all'utente (`profiles`, `gamification`, `xp_history`).
+
+### Grafica & Estetica
+- **Animazione Pulsante Operatore**: Aggiunto un keyframe animato `operatorePulse` per un effetto pulsazione sul pulsante "ATTIVA MODALITÀ OPERATORE".
+- **Font Sora**: Importato Google Fonts Sora ed impostato su `--font-display` per i titoli principali.
+- **Accento Gamification**: Introdotta la variabile `--color-xp` per colorare gli elementi di gamification in modo coerente e caldo (barre progresso livello, streak e badge).
+
+---
+
 ## [1.4.9] - 4 Giugno 2026
 
 ### Sicurezza & Supabase
@@ -418,4 +444,4 @@ Per problemi o domande:
 
 **PolisRoad Development Team** ❤️
 
-*Versione 1.4.9 - 4 Giugno 2026*
+*Versione 1.5.0 - 6 Giugno 2026*

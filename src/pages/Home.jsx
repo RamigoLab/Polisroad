@@ -5,6 +5,7 @@ import { S } from '../styles/styles';
 import { C } from '../styles/theme';
 import { useAuth } from '../hooks/useAuth';
 import { useNews } from '../hooks/useNews';
+import { APP_VERSION } from '../config/constants';
 
 export const Home = ({ onNavigate }) => {
   const { profile } = useAuth();
@@ -82,7 +83,7 @@ export const Home = ({ onNavigate }) => {
           <h4 style={{ color: C.textLight, fontSize: '0.9rem', marginBottom: '8px', paddingLeft: '4px' }}>🔔 Comunicazioni</h4>
           {notificaNewsList.slice(0, 3).map(notifica => (
             <div key={notifica.id} style={{ 
-              backgroundColor: '#fff', 
+              backgroundColor: C.card, 
               borderRadius: '12px', 
               padding: '12px', 
               marginBottom: '8px', 
@@ -142,7 +143,7 @@ export const Home = ({ onNavigate }) => {
           padding: '20px'
         }}>
           <div style={{
-            backgroundColor: '#fff',
+            backgroundColor: C.card,
             borderRadius: '16px',
             padding: '24px',
             maxWidth: '400px',
@@ -162,6 +163,19 @@ export const Home = ({ onNavigate }) => {
           </div>
         </div>
       )}
+
+      {/* Legal Info Card */}
+      <div style={PS.homeLegalCard}>
+        <span style={PS.homeLegalVersion}>PolisRoad v{APP_VERSION} · Contenuto a scopo informativo</span>
+        <div style={PS.homeLegalRow}>
+          <button onClick={() => onNavigate('privacy')} style={PS.homeLegalLink}>
+            Privacy Policy
+          </button>
+          <button onClick={() => onNavigate('termini')} style={PS.homeLegalLink}>
+            Termini di Servizio
+          </button>
+        </div>
+      </div>
     </PageWrapper>
   );
 };

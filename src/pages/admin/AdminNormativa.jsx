@@ -406,7 +406,7 @@ export const AdminNormativa = () => {
             {selectedArticle.commi.map((c) => {
               const edit = commiEdits[c.id] || { comma: '', testo: '' };
               return (
-                <div key={c.id} style={{ ...S.card, border: `1px solid ${C.border}`, backgroundColor: '#fff' }}>
+                <div key={c.id} style={{ ...S.card, border: `1px solid ${C.border}` }}>
                   <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
                     <div style={{ width: '120px' }}>
                       <TextInput 

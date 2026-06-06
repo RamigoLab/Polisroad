@@ -124,7 +124,7 @@ export const LS = {
     top: 0,
     bottom: 0,
     width: '24px',
-    background: 'linear-gradient(to right, rgba(255,255,255,1), transparent)',
+    background: 'linear-gradient(to right, var(--bg-card), transparent)',
     pointerEvents: 'none',
     zIndex: 10,
   },
@@ -134,7 +134,7 @@ export const LS = {
     top: 0,
     bottom: 0,
     width: '40px',
-    background: 'linear-gradient(to left, rgba(255,255,255,1) 30%, transparent)',
+    background: 'linear-gradient(to left, var(--bg-card) 30%, transparent)',
     pointerEvents: 'none',
     zIndex: 10,
     display: 'flex',
@@ -176,7 +176,7 @@ export const LS = {
     filter: isActive ? 'none' : 'grayscale(100%) opacity(0.6)',
   }),
   navTabLabel: (isActive) => ({
-    fontSize: '0.65rem',
+    fontSize: '0.7rem',
     fontWeight: isActive ? '700' : '500',
   }),
 

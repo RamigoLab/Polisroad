@@ -218,8 +218,27 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
         headerLeftAction={<button onClick={handleBack} style={backBtnStyle}><span>←</span> Indietro</button>}
       >
         <div style={PS.normativaDetailBody}>
+          <button
+            onClick={() => setSelectedArticolo(null)}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              backgroundColor: C.card,
+              color: C.primary,
+              border: `1px solid ${C.border}`,
+              borderRadius: '8px',
+              padding: '8px 12px',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              marginBottom: '16px',
+            }}
+          >
+            ← Indietro
+          </button>
           {selectedArticolo.commi.map(c => (
-            <div key={c.id} style={{ marginBottom: '16px', padding: '16px', backgroundColor: '#fff', borderRadius: '12px', border: `1px solid ${C.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+            <div key={c.id} style={{ marginBottom: '16px', padding: '16px', backgroundColor: C.card, borderRadius: '12px', border: `1px solid ${C.border}`, boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
               <Badge type="secondary" style={{ marginBottom: '10px', display: 'inline-block' }}>Comma {(c.comma || '?').replace(/\.$/, '')}</Badge>
               <p style={{ ...PS.normativaDetailText, marginTop: 0 }}>{c.testo}</p>
             </div>
@@ -244,6 +263,25 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   } else if (selectedCapo) {
     viewContent = (
       <div style={S.list}>
+        <button
+          onClick={() => setSelectedCapo(null)}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '6px',
+            backgroundColor: C.card,
+            color: C.primary,
+            border: `1px solid ${C.border}`,
+            borderRadius: '8px',
+            padding: '8px 12px',
+            fontSize: '0.9rem',
+            fontWeight: '600',
+            cursor: 'pointer',
+            marginBottom: '16px',
+          }}
+        >
+          ← Indietro
+        </button>
         <div style={{ marginBottom: '16px', padding: '0 4px', fontSize: '0.85rem', color: C.textLight }}>
           <span onClick={() => { setSelectedTitolo(null); setSelectedCapo(null); }} style={{cursor: 'pointer', textDecoration: 'underline'}}>Normativa</span>
           {' > '}

@@ -43,7 +43,7 @@ export const StreakCounter = ({ currentStreak, longestStreak }) => {
         <div style={{
           fontSize: '1.1rem',
           fontWeight: '800',
-          color: '#d4760a'
+          color: 'var(--color-xp)'
         }}>
           {currentStreak} {currentStreak === 1 ? 'giorno' : 'giorni'}
         </div>
@@ -70,7 +70,7 @@ export const StreakCounter = ({ currentStreak, longestStreak }) => {
         <div style={{
           fontSize: '2.2rem',
           fontWeight: '800',
-          color: '#1a7a5e',
+          color: 'var(--color-xp)',
           lineHeight: 1,
           display: 'flex',
           alignItems: 'center',

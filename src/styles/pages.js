@@ -96,6 +96,7 @@ export const PS = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '12px',
+    animation: 'operatorePulse 2.5s infinite',
   },
   homeGrid: {
     display: 'grid',
@@ -149,6 +150,32 @@ export const PS = {
     alignItems: 'center',
     justifyContent: 'center',
     gap: '8px',
+  },
+  homeLegalCard: {
+    marginTop: '24px',
+    padding: '16px',
+    borderTop: `1px solid ${C.border}`,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '8px',
+  },
+  homeLegalRow: {
+    display: 'flex',
+    gap: '16px',
+  },
+  homeLegalLink: {
+    fontSize: '0.8rem',
+    color: C.accent,
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    background: 'none',
+    border: 'none',
+    padding: 0,
+    fontFamily: 'inherit',
+  },
+  homeLegalVersion: {
+    fontSize: '0.75rem',
+    color: C.textLight,
   },
 
   // ─────────────────────────────────────────────
@@ -536,6 +563,7 @@ export const PS = {
   operatoreFavLabel: {
     color: '#f39c12',
     fontSize: '0.85rem',
+    marginTop: '16px',
     marginBottom: '12px',
     fontWeight: 'bold',
   },

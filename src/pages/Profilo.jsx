@@ -15,6 +15,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } from '../config/constants';
 import { sanitizers, validators } from '../utils/validation';
+import { supabase } from '../config/supabase';
 
 const DataRow = ({ label, value, icon }) => (
   <div style={S.dataRow}>
@@ -215,6 +216,26 @@ export const Profilo = ({ onNavigate }) => {
 
     if (error) showToast('Errore durante l\'azzeramento: ' + error.message, 'error');
     else showToast('Contestazioni azzerate.', 'success');
+  };
+
+  const handleDeleteAccount = async () => {
+    const confirm1 = window.confirm('Sei sicuro di voler eliminare il tuo account? Questa azione è irreversibile.');
+    if (!confirm1) return;
+    const confirm2 = window.confirm('Ultima conferma: tutti i tuoi dati verranno eliminati.');
+    if (!confirm2) return;
+
+    try {
+      const uid = profile.id;
+      // Cancella dati dalle tabelle (la RLS garantisce che puoi cancellare solo i tuoi)
+      await supabase.from('xp_history').delete().eq('user_id', uid);
+      await supabase.from('gamification').delete().eq('user_id', uid);
+      await supabase.from('profiles').delete().eq('id', uid);
+      // Logout — l'utente auth rimane ma senza dati (soluzione intermedia)
+      await signOut();
+      showToast('Account cancellato con successo.');
+    } catch (err) {
+      showToast('Errore durante la cancellazione. Contatta il supporto.', 'error');
+    }
   };
 
 
@@ -494,6 +515,21 @@ export const Profilo = ({ onNavigate }) => {
         </div>
       </div>
 
+      {/* Sezione Documenti Legali */}
+      <div style={{ marginTop: '24px', padding: '16px', backgroundColor: C.card, borderRadius: '12px', border: `1px solid ${C.border}`, marginBottom: '16px' }}>
+        <h4 style={{ fontSize: '0.85rem', color: C.textLight, marginBottom: '12px', fontWeight: '600' }}>
+          📄 Documenti legali
+        </h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <button onClick={() => onNavigate('privacy')} style={{ textAlign: 'left', color: C.accent, fontSize: '0.9rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            Privacy Policy →
+          </button>
+          <button onClick={() => onNavigate('termini')} style={{ textAlign: 'left', color: C.accent, fontSize: '0.9rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            Termini di Servizio →
+          </button>
+        </div>
+      </div>
+
       {/* Supporta */}
       <div style={PS.profileSupportBox}>
         <h4 style={{ color: C.primary, marginBottom: '8px' }}>Supporta PolisRoad</h4>
@@ -503,6 +539,22 @@ export const Profilo = ({ onNavigate }) => {
         <a href="https://www.paypal.me" target="_blank" rel="noreferrer" style={PS.profileDonateBtn}>
           ☕ Dona con PayPal
         </a>
+      </div>
+
+      {/* Zona Pericolosa */}
+      <div style={{ marginTop: '24px', padding: '16px', borderRadius: '12px', border: `1px solid ${C.danger}` }}>
+        <h4 style={{ color: C.danger, fontSize: '0.9rem', marginBottom: '8px', fontWeight: '700' }}>
+          ⚠️ Zona pericolosa
+        </h4>
+        <p style={{ fontSize: '0.8rem', color: C.textLight, marginBottom: '12px', lineHeight: 1.5 }}>
+          L'eliminazione dell'account è irreversibile. Verranno cancellati profilo, statistiche, badge e cronologia XP.
+        </p>
+        <button
+          onClick={handleDeleteAccount}
+          style={{ backgroundColor: 'transparent', border: `1px solid ${C.danger}`, color: C.danger, padding: '10px 16px', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer' }}
+        >
+          Elimina il mio account
+        </button>
       </div>
     </PageWrapper>
   );

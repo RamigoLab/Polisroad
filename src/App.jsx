@@ -24,6 +24,8 @@ const Links = lazy(() => import('./pages/Links').then(m => ({ default: m.Links }
 const Profilo = lazy(() => import('./pages/Profilo').then(m => ({ default: m.Profilo })));
 const Operatore = lazy(() => import('./pages/Operatore').then(m => ({ default: m.Operatore })));
 const GuidePratiche = lazy(() => import('./pages/GuidePratiche').then(m => ({ default: m.GuidePratiche })));
+const Privacy = lazy(() => import('./pages/Privacy').then(m => ({ default: m.Privacy })));
+const TerminiServizio = lazy(() => import('./pages/TerminiServizio').then(m => ({ default: m.TerminiServizio })));
 
 // Lazy loading admin pages
 const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m => ({ default: m.AdminDashboard })));
@@ -105,11 +107,11 @@ function App() {
   }
 
   if (!session) {
-    return <Auth />;
+    return <Auth onNavigate={navigate} />;
   }
 
   if (passwordRecovery) {
-    return <Auth passwordUpdateMode />;
+    return <Auth passwordUpdateMode onNavigate={navigate} />;
   }
 
   const renderPage = () => {
@@ -127,6 +129,8 @@ function App() {
       case 'profilo': return <Profilo {...props} />;
       case 'operatore': return <Operatore {...props} />;
       case 'guide': return <GuidePratiche {...props} />;
+      case 'privacy': return <Privacy {...props} />;
+      case 'termini': return <TerminiServizio {...props} />;
       
       // Admin Pages
       case 'admin_dashboard': return (

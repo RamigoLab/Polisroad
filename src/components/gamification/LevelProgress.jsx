@@ -36,7 +36,7 @@ export const LevelProgress = ({ level, xp }) => {
           <div style={{
             fontSize: '2.8rem',
             fontWeight: '800',
-            color: '#1a7a5e',
+            color: 'var(--color-xp)',
             lineHeight: 1,
             fontFamily: "'Inter', 'Segoe UI', sans-serif"
           }}>{level}</div>
@@ -64,17 +64,17 @@ export const LevelProgress = ({ level, xp }) => {
             <div style={{
               height: '100%',
               width: `${percentage}%`,
-              background: 'linear-gradient(90deg, #1a7a5e 0%, #2cb67d 50%, #38d992 100%)',
+              background: 'var(--color-xp)',
               transition: 'width 0.8s cubic-bezier(0.4, 0, 0.2, 1)',
               borderRadius: '7px',
-              boxShadow: '0 1px 4px rgba(26, 122, 94, 0.3)'
+              boxShadow: '0 1px 4px rgba(232, 160, 32, 0.3)'
             }} />
           </div>
 
           {/* XP text */}
           <div style={{
             fontSize: '0.85rem',
-            color: '#1a7a5e',
+            color: 'var(--color-xp)',
             fontWeight: '600',
             marginTop: '6px'
           }}>

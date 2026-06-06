@@ -147,7 +147,7 @@ const logoWrapStyle = {
   height: '46px',
   borderRadius: '10px',
   border: `1px solid ${C.border}`,
-  backgroundColor: '#fff',
+  backgroundColor: C.card,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',

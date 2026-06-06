@@ -29,7 +29,7 @@ const authSubtitleStyle = {
 };
 
 const authCardStyle = {
-  backgroundColor: '#fff',
+  backgroundColor: C.card,
   padding: '24px',
   borderRadius: '16px',
   color: C.text,
@@ -51,10 +51,11 @@ const authSwitchBtnStyle = {
   fontSize: '0.9rem',
 };
 
-export const Auth = ({ passwordUpdateMode = false }) => {
+export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
   const { signIn, signUp, resetPassword, updatePassword, clearPasswordRecovery } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
+  const [privacyAccepted, setPrivacyAccepted] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -236,13 +237,62 @@ export const Auth = ({ passwordUpdateMode = false }) => {
               <TextInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
               <TextInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
 
+              {!isLogin && (
+                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', margin: '12px 0' }}>
+                  <input
+                    type="checkbox"
+                    id="privacy-check"
+                    checked={privacyAccepted}
+                    onChange={e => setPrivacyAccepted(e.target.checked)}
+                    style={{ marginTop: '2px', flexShrink: 0, cursor: 'pointer' }}
+                  />
+                  <label htmlFor="privacy-check" style={{ fontSize: '0.85rem', color: C.textLight, cursor: 'pointer', lineHeight: 1.4 }}>
+                    Ho letto e accetto la{' '}
+                    <button
+                      type="button"
+                      onClick={() => onNavigate('privacy')}
+                      style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', padding: 0, fontSize: 'inherit', cursor: 'pointer' }}
+                    >
+                      Privacy Policy
+                    </button>
+                    {' '}e i{' '}
+                    <button
+                      type="button"
+                      onClick={() => onNavigate('termini')}
+                      style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', padding: 0, fontSize: 'inherit', cursor: 'pointer' }}
+                    >
+                      Termini di Servizio
+                    </button>
+                  </label>
+                </div>
+              )}
+
               <button
                 type="submit"
-                disabled={loading}
-                style={{ ...S.btnPrimary, marginTop: '8px', opacity: loading ? 0.7 : 1 }}
+                disabled={loading || (!isLogin && !privacyAccepted)}
+                style={{
+                  ...S.btnPrimary,
+                  marginTop: '8px',
+                  opacity: loading ? 0.7 : (isLogin || privacyAccepted) ? 1 : 0.5
+                }}
               >
                 {loading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Registrati')}
               </button>
+
+              {isLogin && (
+                <div style={{ textAlign: 'center', marginTop: '20px' }}>
+                  <span style={{ fontSize: '0.75rem', color: C.textLight }}>
+                    Utilizzando l'app accetti la{' '}
+                    <button type="button" onClick={() => onNavigate('privacy')} style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', fontSize: 'inherit', cursor: 'pointer', padding: 0 }}>
+                      Privacy Policy
+                    </button>
+                    {' '}e i{' '}
+                    <button type="button" onClick={() => onNavigate('termini')} style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', fontSize: 'inherit', cursor: 'pointer', padding: 0 }}>
+                      Termini di Servizio
+                    </button>
+                  </span>
+                </div>
+              )}
             </form>
           )}
 
