@@ -41,12 +41,24 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
 
   const filteredList = useMemo(() => {
     const s = debouncedSearch.trim().toLowerCase();
-    if (s.length < 2) return list;
-    return list.filter(item =>
-      (item.titolo || '').toLowerCase().includes(s) ||
-      (item.rif_normativo || '').toLowerCase().includes(s) ||
-      (item.codice_violazione || '').toLowerCase().includes(s)
-    );
+    let result = list;
+    if (s.length >= 2) {
+      result = list.filter(item =>
+        (item.titolo || '').toLowerCase().includes(s) ||
+        (item.rif_normativo || '').toLowerCase().includes(s) ||
+        (item.codice_violazione || '').toLowerCase().includes(s)
+      );
+    }
+    // Ordina prima per articolo_numero (numerico) e poi per codice_caso/rif_normativo
+    return [...result].sort((a, b) => {
+      const numA = parseInt(a.articolo_numero, 10) || 0;
+      const numB = parseInt(b.articolo_numero, 10) || 0;
+      if (numA !== numB) return numA - numB;
+      
+      const casoA = a.codice_caso || '';
+      const casoB = b.codice_caso || '';
+      return casoA.localeCompare(casoB, undefined, { numeric: true, sensitivity: 'base' });
+    });
   }, [list, debouncedSearch]);
 
   const handleNoteSave = async (id) => {

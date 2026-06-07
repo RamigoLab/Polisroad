@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { SearchBar } from '../components/ui/SearchBar';
 import { PS } from '../styles/pages';
 import { C } from '../styles/theme';
@@ -35,12 +35,28 @@ export const Operatore = ({ onNavigate }) => {
     return () => clearInterval(timer);
   }, []);
 
-  const displayList = search.length > 0
-    ? list.filter(item =>
+  const displayList = useMemo(() => {
+    let result = [];
+    if (search.length > 0) {
+      result = list.filter(item =>
         (item.titolo || '').toLowerCase().includes(search.toLowerCase()) ||
         (item.rif_normativo || '').toLowerCase().includes(search.toLowerCase())
-      )
-    : list.filter(item => preferiti.includes(item.id));
+      );
+    } else {
+      result = list.filter(item => preferiti.includes(item.id));
+    }
+    
+    // Ordina per articolo_numero (numerico) e codice_caso
+    return [...result].sort((a, b) => {
+      const numA = parseInt(a.articolo_numero, 10) || 0;
+      const numB = parseInt(b.articolo_numero, 10) || 0;
+      if (numA !== numB) return numA - numB;
+      
+      const casoA = a.codice_caso || '';
+      const casoB = b.codice_caso || '';
+      return casoA.localeCompare(casoB, undefined, { numeric: true, sensitivity: 'base' });
+    });
+  }, [list, search, preferiti]);
 
   return (
     <div style={PS.operatoreContainer}>
