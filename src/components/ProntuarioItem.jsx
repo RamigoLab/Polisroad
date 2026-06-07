@@ -23,8 +23,7 @@ export const ProntuarioItem = React.memo(({ item, onClick, isFavorite }) => {
         {item.titolo}
       </h3>
       <div style={PS.prontuarioItemMeta}>
-        <span>Cod: {item.codice_violazione}</span>
-        <span style={S.valueDanger}>PMR: €{item.pmr}</span>
+        <span style={S.valueDanger}>Sanzione: €{item.pmr}</span>
       </div>
     </div>
   );
