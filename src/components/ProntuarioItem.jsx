@@ -20,7 +20,7 @@ export const ProntuarioItem = React.memo(({ item, onClick, isFavorite }) => {
         </div>
       </div>
       <h3 style={{ fontSize: '1rem', color: C.text, marginBottom: '8px', lineHeight: 1.3 }}>
-        {item.titolo}
+        {item.titolo || item.articolo_nome || (item.descrizione ? (item.descrizione.substring(0, 80) + '...') : 'Nessun titolo')}
       </h3>
       <div style={PS.prontuarioItemMeta}>
         <span style={S.valueDanger}>Sanzione: €{item.pmr}</span>

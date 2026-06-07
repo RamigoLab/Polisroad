@@ -89,7 +89,7 @@ export const Operatore = ({ onNavigate }) => {
                 <div onClick={() => setExpandedId(isExpanded ? null : item.id)} style={PS.operatoreItemHeader}>
                   <div>
                     <span style={PS.operatoreItemRef}>{item.rif_normativo} (Sanzione: €{item.pmr})</span>
-                    <span style={PS.operatoreItemTitle}>{item.titolo}</span>
+                    <span style={PS.operatoreItemTitle}>{item.titolo || item.articolo_nome || (item.descrizione ? (item.descrizione.substring(0, 80) + '...') : 'Prontuario')}</span>
                   </div>
                   <span>{isExpanded ? '▲' : '▼'}</span>
                 </div>

@@ -99,7 +99,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
     return (
       <PageWrapper
         style={{ padding: 0 }}
-        title={selectedItem.titolo}
+        title={selectedItem.titolo || selectedItem.articolo_nome || (selectedItem.descrizione ? (selectedItem.descrizione.substring(0, 80) + '...') : 'Prontuario')}
         subtitle={selectedItem.rif_normativo}
         onNavigate={onNavigate}
         headerLeftAction={<button onClick={() => setSelectedItem(null)} style={{ fontSize: '0.85rem', padding: '6px 8px', color: '#fff' }}>Indietro</button>}
