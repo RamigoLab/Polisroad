@@ -1,7 +1,7 @@
 {
   "name": "polisroad",
   "private": true,
-  "version": "1.5.1",
+  "version": "1.5.2",
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/update-version.js",
@@ -11,11 +11,15 @@
     "lint": "eslint .",
     "test": "vitest",
     "test:run": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "import:prontuario": "node scripts/import_prontuario.js",
+    "generate:prontuario": "node scripts/generate_prontuario_sql.js",
+    "convert:prontuario": "node scripts/convert_csv_for_supabase.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
     "@types/dompurify": "^3.0.5",
+    "csv-parse": "^5.6.0",
     "dompurify": "^3.4.5",
     "posthog-js": "^1.373.5",
     "react": "^19.2.5",
@@ -24,10 +28,10 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@testing-library/react": "^16.3.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
-    "@testing-library/react": "^16.3.0",
     "eslint": "^10.2.1",
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.2",

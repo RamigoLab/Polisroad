@@ -87,8 +87,15 @@ export const DataProvider = ({ children }) => {
           setNormativa(normativaData);
         }
 
-        // Set prontuario (still using mock data)
-        setProntuario(mockProntuario);
+        // Fetch prontuario data with pagination
+        const { data: prontuarioData, error: prontuarioError } = await fetchAllRows('prontuario', 'articolo_numero');
+        if (prontuarioError) {
+          console.error('Prontuario fetch error:', prontuarioError);
+          setError('Errore nel caricamento del prontuario.');
+          setProntuario(mockProntuario);
+        } else {
+          setProntuario(prontuarioData);
+        }
 
       const fetchedNews = newsData || mockNews;
       const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
@@ -109,7 +116,7 @@ export const DataProvider = ({ children }) => {
     } catch (err) {
       console.error('General Data Fetch Error:', err);
       setError(`Errore generale di connessione: ${err.message || 'Verifica la connessione a Supabase'}`);
-      // Fallback
+      // Fallback ai mock
       setProntuario(mockProntuario);
       setNormativa(mockNormativa);
       setNews(mockNews);

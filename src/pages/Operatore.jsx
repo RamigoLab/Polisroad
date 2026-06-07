@@ -37,8 +37,8 @@ export const Operatore = ({ onNavigate }) => {
 
   const displayList = search.length > 0
     ? list.filter(item =>
-        item.titolo.toLowerCase().includes(search.toLowerCase()) ||
-        item.rif_normativo.toLowerCase().includes(search.toLowerCase())
+        (item.titolo || '').toLowerCase().includes(search.toLowerCase()) ||
+        (item.rif_normativo || '').toLowerCase().includes(search.toLowerCase())
       )
     : list.filter(item => preferiti.includes(item.id));
 

@@ -1,5 +1,12 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.5.2] - 7 Giugno 2026
+
+### 📊 Prontuario & CSV Import
+- **Risoluzione bug importazione CSV**: Rimosso il BOM UTF-8 (`ï»¿`) in lettura del CSV sorgente che causava l'azzeramento della colonna `articolo_numero`.
+- **Script di conversione aggiornato**: Ottimizzato `convert_csv_for_supabase.js` implementando una serializzazione nativa senza dipendenze esterne.
+- **Aggiornamento versione**: Sincronizzato il numero di versione dell'applicazione a `1.5.2`.
+
 ## [1.5.1] - 6 Giugno 2026
 
 ### 🔎 Ricerca Normativa migliorata

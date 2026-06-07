@@ -22,9 +22,8 @@ export const Calcolatore = ({ onNavigate }) => {
     const item = list.find(p => p.id === id);
     if (item) {
       await addXP(20, 'calculator');
-      const baseValue = item.pmr || item.edittale_min;
-      setMin(baseValue ? baseValue.toString() : '');
-      setMax(item.edittale_max ? item.edittale_max.toString() : '');
+      setMin(item.pmr ? item.pmr.toString() : '');
+      setMax('');
       setPunti(item.punti_patente ? item.punti_patente.toString() : '');
     }
   };
@@ -41,11 +40,13 @@ export const Calcolatore = ({ onNavigate }) => {
           label="Pre-compila da violazione (Opzionale)"
           value={selectedId}
           onChange={handleSelect}
-          options={list.map(item => ({ value: item.id, label: `${item.rif_normativo} - ${item.titolo.substring(0, 30)}...` }))}
+          options={list
+            .filter(item => item.titolo && item.rif_normativo)
+            .map(item => ({ value: item.id, label: `${item.rif_normativo} – ${item.titolo.substring(0, 35)}` }))}
         />
         <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           <TextInput 
-            label="Edittale Minimo (€)" 
+            label="PMR / Sanzione Base (€)" 
             type="number" 
             value={min} 
             onChange={e => {
@@ -54,7 +55,7 @@ export const Calcolatore = ({ onNavigate }) => {
             }} 
           />
           <TextInput 
-            label="Edittale Massimo (€)" 
+            label="Edittale Massimo (€) – opzionale" 
             type="number" 
             value={max} 
             onChange={e => {
@@ -77,7 +78,7 @@ export const Calcolatore = ({ onNavigate }) => {
       {min && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={PS.calcResultPrimary}>
-            <div style={PS.calcResultLabel}>Pagamento in Misura Ridotta (Entro 60gg)</div>
+            <div style={PS.calcResultLabel}>PMR – Pagamento in Misura Ridotta</div>
             <div style={{ ...PS.calcResultValueLg, color: C.primary }}>€ {calcDiurna}</div>
           </div>
 

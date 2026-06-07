@@ -117,12 +117,8 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
 
             <div style={PS.prontuarioSanzioniGrid}>
               <div style={PS.prontuarioSanzioniCell}>
-                <div style={PS.prontuarioSanzioniLabel}>Min / Max</div>
-                <div style={S.valueText}>€{selectedItem.edittale_min} / €{selectedItem.edittale_max}</div>
-              </div>
-              <div style={PS.prontuarioSanzioniCell}>
                 <div style={PS.prontuarioSanzioniLabel}>PMR (Diurna)</div>
-                <div style={S.valueDanger}>€{selectedItem.pmr}</div>
+                <div style={S.valueDanger}>€{selectedItem.pmr ?? 'N.D.'}</div>
               </div>
               <div style={PS.prontuarioSanzioniCell}>
                 <div style={PS.prontuarioSanzioniLabel}>Scontata 30%</div>
@@ -131,10 +127,16 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
               <div style={PS.prontuarioSanzioniCell}>
                 <div style={PS.prontuarioSanzioniLabel}>Sanzione Notturna</div>
                 <div style={{ fontWeight: 'bold', color: selectedItem.sanzione_notturna ? C.danger : C.text }}>
-                  {selectedItem.sanzione_notturna
-                    ? `€${(parseFloat(selectedItem.pmr) * 1.333333).toFixed(2)}`
-                    : 'Non prevista'}
+                  {selectedItem.sanzione_notturna_importo
+                    ? `€${selectedItem.sanzione_notturna_importo}`
+                    : selectedItem.sanzione_notturna
+                      ? `€${(parseFloat(selectedItem.pmr) * 1.333333).toFixed(2)}`
+                      : 'Non prevista'}
                 </div>
+              </div>
+              <div style={PS.prontuarioSanzioniCell}>
+                <div style={PS.prontuarioSanzioniLabel}>Not. Scontata</div>
+                <div style={S.valueSuccess}>{selectedItem.sanzione_notturna_scontata ? `€${selectedItem.sanzione_notturna_scontata}` : 'N.A.'}</div>
               </div>
             </div>
 
