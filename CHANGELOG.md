@@ -1,5 +1,19 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.5.3] - 12 Giugno 2026
+
+### 🛡️ Audit di Sicurezza & Privacy
+- **GDPR Art. 17 (Cancellazione Account)**: Corretta la cancellazione per includere l'eliminazione dei dati associati su `note`, `preferiti` e `segnalazioni`. Introdotta la Supabase Edge Function `delete-user` per eliminare l'utente auth da Supabase. Aggiornata l'informativa UI nel Profilo.
+- **Privacy & Analytics**: Sostituita la trasmissione del testo integrale delle ricerche a PostHog con metadati anonimizzati (lunghezza e presenza di cifre) per tutelare i dati di terzi (es. targhe o nominativi).
+- **Privacy Policy aggiornata**: Corrette le dichiarazioni di sincronizzazione dati e documentato PostHog come sub-processor.
+- **Rate Limiting**: Aggiunta nota tecnica in `rateLimiter.js` sul rate limiter client-side e il ruolo di Supabase.
+- **Logging**: Creato logger custom `src/utils/logger.js` per disabilitare `console.log` e `console.warn` in ambiente di produzione.
+- **Esportabilità Dati (GDPR Art. 20)**: Aggiunta opzione per esportare tutti i dati personali dell'utente (profilo, note, preferiti, statistiche) in formato JSON dal Profilo.
+- **Hardening RLS Supabase**: Creata migrazione per rendere RLS sulla tabella `news` editabile solo dagli amministratori.
+- **Refusi**: Corretti refusi testuali in `Auth.jsx` e `Profilo.jsx`.
+- **Dipendenze**: Spostati `csv-parse` e `@types/dompurify` in `devDependencies`.
+- **Versione**: Aggiornato tutto alla versione `1.5.3`.
+
 ## [1.5.2] - 7 Giugno 2026
 
 ### 📊 Prontuario & CSV Import

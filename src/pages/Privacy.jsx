@@ -59,15 +59,15 @@ export const Privacy = ({ onNavigate }) => {
         </ul>
 
         <p style={pStyle}>
-          L'App raccoglie inoltre, esclusivamente sul dispositivo dell'utente e senza trasmissione a server esterni, i seguenti dati locali:
+          L'App raccoglie inoltre i seguenti dati di utilizzo e personalizzazione:
         </p>
         <ul style={ulStyle}>
-          <li style={liStyle}>Cronologia delle ricerche effettuate nell'App</li>
-          <li style={liStyle}>Articoli e voci salvati tra i preferiti</li>
-          <li style={liStyle}>Note personali associate agli articoli</li>
+          <li style={liStyle}>Cronologia delle ricerche effettuate nell'App (memorizzata esclusivamente in locale sul dispositivo dell'utente, senza trasmissione a server esterni)</li>
+          <li style={liStyle}>Articoli e voci salvati tra i preferiti (sincronizzati sul database Supabase situato in UE quando l'utente è autenticato)</li>
+          <li style={liStyle}>Note personali associate agli articoli (sincronizzate sul database Supabase situato in UE quando l'utente è autenticato)</li>
         </ul>
         <p style={pStyle}>
-          Questi dati locali non vengono mai inviati a server esterni e rimangono sotto il pieno controllo dell'utente.
+          La cronologia delle ricerche rimane memorizzata esclusivamente in locale sul dispositivo, mentre le note e i preferiti vengono sincronizzati con il server quando l'utente effettua l'accesso per consentirne la fruizione su più dispositivi.
         </p>
 
         <h3 style={h3Style}>3. Finalità del trattamento</h3>
@@ -92,7 +92,18 @@ export const Privacy = ({ onNavigate }) => {
 
         <h3 style={h3Style}>6. Responsabile del trattamento (sub-processor)</h3>
         <p style={pStyle}>
-          I dati vengono ospitati su Supabase (Supabase Inc.), fornitore di servizi cloud con server ubicati nell'Unione Europea (Frankfurt, Germania). Nessun dato viene trasferito al di fuori dello Spazio Economico Europeo.
+          I dati personali di autenticazione, profilo, note e preferiti sono ospitati su Supabase (Supabase Inc.), fornitore di servizi cloud con server ubicati nell'Unione Europea (Frankfurt, Germania).
+        </p>
+        <p style={pStyle}>
+          Inoltre, per finalità di analisi del comportamento degli utenti e ottimizzazione dell'esperienza d'uso, l'App si avvale di PostHog (PostHog Inc.), con sede negli Stati Uniti. I trasferimenti di dati verso PostHog avvengono nel rispetto delle Clausole Contrattuali Standard (Standard Contractual Clauses - SCC). I dati trasmessi includono esclusivamente eventi comportamentali e metriche d'uso anonimizzate (ad esempio, la lunghezza e la presenza di numeri all'interno dei termini di ricerca, senza trasmettere mai il testo integrale della ricerca per proteggere dati personali di terzi come targhe o nominativi).
+        </p>
+
+        <h3 style={h3Style}>6.1. Cookie e tecnologie di tracciamento</h3>
+        <p style={pStyle}>
+          L'App utilizza PostHog per analizzare in modo pseudonimo l'utilizzo delle diverse funzionalità e migliorare l'interfaccia. PostHog può fare uso di tecnologie di memorizzazione locale (localStorage) o cookie tecnici per tracciare le sessioni.
+        </p>
+        <p style={pStyle}>
+          È possibile inibire questo tracciamento disattivando i cookie dal proprio browser o bloccando le connessioni verso il dominio di PostHog (es. utilizzando estensioni ad-blocker).
         </p>
 
         <h3 style={h3Style}>7. Contenuto normativo</h3>

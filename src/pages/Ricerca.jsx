@@ -39,7 +39,10 @@ export const Ricerca = ({ onNavigate }) => {
       const timer = setTimeout(async () => {
         await addSearch(search);
         await addXP(10, 'search');
-        posthog.capture('search_executed', { query: search });
+        posthog.capture('search_executed', { 
+          query_length: search.length, 
+          query_has_digits: /\d/.test(search) 
+        });
       }, 1500); // 1.5 seconds after user stops typing
       return () => clearTimeout(timer);
     }

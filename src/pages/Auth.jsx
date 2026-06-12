@@ -299,7 +299,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
           {!passwordUpdateMode && !isResettingPassword && (
             <div style={authSwitchStyle}>
               <button type="button" onClick={() => setIsLogin(!isLogin)} style={authSwitchBtnStyle}>
-                {isLogin ? 'Non hai un account? Registrati' : 'Hai gia un account? Accedi'}
+                {isLogin ? 'Non hai un account? Registrati' : 'Hai già un account? Accedi'}
               </button>
               {isLogin && (
                 <button type="button" onClick={() => setIsResettingPassword(true)} style={{ ...authSwitchBtnStyle, display: 'block', margin: '10px auto 0' }}>

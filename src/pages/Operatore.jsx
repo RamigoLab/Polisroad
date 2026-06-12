@@ -36,7 +36,7 @@ export const Operatore = ({ onNavigate }) => {
   }, []);
 
   const displayList = useMemo(() => {
-    let result = [];
+    let result;
     if (search.length > 0) {
       result = list.filter(item =>
         (item.titolo || '').toLowerCase().includes(search.toLowerCase()) ||

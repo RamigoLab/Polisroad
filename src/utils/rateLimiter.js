@@ -1,3 +1,6 @@
+// NOTA DI SICUREZZA: questo rate limiter opera solo lato client come protezione UX.
+// La protezione reale contro brute-force è delegata a Supabase Auth (server-side).
+// Non rimuovere la dipendenza dal rate limiting di Supabase Auth.
 const MAX_LOGIN_ATTEMPTS = 5;
 const LOCKOUT_DURATION = 15 * 60 * 1000; // 15 minutes
 

@@ -1,6 +1,7 @@
 import React, { createContext, useCallback } from 'react';
 import { useGamification } from '../hooks/useGamification';
 import { useAuth } from '../hooks/useAuth';
+import { logger } from '../utils/logger';
 
 export const GamificationContext = createContext();
 
@@ -27,17 +28,17 @@ export const GamificationProvider = ({ children }) => {
   // Wrapper con error handling e logging
   const safeAddXP = useCallback(async (amount, action) => {
     if (!session?.user?.id) {
-      console.warn('⚠️ No user session for XP');
+      logger.warn('⚠️ No user session for XP');
       return;
     }
     try {
       const result = await addXP(amount, action);
       if (result && !result.error) {
-        console.log(`✅ XP +${amount} for action: ${action}`);
+        logger.log(`✅ XP +${amount} for action: ${action}`);
       }
       return result;
     } catch (e) {
-      console.error(`❌ Error adding XP for action ${action}:`, e);
+      logger.error(`❌ Error adding XP for action ${action}:`, e);
     }
   }, [session?.user?.id, addXP]);
 

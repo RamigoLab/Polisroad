@@ -203,7 +203,7 @@ export const Profilo = ({ onNavigate }) => {
   const handleResetContestazioni = async () => {
     const total = stats?.total_contestazioni || 0;
     if (total <= 0) {
-      showToast('Il contatore contestazioni e gia a zero.', 'success');
+      showToast('Il contatore contestazioni è già a zero.', 'success');
       return;
     }
 
@@ -218,23 +218,83 @@ export const Profilo = ({ onNavigate }) => {
     else showToast('Contestazioni azzerate.', 'success');
   };
 
+  const handleExportData = async () => {
+    try {
+      const uid = profile?.id;
+      if (!uid) return;
+      
+      showToast('Esportazione dati in corso...', 'success');
+      
+      const [
+        profileRes,
+        noteRes,
+        preferitiRes,
+        xpHistoryRes,
+        gamificationRes
+      ] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', uid),
+        supabase.from('note').select('*').eq('user_id', uid),
+        supabase.from('preferiti').select('*').eq('user_id', uid),
+        supabase.from('xp_history').select('*').eq('user_id', uid),
+        supabase.from('gamification').select('*').eq('user_id', uid)
+      ]);
+
+      const data = {
+        esportato_il: new Date().toISOString(),
+        profile: profileRes.data || [],
+        note: noteRes.data || [],
+        preferiti: preferitiRes.data || [],
+        xp_history: xpHistoryRes.data || [],
+        gamification: gamificationRes.data || []
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `polisroad_export_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast('Dati esportati con successo!', 'success');
+    } catch (err) {
+      showToast('Errore durante l\'esportazione: ' + err.message, 'error');
+    }
+  };
+
   const handleDeleteAccount = async () => {
     const confirm1 = window.confirm('Sei sicuro di voler eliminare il tuo account? Questa azione è irreversibile.');
     if (!confirm1) return;
-    const confirm2 = window.confirm('Ultima conferma: tutti i tuoi dati verranno eliminati.');
+    const confirm2 = window.confirm('Ultima conferma: tutti i tuoi dati (profilo, statistiche, badge, cronologia XP, note personali, preferiti e segnalazioni) verranno eliminati definitivamente.');
     if (!confirm2) return;
 
     try {
       const uid = profile.id;
-      // Cancella dati dalle tabelle (la RLS garantisce che puoi cancellare solo i tuoi)
+      // Cancella dati dalle tabelle correlate
       await supabase.from('xp_history').delete().eq('user_id', uid);
       await supabase.from('gamification').delete().eq('user_id', uid);
+      await supabase.from('note').delete().eq('user_id', uid);
+      await supabase.from('preferiti').delete().eq('user_id', uid);
+      
+      if (profile?.email) {
+        await supabase.from('segnalazioni').delete().eq('email', profile.email);
+      }
+      
       await supabase.from('profiles').delete().eq('id', uid);
-      // Logout — l'utente auth rimane ma senza dati (soluzione intermedia)
+      
+      // Invocazione Edge Function per cancellare l'utente auth da Supabase
+      const { error: fnError } = await supabase.functions.invoke('delete-user', { body: { uid } });
+      if (fnError) {
+        throw fnError;
+      }
+
+      // Logout
       await signOut();
-      showToast('Account cancellato con successo.');
+      showToast('Account e tutti i dati cancellati con successo.', 'success');
     } catch (err) {
-      showToast('Errore durante la cancellazione. Contatta il supporto.', 'error');
+      showToast('Errore durante la cancellazione: ' + err.message, 'error');
     }
   };
 
@@ -312,7 +372,8 @@ export const Profilo = ({ onNavigate }) => {
                   {resetContestazioniLoading ? 'Azzeramento...' : 'Azzera contestazioni'}
                 </button>
               </div>
-              <button onClick={() => setIsEditing(true)} style={S.btnOutline}>⚙️ Modifica Profilo</button>
+              <button onClick={() => setIsEditing(true)} style={{ ...S.btnOutline, marginBottom: '10px' }}>⚙️ Modifica Profilo</button>
+              <button onClick={handleExportData} style={{ ...S.btnOutline, borderColor: C.primary, color: C.primary }}>📥 Esporta i miei dati (Portabilità GDPR)</button>
             </>
           )}
         </div>
@@ -547,7 +608,7 @@ export const Profilo = ({ onNavigate }) => {
           ⚠️ Zona pericolosa
         </h4>
         <p style={{ fontSize: '0.8rem', color: C.textLight, marginBottom: '12px', lineHeight: 1.5 }}>
-          L'eliminazione dell'account è irreversibile. Verranno cancellati profilo, statistiche, badge e cronologia XP.
+          L'eliminazione dell'account è irreversibile. Verranno cancellati in modo permanente il profilo, le statistiche, i badge, la cronologia XP, le note personali, i preferiti e le segnalazioni inviate.
         </p>
         <button
           onClick={handleDeleteAccount}

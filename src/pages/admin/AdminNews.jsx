@@ -7,6 +7,7 @@ import { TextArea } from '../../components/ui/TextArea';
 import { useNews } from '../../hooks/useNews';
 import { useToast } from '../../components/ui/ToastManager';
 import { validators, sanitizers } from '../../utils/validation';
+import { logger } from '../../utils/logger';
 
 // RSS Feed List configuration with metadata (using 100% reliable, active, CORS-friendly Italian traffic feeds)
 const FEEDS = [
@@ -235,7 +236,7 @@ export const AdminNews = () => {
             }
           }
         } catch (err) {
-          console.warn(`Failed to fetch RSS feed from ${feed.fonte}:`, err);
+          logger.warn(`Failed to fetch RSS feed from ${feed.fonte}:`, err);
         }
       }
 
@@ -245,9 +246,9 @@ export const AdminNews = () => {
         showToast(`Tutte le notizie RSS sono già sincronizzate o non pertinenti al CdS.`, 'info');
       }
       
-      console.log(`Sync completed. Added: ${addedCount}, Duplicates: ${skippedDuplicate}, Irrelevant: ${skippedIrrelevant}`);
+      logger.log(`Sync completed. Added: ${addedCount}, Duplicates: ${skippedDuplicate}, Irrelevant: ${skippedIrrelevant}`);
     } catch (error) {
-      console.warn('RSS sync failed:', error);
+      logger.warn('RSS sync failed:', error);
       showToast('Errore generale durante la sincronizzazione feeds', 'error');
     } finally {
       setSyncing(false);
