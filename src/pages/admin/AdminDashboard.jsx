@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { C } from '../../styles/theme';
+import { Icon } from '../../components/ui/Icon';
 import { S } from '../../styles/styles';
 import { useNews } from '../../hooks/useNews';
 
@@ -55,11 +56,11 @@ export const AdminDashboard = () => {
       <h2 style={S.sectionTitle}>Dashboard</h2>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-        <StatCard title="Operatori Iscritti" count={userCount} color={C.accent} icon="👮" />
-        <StatCard title="Segnalazioni Attive" count={segnalazioniCount} color={C.danger} icon="🚨" />
-        <StatCard title="Voci Prontuario" count={prontuarioList.length} color={C.primary} icon="📋" />
-        <StatCard title="Articoli Normativa" count={normativaList.length} color={C.success} icon="📖" />
-        <StatCard title="News Pubblicate" count={newsList.filter(n => n.pubblicato).length} color={C.warning} icon="📢" />
+        <StatCard title="Operatori Iscritti" count={userCount} color={C.accent} icon="user" />
+        <StatCard title="Segnalazioni Attive" count={segnalazioniCount} color={C.danger} icon="shield-alert" />
+        <StatCard title="Voci Prontuario" count={prontuarioList.length} color={C.primary} icon="clipboard-list" />
+        <StatCard title="Articoli Normativa" count={normativaList.length} color={C.success} icon="book-open" />
+        <StatCard title="News Pubblicate" count={newsList.filter(n => n.pubblicato).length} color={C.warning} icon="megaphone" />
       </div>
 
       <div style={{ marginTop: '32px', ...S.card, border: `1px solid ${C.border}` }}>
@@ -91,7 +92,7 @@ const StatCard = ({ title, count, color, icon }) => (
   <div style={{ ...S.card, borderLeft: `4px solid ${color}`, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
       <span style={S.labelUppercase}>{title}</span>
-      <span style={{ fontSize: '1.2rem' }}>{icon}</span>
+      <span style={{ color }}><Icon name={icon} size={22} /></span>
     </div>
     <div style={{ fontSize: '2rem', fontWeight: 'bold', color: C.text }}>{count}</div>
   </div>

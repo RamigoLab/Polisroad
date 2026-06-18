@@ -1,3 +1,4 @@
+import { logger } from './logger';
 // NOTA DI SICUREZZA: questo rate limiter opera solo lato client come protezione UX.
 // La protezione reale contro brute-force è delegata a Supabase Auth (server-side).
 // Non rimuovere la dipendenza dal rate limiting di Supabase Auth.
@@ -12,7 +13,7 @@ const getStorageAttempts = () => {
       return new Map(Object.entries(parsed));
     }
   } catch (e) {
-    console.error("Error reading rate limit attempts:", e);
+    logger.error("Error reading rate limit attempts:", e);
   }
   return new Map();
 };
@@ -22,7 +23,7 @@ const saveStorageAttempts = (map) => {
     const obj = Object.fromEntries(map.entries());
     localStorage.setItem('polisroad_login_attempts', JSON.stringify(obj));
   } catch (e) {
-    console.error("Error saving rate limit attempts:", e);
+    logger.error("Error saving rate limit attempts:", e);
   }
 };
 

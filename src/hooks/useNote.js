@@ -4,6 +4,7 @@ import { USE_SUPABASE } from '../config/constants';
 import { useAuth } from './useAuth';
 import { useSyncQueue } from './useSyncQueue';
 
+import { logger } from '../utils/logger';
 export const useNote = () => {
   const { session } = useAuth();
   const [note, setNote] = useState({});
@@ -14,7 +15,7 @@ export const useNote = () => {
     const loadNote = async () => {
       const { data, error } = await supabase.from('note').select('prontuario_id, testo').eq('user_id', session.user.id);
       if (error) {
-        console.error('Failed to load notes:', error);
+        logger.error('Failed to load notes:', error);
         setError(error);
         return;
       }
@@ -69,7 +70,7 @@ export const useNote = () => {
     if (!testo || testo.trim() === '') {
       const { error } = await supabase.from('note').delete().match({ user_id: session.user.id, prontuario_id: prontuarioId });
       if (error) {
-        console.error('Failed to delete note:', error);
+        logger.error('Failed to delete note:', error);
         setError(error);
         return { error };
       }
@@ -86,7 +87,7 @@ export const useNote = () => {
         { onConflict: 'user_id, prontuario_id' }
       );
       if (error) {
-        console.error('Failed to save note:', error);
+        logger.error('Failed to save note:', error);
         setError(error);
         return { error };
       }

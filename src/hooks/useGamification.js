@@ -3,6 +3,7 @@ import { supabase, isSupabaseConfigured } from '../config/supabase';
 import { useAuth } from './useAuth';
 import { BADGES } from '../config/badges';
 
+import { logger } from '../utils/logger';
 /**
  * Hook per gestire la logica di gamification.
  * - Recupera le statistiche dell'utente da Supabase.
@@ -45,7 +46,7 @@ export const useGamification = () => {
           setStats(data);
         }
       } catch (e) {
-        console.error('Error fetching gamification stats:', e);
+        logger.error('Error fetching gamification stats:', e);
         setError(e.message);
       } finally {
         setLoading(false);
@@ -119,7 +120,7 @@ export const useGamification = () => {
         // Ritorna informazioni di livello
         return { leveledUp: newLevel > (currentStats?.level || 1), newLevel };
       } catch (e) {
-        console.error('addXP error:', e);
+        logger.error('addXP error:', e);
         return { error: e.message };
       }
     },
@@ -166,7 +167,7 @@ export const useGamification = () => {
       else if (newStreak >= 3) bonus = 5;
       if (bonus > 0) await addXP(bonus, 'streak_bonus');
     } catch (e) {
-      console.error('updateStreak error:', e);
+      logger.error('updateStreak error:', e);
     }
   }, [userId, stats, addXP]);
 
@@ -229,7 +230,7 @@ export const useGamification = () => {
       setStats(prev => ({ ...prev, total_contestazioni: 0 }));
       return { error: null };
     } catch (e) {
-      console.error('resetContestazioni error:', e);
+      logger.error('resetContestazioni error:', e);
       return { error: e };
     }
   }, [userId, stats]);

@@ -4,6 +4,7 @@ import { mockProntuario } from '../data/prontuario';
 import { mockNormativa } from '../data/normativa';
 import { mockNews } from '../data/news';
 
+import { logger } from '../utils/logger';
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
@@ -57,7 +58,7 @@ export const DataProvider = ({ children }) => {
         .limit(100);
 
       if (newsError) {
-        console.error('Data Fetch Errors:', {
+        logger.error('Data Fetch Errors:', {
           news: newsError
         });
         
@@ -80,7 +81,7 @@ export const DataProvider = ({ children }) => {
         // Fetch normative data with pagination
         const { data: normativaData, error: normativaError } = await fetchAllRows('codice_strada', 'ordine');
         if (normativaError) {
-          console.error('Normativa fetch error:', normativaError);
+          logger.error('Normativa fetch error:', normativaError);
           setError('Errore nel caricamento della normativa.');
           setNormativa(mockNormativa);
         } else {
@@ -90,7 +91,7 @@ export const DataProvider = ({ children }) => {
         // Fetch prontuario data with pagination
         const { data: prontuarioData, error: prontuarioError } = await fetchAllRows('prontuario', 'articolo_numero');
         if (prontuarioError) {
-          console.error('Prontuario fetch error:', prontuarioError);
+          logger.error('Prontuario fetch error:', prontuarioError);
           setError('Errore nel caricamento del prontuario.');
           setProntuario(mockProntuario);
         } else {
@@ -114,7 +115,7 @@ export const DataProvider = ({ children }) => {
       setNews(validNews);
 
     } catch (err) {
-      console.error('General Data Fetch Error:', err);
+      logger.error('General Data Fetch Error:', err);
       setError(`Errore generale di connessione: ${err.message || 'Verifica la connessione a Supabase'}`);
       // Fallback ai mock
       setProntuario(mockProntuario);

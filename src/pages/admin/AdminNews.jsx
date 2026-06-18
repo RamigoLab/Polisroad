@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { C } from '../../styles/theme';
+import { Icon } from '../../components/ui/Icon';
 import { S } from '../../styles/styles';
 import { PS } from '../../styles/pages';
 import { TextInput } from '../../components/ui/TextInput';
@@ -8,25 +9,10 @@ import { useNews } from '../../hooks/useNews';
 import { useToast } from '../../components/ui/ToastManager';
 import { validators, sanitizers } from '../../utils/validation';
 import { logger } from '../../utils/logger';
+import { supabase } from '../../config/supabase';
 
-// RSS Feed List configuration with metadata (using 100% reliable, active, CORS-friendly Italian traffic feeds)
-const FEEDS = [
-  {
-    url: "https://www.asaps.it/rss.php",
-    fonte: "ASAPS",
-    categoria: "sicurezza"
-  },
-  {
-    url: "https://www.sicurauto.it/feed/",
-    fonte: "SicurAUTO",
-    categoria: "informativa"
-  },
-  {
-    url: "https://www.polizialocale.com/feed/",
-    fonte: "Polizia Locale",
-    categoria: "normativa"
-  }
-];
+// Le fonti RSS curate vivono ora lato server in supabase/functions/fetch-rss
+// (prima erano qui come FEEDS e venivano fetchate dal browser via api.rss2json.com).
 
 // Relevant keywords to filter traffic/enforcement news only
 const RELEVANT_KEYWORDS = [
@@ -183,60 +169,50 @@ export const AdminNews = () => {
     let skippedIrrelevant = 0;
 
     try {
-      for (const feed of FEEDS) {
-        // Safe RSS to JSON proxy to completely bypass CORS issues
-        const proxyUrl = `https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed.url)}`;
-        
-        try {
-          const response = await fetch(proxyUrl);
-          const data = await response.json();
+      const { data, error: fnError } = await supabase.functions.invoke('fetch-rss');
+      if (fnError) throw fnError;
 
-          if (data.status === 'ok' && data.items) {
-            for (const item of data.items) {
-              const title = cleanHtml(item.title);
-              const link = item.link;
-              const rawDesc = item.description || item.content || '';
-              const content = cleanHtml(rawDesc);
+      for (const feed of data.feeds) {
+        for (const item of feed.items) {
+          const title = cleanHtml(item.title);
+          const link = item.link;
+          const content = cleanHtml(item.description || '');
 
-              // 1. Check for duplicates in current news list using both title and link embedded in content
-              const isDuplicate = list.some(existing => 
-                (existing.contenuto && existing.contenuto.includes(link)) || 
-                (existing.titolo.toLowerCase() === title.toLowerCase())
-              );
+          // 1. Check for duplicates in current news list using both title and link embedded in content
+          const isDuplicate = list.some(existing => 
+            (existing.contenuto && existing.contenuto.includes(link)) || 
+            (existing.titolo.toLowerCase() === title.toLowerCase())
+          );
 
-              if (isDuplicate) {
-                skippedDuplicate++;
-                continue;
-              }
-
-              // 2. Check for keywords relevance (PolisRoad focus)
-              const relevant = checkRelevance(title, content);
-
-              if (!relevant) {
-                skippedIrrelevant++;
-                continue;
-              }
-
-              // 3. Save relevant and clean news item with embedded source
-              const cleanedContent = content.length > 500 ? content.substring(0, 500) + '...' : content;
-              const contentWithSource = `[Fonte: ${feed.fonte} | Link: ${link}]\n\n${cleanedContent}`;
-
-              const newsItem = {
-                titolo: title,
-                contenuto: contentWithSource,
-                categoria: feed.categoria,
-                pubblicato: false,
-                data_creazione: new Date(item.pubDate || Date.now()).toISOString()
-              };
-
-              const { error } = await add(newsItem);
-              if (!error) {
-                addedCount++;
-              }
-            }
+          if (isDuplicate) {
+            skippedDuplicate++;
+            continue;
           }
-        } catch (err) {
-          logger.warn(`Failed to fetch RSS feed from ${feed.fonte}:`, err);
+
+          // 2. Check for keywords relevance (PolisRoad focus)
+          const relevant = checkRelevance(title, content);
+
+          if (!relevant) {
+            skippedIrrelevant++;
+            continue;
+          }
+
+          // 3. Save relevant and clean news item with embedded source
+          const cleanedContent = content.length > 500 ? content.substring(0, 500) + '...' : content;
+          const contentWithSource = `[Fonte: ${feed.fonte} | Link: ${link}]\n\n${cleanedContent}`;
+
+          const newsItem = {
+            titolo: title,
+            contenuto: contentWithSource,
+            categoria: feed.categoria,
+            pubblicato: false,
+            data_creazione: new Date(item.pubDate || Date.now()).toISOString()
+          };
+
+          const { error } = await add(newsItem);
+          if (!error) {
+            addedCount++;
+          }
         }
       }
 
@@ -358,7 +334,7 @@ export const AdminNews = () => {
               backgroundColor: syncing ? 'rgba(46, 204, 113, 0.05)' : 'transparent'
             }}
           >
-            {syncing ? '🔄 Sincronizzazione...' : '⚡ Sincronizza RSS Live'}
+            {syncing ? <><Icon name="rotate-cw" size={16}/> Sincronizzazione...</> : <><Icon name="zap" size={16}/> Sincronizza RSS Live</>}
           </button>
           <button onClick={handleNew} style={S.btnPrimarySmall}>+ Nuova Notizia</button>
         </div>

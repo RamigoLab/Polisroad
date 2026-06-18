@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { C } from '../../styles/theme';
+import { Icon } from '../../components/ui/Icon';
 import { S } from '../../styles/styles';
 import { useToast } from '../../components/ui/ToastManager';
 import { supabase, isSupabaseConfigured } from '../../config/supabase';
 
+import { logger } from '../../utils/logger';
 export const AdminSegnalazioni = () => {
   const [list, setList] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,7 +28,7 @@ export const AdminSegnalazioni = () => {
           .order('created_at', { ascending: false });
 
         if (error) {
-          console.warn("Supabase reports query returned error:", error);
+          logger.warn("Supabase reports query returned error:", error);
           if (error.code === '42P01') {
             setDbError(true); // Table does not exist
           }
@@ -35,7 +37,7 @@ export const AdminSegnalazioni = () => {
           loadedData = data || [];
         }
       } catch (err) {
-        console.error("Failed to query Supabase reports:", err);
+        logger.error("Failed to query Supabase reports:", err);
         errorOccurred = true;
       }
     } else {
@@ -50,7 +52,7 @@ export const AdminSegnalazioni = () => {
         // Sort by created_at desc
         loadedData.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
       } catch (e) {
-        console.error("Failed to parse local reports:", e);
+        logger.error("Failed to parse local reports:", e);
       }
     }
 
@@ -79,11 +81,11 @@ export const AdminSegnalazioni = () => {
         if (!error) {
           success = true;
         } else {
-          console.warn("Failed to update in Supabase:", error);
+          logger.warn("Failed to update in Supabase:", error);
           showToast('Supabase ha rifiutato la modifica. Controlla le policy RLS.', 'error');
         }
       } catch (err) {
-        console.error("Supabase toggle exception:", err);
+        logger.error("Supabase toggle exception:", err);
         shouldUseLocalFallback = true;
       }
     }
@@ -97,7 +99,7 @@ export const AdminSegnalazioni = () => {
         localStorage.setItem('polisroad_local_segnalazioni', JSON.stringify(localList));
         success = true;
       } catch (e) {
-        console.error("Local toggle failed:", e);
+        logger.error("Local toggle failed:", e);
       }
     }
 
@@ -124,11 +126,11 @@ export const AdminSegnalazioni = () => {
         if (!error) {
           success = true;
         } else {
-          console.warn("Failed to delete in Supabase:", error);
+          logger.warn("Failed to delete in Supabase:", error);
           showToast('Supabase ha rifiutato l\'eliminazione. Controlla le policy RLS.', 'error');
         }
       } catch (err) {
-        console.error("Supabase delete exception:", err);
+        logger.error("Supabase delete exception:", err);
         shouldUseLocalFallback = true;
       }
     }
@@ -142,7 +144,7 @@ export const AdminSegnalazioni = () => {
         localStorage.setItem('polisroad_local_segnalazioni', JSON.stringify(localList));
         success = true;
       } catch (e) {
-        console.error("Local delete failed:", e);
+        logger.error("Local delete failed:", e);
       }
     }
 
@@ -226,13 +228,13 @@ USING (public.is_admin());`;
           disabled={loading} 
           style={{ ...S.btnPrimarySmall, backgroundColor: C.primary, width: 'auto', border: 'none', cursor: 'pointer' }}
         >
-          {loading ? 'Aggiornamento...' : '🔄 Ricarica'}
+          {loading ? 'Aggiornamento...' : '<Icon name="rotate-cw" size={16}/> Ricarica'}
         </button>
       </div>
 
       {dbError && (
         <div style={{ ...S.warningBox, marginBottom: '24px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
-          <h4 style={{ margin: 0, color: C.warning, fontWeight: 'bold' }}>⚠️ Tabella Database Mancante in Supabase</h4>
+          <h4 style={{ margin: 0, color: C.warning, fontWeight: 'bold' }}><Icon name="triangle-alert" size={16}/> Tabella Database Mancante in Supabase</h4>
           <p style={{ margin: 0, fontSize: '0.85rem', lineHeight: '1.4', color: C.text }}>
             L'applicazione sta usando la memoria locale (<strong>localStorage</strong>) come fallback perché la tabella <code>segnalazioni</code> non esiste nel tuo database Supabase.
           </p>
@@ -311,7 +313,7 @@ USING (public.is_admin());`;
                   <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
                     {isLocal && (
                       <span style={{ fontSize: '0.75rem', color: C.warning, fontWeight: 'bold' }}>
-                        💾 Locale
+                        <Icon name="save" size={16}/> Locale
                       </span>
                     )}
                     <span style={{
@@ -359,7 +361,7 @@ USING (public.is_admin());`;
                       cursor: 'pointer'
                     }}
                   >
-                    {item.risolto ? 'Riapri Segnalazione 🔓' : 'Segna come Risolta ✓'}
+                    {item.risolto ? 'Riapri Segnalazione <Icon name="unlock" size={16}/>' : 'Segna come Risolta <Icon name="check" size={16}/>'}
                   </button>
                   <button 
                     onClick={() => handleDelete(item.id)}
@@ -370,7 +372,7 @@ USING (public.is_admin());`;
                       cursor: 'pointer' 
                     }}
                   >
-                    Elimina 🗑️
+                    Elimina <Icon name="trash" size={16}/>
                   </button>
                 </div>
               </div>
@@ -379,7 +381,7 @@ USING (public.is_admin());`;
           
           {filteredList.length === 0 && (
             <div style={S.emptyStateBox}>
-              <span style={S.emptyStateIcon}>🎉</span>
+              <span style={S.emptyStateIcon}><Icon name="celebrate" size={16}/></span>
               Nessuna segnalazione trovata in questa categoria!
             </div>
           )}

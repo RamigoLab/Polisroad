@@ -1,10 +1,11 @@
 import React from 'react';
 import { C } from '../../styles/theme';
+import { Icon } from '../../components/ui/Icon';
 import { LS } from '../../styles/layout';
 
 const ADMIN_TABS = [
   { id: 'dashboard', label: 'Dashboard', page: 'admin_dashboard' },
-  { id: 'segnalazioni', label: 'Segnalazioni 🚨', page: 'admin_segnalazioni' },
+  { id: 'segnalazioni', label: 'Segnalazioni <Icon name="shield-alert" size={18}/>', page: 'admin_segnalazioni' },
   { id: 'news', label: 'News', page: 'admin_news' },
   { id: 'prontuario', label: 'Prontuario', page: 'admin_prontuario' },
   { id: 'normativa', label: 'Normativa', page: 'admin_normativa' },
@@ -15,7 +16,7 @@ export const AdminLayout = ({ children, currentTab, onNavigate }) => {
     <div style={LS.adminContainer(C.text)}>
       <header style={LS.adminHeader}>
         <div style={LS.adminHeaderLeft}>
-          <span>⚙️</span>
+          <span><Icon name="settings" size={18}/></span>
           <h2 style={LS.adminHeaderTitle}>Area Amministrativa</h2>
         </div>
         <button onClick={() => onNavigate('home')} style={LS.adminCloseBtn(C.accentLight)}>

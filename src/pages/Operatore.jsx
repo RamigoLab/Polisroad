@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { SearchBar } from '../components/ui/SearchBar';
 import { PS } from '../styles/pages';
 import { C } from '../styles/theme';
+import { Icon } from '../components/ui/Icon';
 import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
@@ -63,7 +64,7 @@ export const Operatore = ({ onNavigate }) => {
       {/* Header */}
       <div style={PS.operatoreHeader}>
         <div style={PS.operatoreHeaderTop}>
-          <span style={PS.operatoreHeaderTitle}>🚨 MODALITÀ OPERATORE</span>
+          <span style={{...PS.operatoreHeaderTitle, display:'inline-flex', alignItems:'center', gap:'8px'}}><Icon name="shield-alert" size={18}/> MODALITÀ OPERATORE</span>
           <button onClick={() => onNavigate('home')} style={PS.operatoreExitBtn}>ESCI</button>
         </div>
         <div style={PS.operatoreHeaderMeta}>
@@ -167,7 +168,7 @@ export const Operatore = ({ onNavigate }) => {
                         boxShadow: `0 4px 12px ${C.danger}40`
                       }}
                     >
-                      ✍️ {registering ? 'Registrazione...' : 'Registra Contestazione'}
+                      {registering ? 'Registrazione...' : <><Icon name="pen-line" size={16}/> Registra Contestazione</>}
                     </button>
                   </div>
                 )}

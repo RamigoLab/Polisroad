@@ -3,6 +3,7 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { SearchBar } from '../components/ui/SearchBar';
 import { Badge } from '../components/ui/Badge';
 import { C } from '../styles/theme';
+import { Icon } from '../components/ui/Icon';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useProntuario } from '../hooks/useProntuario';
@@ -164,13 +165,13 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
           <div style={PS.prontuarioNoteBlock}>
             {selectedItem.note_verbale && (
               <div style={S.infoBox}>
-                <h4 style={S.infoBoxTitle}>📝 Note al Verbale</h4>
+                <h4 style={{...S.infoBoxTitle, display:'flex', alignItems:'center', gap:'6px'}}><Icon name="file-text" size={16}/> Note al Verbale</h4>
                 <p style={{ fontSize: '0.9rem' }}>{selectedItem.note_verbale}</p>
               </div>
             )}
             {selectedItem.note_operative && (
               <div style={S.dangerBox}>
-                <h4 style={S.dangerBoxTitle}>🚨 Note Operative</h4>
+                <h4 style={{...S.dangerBoxTitle, display:'flex', alignItems:'center', gap:'6px'}}><Icon name="shield-alert" size={16}/> Note Operative</h4>
                 <p style={{ fontSize: '0.9rem' }}>{selectedItem.note_operative}</p>
               </div>
             )}
@@ -179,7 +180,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
           {/* Memo Personale */}
           <div style={PS.prontuarioMemoBlock}>
             <h4 style={PS.prontuarioMemoHeader}>
-              <span>💡 Memo Personale</span>
+              <span style={{display:'inline-flex', alignItems:'center', gap:'6px'}}><Icon name="lightbulb" size={15}/> Memo Personale</span>
               {editNoteId !== selectedItem.id && (
                 <button onClick={() => { setEditNoteId(selectedItem.id); setTempNote(itemNote); }} style={{ fontSize: '0.8rem', color: C.accent }}>Modifica</button>
               )}
@@ -217,7 +218,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
                 boxShadow: `0 4px 12px ${C.danger}40`
               }}
             >
-              ✍️ Registra Contestazione
+              <Icon name="pen-line" size={16}/> Registra Contestazione
             </button>
             <p style={{ fontSize: '0.8rem', color: C.textLight, marginTop: '8px' }}>
               Registra questa contestazione nel tuo profilo per sbloccare traguardi e statistiche.

@@ -3,6 +3,7 @@ import { supabase } from '../config/supabase';
 import { useAuth } from './useAuth';
 import { useToast } from '../components/ui/ToastManager';
 
+import { logger } from '../utils/logger';
 /**
  * Hook to manage offline-first synchronization queue.
  * Persists failed database actions to localStorage and retries them automatically when online.
@@ -63,7 +64,7 @@ export const useSyncQueue = () => {
       }
       return true; // Success
     } catch (err) {
-      console.error('Failed to sync action:', action, err);
+      logger.error('Failed to sync action:', action, err);
       return false; // Failed
     }
   }, [session]);
@@ -84,7 +85,7 @@ export const useSyncQueue = () => {
         if (updatedAction.attempts < 3) {
           remaining.push(updatedAction);
         } else {
-          console.warn('Action failed after 3 attempts, discarding:', action);
+          logger.warn('Action failed after 3 attempts, discarding:', action);
         }
       }
     }

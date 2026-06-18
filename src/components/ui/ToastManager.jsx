@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { C } from '../../styles/theme';
+import { Icon } from './Icon';
 
 const ToastContext = createContext(null);
 
@@ -35,7 +36,7 @@ export const ToastProvider = ({ children }) => {
       justifyContent: 'space-between',
       gap: '12px',
       padding: '12px 20px',
-      borderRadius: '12px',
+      borderRadius: C.radiusPill,
       fontSize: '0.9rem',
       fontWeight: '600',
       boxShadow: '0 8px 16px rgba(0,0,0,0.15)',
@@ -64,15 +65,15 @@ export const ToastProvider = ({ children }) => {
   const getToastIcon = (type) => {
     switch (type) {
       case 'success':
-        return '✅';
+        return <Icon name="circle-check" size={18} />;
       case 'danger':
       case 'error':
-        return '🚨';
+        return <Icon name="circle-x" size={18} />;
       case 'warning':
-        return '⚠️';
+        return <Icon name="triangle-alert" size={18} />;
       case 'info':
       default:
-        return 'ℹ️';
+        return <Icon name="info" size={18} />;
     }
   };
 
@@ -122,13 +123,14 @@ export const ToastProvider = ({ children }) => {
                 background: 'none',
                 border: 'none',
                 color: '#fff',
-                fontSize: '1rem',
                 cursor: 'pointer',
                 opacity: 0.8,
                 padding: '0 4px',
+                display: 'flex',
+                alignItems: 'center',
               }}
             >
-              ✕
+              <Icon name="close" size={16} />
             </button>
           </div>
         ))}

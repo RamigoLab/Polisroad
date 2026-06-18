@@ -3,6 +3,7 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { SearchBar } from '../components/ui/SearchBar';
 import { Badge } from '../components/ui/Badge';
 import { C } from '../styles/theme';
+import { Icon } from '../components/ui/Icon';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useNormativa } from '../hooks/useNormativa';
@@ -329,7 +330,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
           <span style={{fontWeight: 'bold', color: C.text}}>Lavori in corso</span>
         </div>
         <div style={{ ...S.emptyState, marginTop: '40px' }}>
-          <span style={{ fontSize: '2rem', display: 'block', marginBottom: '12px' }}>🚧</span>
+          <span style={{ display: 'block', marginBottom: '12px', color: 'var(--color-warning)' }}><Icon name="construction" size={32} /></span>
           Stiamo lavorando per aggiungere questa normativa.<br/>Torna presto!
         </div>
       </div>

@@ -64,7 +64,21 @@ function App() {
       setErrorToast(dataError);
     }
   }, [dataError]);
-  
+
+  // A1: sincronizza lo stato iniziale nella history e ascolta il tasto Indietro
+  useEffect(() => {
+    window.history.replaceState({ page: currentPage, params: navigationParams }, '', `?page=${currentPage}`);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    const handlePopState = (event) => {
+      const state = event.state;
+      setCurrentPage(state?.page || 'home');
+      setNavigationParams(state?.params || null);
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
 
 
   const navigate = (page, params = null) => {

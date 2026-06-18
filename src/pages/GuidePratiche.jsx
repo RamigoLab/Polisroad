@@ -1,4 +1,5 @@
 import React from 'react';
+import { Icon } from '../components/ui/Icon';
 import { PageWrapper } from '../components/layout/PageWrapper';
 
 import { C } from '../styles/theme';
@@ -18,7 +19,7 @@ export const GuidePratiche = ({ onNavigate }) => {
         textAlign: 'center',
         marginTop: '20px'
       }}>
-        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>🚧</div>
+        <div style={{ marginBottom: '16px', color: 'var(--color-warning)' }}><Icon name="construction" size={40} /></div>
         <h3 style={{ color: C.warning, marginBottom: '8px' }}>Work in progress</h3>
         <p style={{ color: C.text, lineHeight: '1.5' }}>
           Stiamo lavorando a questa sezione. Presto troverai guide operative su:

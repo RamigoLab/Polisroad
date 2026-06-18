@@ -1,18 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { APP_VERSION } from '../../config/constants';
-
-const TABS = [
-  { id: 'home', icon: '🏠', label: 'Home' },
-  { id: 'normativa', icon: '📖', label: 'Normativa' },
-  { id: 'prontuario', icon: '📋', label: 'Prontuario' },
-  { id: 'preferiti', icon: '⭐', label: 'Preferiti' },
-  { id: 'ricerca', icon: '🔍', label: 'Cerca' },
-  { id: 'calcolatore', icon: '🧮', label: 'Calcolatore' },
-  { id: 'guide', icon: '📚', label: 'Guide Pratiche' },
-  { id: 'news', icon: '📰', label: 'News' },
-  { id: 'links', icon: '🔗', label: 'Links' },
-  { id: 'profilo', icon: '👤', label: 'Profilo' },
-];
+import { NAV_ITEMS } from '../../config/navigation';
+import { Icon } from '../ui/Icon';
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
   const [isOnline, setIsOnline] = useState(navigator.onLine);
@@ -38,7 +27,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
       </div>
 
       <nav className="sidebar-nav">
-        {TABS.map((tab) => {
+        {NAV_ITEMS.map((tab) => {
           const isActive = currentPage === tab.id;
           return (
             <button
@@ -46,7 +35,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
               onClick={() => onNavigate(tab.id)}
               className={`sidebar-tab-btn ${isActive ? 'active' : ''}`}
             >
-              <span className="sidebar-tab-icon">{tab.icon}</span>
+              <span className="sidebar-tab-icon"><Icon name={tab.icon} size={18} /></span>
               <span className="sidebar-tab-label">{tab.label}</span>
             </button>
           );

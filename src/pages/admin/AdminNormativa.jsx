@@ -6,6 +6,7 @@ import { TextArea } from '../../components/ui/TextArea';
 import { useNormativa } from '../../hooks/useNormativa';
 import { useToast } from '../../components/ui/ToastManager';
 import { C } from '../../styles/theme';
+import { Icon } from '../../components/ui/Icon';
 
 export const AdminNormativa = () => {
   const { list, add, update, remove } = useNormativa();
@@ -363,7 +364,7 @@ export const AdminNormativa = () => {
 
         {/* SECTION 1: ARTICLE HEAD METADATA */}
         <div style={{ ...S.formCard, marginBottom: '24px', borderLeft: `4px solid ${C.primary}` }}>
-          <h3 style={{ ...S.infoBoxTitle, marginBottom: '12px' }}>⚙️ Intestazione dell'Articolo</h3>
+          <h3 style={{ ...S.infoBoxTitle, marginBottom: '12px' }}><Icon name="settings" size={16}/> Intestazione dell'Articolo</h3>
           <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
             <div style={PS.adminSanzioniGrid}>
               <TextInput label="Titolo (Es. Titolo I)" value={titoloNum} onChange={e => setTitoloNum(e.target.value)} />
@@ -398,7 +399,7 @@ export const AdminNormativa = () => {
         {/* SECTION 2: INDIVIDUAL COMMA CARDS */}
         <div style={{ marginBottom: '16px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h3 style={S.sectionTitle}>📜 Commi dell'Articolo ({(selectedArticle.commi || []).length})</h3>
+            <h3 style={S.sectionTitle}><Icon name="scroll" size={16}/> Commi dell'Articolo ({(selectedArticle.commi || []).length})</h3>
             <button onClick={handleAddNewComma} disabled={loading} style={S.btnPrimarySmall}>+ Aggiungi Comma</button>
           </div>
 

@@ -3,6 +3,7 @@ import { supabase } from '../config/supabase';
 import { USE_SUPABASE } from '../config/constants';
 import { useAuth } from './useAuth';
 
+import { logger } from '../utils/logger';
 export const usePreferiti = () => {
   const { session } = useAuth();
   const [preferiti, setPreferiti] = useState([]);
@@ -12,7 +13,7 @@ export const usePreferiti = () => {
     const loadPreferiti = async () => {
       const { data, error } = await supabase.from('preferiti').select('prontuario_id').eq('user_id', session.user.id);
       if (error) {
-        console.error('Failed to load favorites:', error);
+        logger.error('Failed to load favorites:', error);
         setError(error);
         return;
       }
@@ -56,7 +57,7 @@ export const usePreferiti = () => {
     if (isFav) {
       const { error } = await supabase.from('preferiti').delete().match({ user_id: session.user.id, prontuario_id: id });
       if (error) {
-        console.error('Failed to remove favorite:', error);
+        logger.error('Failed to remove favorite:', error);
         setError(error);
         return { error };
       }
@@ -66,7 +67,7 @@ export const usePreferiti = () => {
     } else {
       const { error } = await supabase.from('preferiti').insert({ user_id: session.user.id, prontuario_id: id });
       if (error) {
-        console.error('Failed to add favorite:', error);
+        logger.error('Failed to add favorite:', error);
         setError(error);
         return { error };
       }

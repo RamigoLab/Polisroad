@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 
+import { logger } from '../utils/logger';
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' && !import.meta.env.PROD;
 
 const DEMO_USER = {
@@ -34,7 +35,7 @@ export const AuthProvider = ({ children }) => {
         .select('*', { count: 'exact', head: true });
       if (!error) setUserCount(count);
     } catch (err) {
-      console.warn("User count fetch failed:", err);
+      logger.warn("User count fetch failed:", err);
     }
   };
 
@@ -50,7 +51,7 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error;
       setProfile(data);
     } catch (error) {
-      console.error('Error fetching profile:', error.message);
+      logger.error('Error fetching profile:', error.message);
     } finally {
       setLoading(false);
     }

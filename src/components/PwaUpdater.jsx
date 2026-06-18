@@ -1,7 +1,9 @@
 import React from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { C } from '../styles/theme';
+import { Icon } from './ui/Icon';
 
+import { logger } from '../utils/logger';
 const PwaUpdater = () => {
   const {
     offlineReady: [offlineReady, setOfflineReady],
@@ -12,7 +14,7 @@ const PwaUpdater = () => {
       // optional polling logic
     },
     onRegisterError(error) {
-      console.error('SW registration error', error);
+      logger.error('SW registration error', error);
     },
   });
 
@@ -33,7 +35,7 @@ const PwaUpdater = () => {
             transform: 'translateX(-50%)',
             backgroundColor: C.card,
             border: `1px solid ${C.border}`,
-            borderRadius: '12px',
+            borderRadius: C.radiusMd,
             padding: '16px',
             boxShadow: '0 4px 20px rgba(0,0,0,0.3)',
             zIndex: 10000,
@@ -44,12 +46,14 @@ const PwaUpdater = () => {
         >
           <div style={{ marginBottom: '12px', color: C.text }}>
             {offlineReady ? (
-              <span style={{ fontWeight: 'bold', color: C.success }}>
-                ✅ App pronta per funzionare offline!
+              <span style={{ fontWeight: 'bold', color: C.success, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                <Icon name="circle-check" size={18} /> App pronta per funzionare offline!
               </span>
             ) : (
               <span>
-                <strong style={{ color: C.primary }}>🚀 Nuovo aggiornamento disponibile!</strong>
+                <strong style={{ color: C.primary, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Icon name="rocket" size={18} /> Nuovo aggiornamento disponibile!
+                </strong>
                 <br />
                 <small>Riavvia per caricare l'ultima versione disponibile.</small>
               </span>
@@ -64,7 +68,7 @@ const PwaUpdater = () => {
                   color: '#fff',
                   border: 'none',
                   padding: '8px 16px',
-                  borderRadius: '8px',
+                  borderRadius: C.radiusPill,
                   fontWeight: 'bold',
                   cursor: 'pointer',
                 }}
@@ -79,7 +83,7 @@ const PwaUpdater = () => {
                 color: C.textLight,
                 border: `1px solid ${C.border}`,
                 padding: '8px 16px',
-                borderRadius: '8px',
+                borderRadius: C.radiusPill,
                 cursor: 'pointer',
               }}
             >

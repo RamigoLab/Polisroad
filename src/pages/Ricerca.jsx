@@ -3,6 +3,7 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { SearchBar } from '../components/ui/SearchBar';
 import { Badge } from '../components/ui/Badge';
 import { C } from '../styles/theme';
+import { Icon } from '../components/ui/Icon';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useProntuario } from '../hooks/useProntuario';
@@ -69,8 +70,8 @@ export const Ricerca = ({ onNavigate }) => {
       {!hasSearch && history.length > 0 && (
         <div style={{ marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-light)' }}>
-              🕒 Ricerche Recenti
+            <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--color-text-light)', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+              <Icon name="clock" size={15} /> Ricerche Recenti
             </span>
             <button 
               onClick={clearHistory}
@@ -112,7 +113,7 @@ export const Ricerca = ({ onNavigate }) => {
                     padding: '2px',
                   }}
                 >
-                  ✕
+                  <Icon name="close" size={14} />
                 </span>
               </div>
             ))}
@@ -123,7 +124,7 @@ export const Ricerca = ({ onNavigate }) => {
       {/* Empty State message when history is empty and no search is entered */}
       {!hasSearch && history.length === 0 && (
         <div style={{ textAlign: 'center', padding: '40px 20px', color: 'var(--color-text-light)' }}>
-          <div style={{ fontSize: '2.5rem', marginBottom: '12px' }}>🔍</div>
+          <div style={{ marginBottom: '12px', color: 'var(--color-text-light)' }}><Icon name="search" size={40} /></div>
           <p style={{ fontSize: '0.9rem' }}>Scrivi sopra per cercare simultaneamente nel Prontuario e nella Normativa.</p>
         </div>
       )}

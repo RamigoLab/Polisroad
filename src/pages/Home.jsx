@@ -6,6 +6,7 @@ import { C } from '../styles/theme';
 import { useAuth } from '../hooks/useAuth';
 import { useNews } from '../hooks/useNews';
 import { APP_VERSION } from '../config/constants';
+import { Icon } from '../components/ui/Icon';
 
 export const Home = ({ onNavigate }) => {
   const { profile } = useAuth();
@@ -51,24 +52,24 @@ export const Home = ({ onNavigate }) => {
       headerChildren={
         <div style={PS.homeQuickActions}>
           <button onClick={() => onNavigate('ricerca')} style={PS.homeSearchBtn}>
-            <span>🔍</span> Ricerca Rapida
+            <Icon name="search" size={18} /> Ricerca Rapida
           </button>
         </div>
       }
     >
       <button onClick={() => onNavigate('operatore')} style={PS.homeOperatoreBtn}>
-        <span style={{ fontSize: '1.4rem' }}>🚨</span> ATTIVA MODALITÀ OPERATORE
+        <Icon name="shield-alert" size={22} /> ATTIVA MODALITÀ OPERATORE
       </button>
 
       <div style={PS.homeGrid}>
-        <NavCard icon="📋" title="Prontuario" onClick={() => onNavigate('prontuario')} />
-        <NavCard icon="📖" title="Normativa" onClick={() => onNavigate('normativa')} />
-        <NavCard icon="🧮" title="Calcolatore" onClick={() => onNavigate('calcolatore')} />
-        <NavCard icon="⭐" title="Preferiti" onClick={() => onNavigate('preferiti')} />
-        <NavCard icon="📚" title="Guide Pratiche" onClick={() => onNavigate('guide')} />
-        <NavCard icon="📰" title="News" onClick={() => onNavigate('news')} />
-        <NavCard icon="🔗" title="Links Utili" onClick={() => onNavigate('links')} />
-        <NavCard icon="👤" title="Profilo" onClick={() => onNavigate('profilo')} />
+        <NavCard icon="clipboard-list" title="Prontuario" onClick={() => onNavigate('prontuario')} />
+        <NavCard icon="book-open" title="Normativa" onClick={() => onNavigate('normativa')} />
+        <NavCard icon="calculator" title="Calcolatore" onClick={() => onNavigate('calcolatore')} />
+        <NavCard icon="star" title="Preferiti" onClick={() => onNavigate('preferiti')} />
+        <NavCard icon="graduation-cap" title="Guide Pratiche" onClick={() => onNavigate('guide')} />
+        <NavCard icon="newspaper" title="News" onClick={() => onNavigate('news')} />
+        <NavCard icon="link" title="Links Utili" onClick={() => onNavigate('links')} />
+        <NavCard icon="user" title="Profilo" onClick={() => onNavigate('profilo')} />
       </div>
 
       {bannerNews && (
@@ -80,7 +81,9 @@ export const Home = ({ onNavigate }) => {
 
       {notificaNewsList.length > 0 && (
         <div style={{ marginTop: '16px' }}>
-          <h4 style={{ color: C.textLight, fontSize: '0.9rem', marginBottom: '8px', paddingLeft: '4px' }}>🔔 Comunicazioni</h4>
+          <h4 style={{ color: C.textLight, fontSize: '0.9rem', marginBottom: '8px', paddingLeft: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <Icon name="bell" size={16} /> Comunicazioni
+          </h4>
           {notificaNewsList.slice(0, 3).map(notifica => (
             <div key={notifica.id} style={{ 
               backgroundColor: C.card, 
@@ -99,7 +102,7 @@ export const Home = ({ onNavigate }) => {
 
       {isAdmin && (
         <button onClick={() => onNavigate('admin_dashboard')} style={PS.homeAdminBtn}>
-          <span>⚙️</span> Pannello Admin
+          <Icon name="settings" size={18} /> Pannello Admin
         </button>
       )}
 
@@ -182,7 +185,7 @@ export const Home = ({ onNavigate }) => {
 
 const NavCard = ({ icon, title, onClick }) => (
   <div onClick={onClick} style={PS.homeNavCard}>
-    <span style={PS.homeNavCardIcon}>{icon}</span>
+    <span style={PS.homeNavCardIcon}><Icon name={icon} size={22} /></span>
     <span style={PS.homeNavCardLabel}>{title}</span>
   </div>
 );

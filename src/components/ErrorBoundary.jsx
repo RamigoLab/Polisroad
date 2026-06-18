@@ -1,5 +1,8 @@
 import React from 'react';
 
+import { logger } from '../utils/logger';
+import { C } from '../styles/theme';
+import { Icon } from './ui/Icon';
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -13,7 +16,7 @@ export class ErrorBoundary extends React.Component {
 
   componentDidCatch(error, errorInfo) {
     // You can also log the error to an error reporting service
-    console.error("ErrorBoundary caught an error", error, errorInfo);
+    logger.error("ErrorBoundary caught an error", error, errorInfo);
   }
 
   handleReload = () => {
@@ -32,27 +35,27 @@ export class ErrorBoundary extends React.Component {
             justifyContent: 'center',
             minHeight: '100vh',
             padding: '24px',
-            backgroundColor: '#0d1117',
-            color: '#c9d1d9',
+            backgroundColor: C.background,
+            color: C.text,
             textAlign: 'center',
             fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif',
           }}
         >
           <div
             style={{
-              fontSize: '4rem',
               marginBottom: '16px',
+              color: C.danger,
               animation: 'bounce 2s infinite',
             }}
           >
-            🚨
+            <Icon name="octagon-alert" size={56} />
           </div>
           <h1
             style={{
               fontSize: '1.5rem',
               fontWeight: 'bold',
               marginBottom: '12px',
-              color: '#e74c3c',
+              color: C.danger,
             }}
           >
             Si è verificato un errore
@@ -60,7 +63,7 @@ export class ErrorBoundary extends React.Component {
           <p
             style={{
               fontSize: '0.95rem',
-              color: '#8b949e',
+              color: C.textLight,
               maxWidth: '320px',
               lineHeight: '1.5',
               marginBottom: '24px',
@@ -72,14 +75,14 @@ export class ErrorBoundary extends React.Component {
           {this.state.error && (
             <div
               style={{
-                backgroundColor: '#161b22',
-                border: '1px solid #30363d',
-                borderRadius: '8px',
+                backgroundColor: C.surface,
+                border: `1px solid ${C.border}`,
+                borderRadius: C.radiusSm,
                 padding: '12px',
                 width: '100%',
                 maxWidth: '360px',
                 fontSize: '0.8rem',
-                color: '#f0f6fc',
+                color: C.text,
                 textAlign: 'left',
                 whiteSpace: 'pre-wrap',
                 overflowX: 'auto',
@@ -95,21 +98,24 @@ export class ErrorBoundary extends React.Component {
           <button
             onClick={this.handleReload}
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
               padding: '12px 24px',
-              backgroundColor: '#1f6feb',
+              backgroundColor: C.accent,
               color: '#fff',
               border: 'none',
-              borderRadius: '8px',
+              borderRadius: C.radiusPill,
               fontSize: '1rem',
               fontWeight: 'bold',
               cursor: 'pointer',
-              boxShadow: '0 4px 12px rgba(31, 111, 235, 0.3)',
-              transition: 'background-color 0.2s',
+              boxShadow: 'var(--shadow-md)',
+              transition: 'filter 0.2s',
             }}
-            onMouseOver={(e) => (e.currentTarget.style.backgroundColor = '#388bfd')}
-            onMouseOut={(e) => (e.currentTarget.style.backgroundColor = '#1f6feb')}
+            onMouseOver={(e) => (e.currentTarget.style.filter = 'brightness(1.1)')}
+            onMouseOut={(e) => (e.currentTarget.style.filter = 'none')}
           >
-            🔄 Ricarica PolisRoad
+            <Icon name="rotate-cw" size={18} /> Ricarica PolisRoad
           </button>
         </div>
       );

@@ -3,6 +3,7 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
 import { useToast } from '../components/ui/ToastManager';
 import { C } from '../styles/theme';
+import { Icon } from '../components/ui/Icon';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useGamificationContext } from '../context/GamificationContext';
@@ -17,6 +18,7 @@ import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } fro
 import { sanitizers, validators } from '../utils/validation';
 import { supabase } from '../config/supabase';
 
+import { logger } from '../utils/logger';
 const DataRow = ({ label, value, icon }) => (
   <div style={S.dataRow}>
     <div style={S.dataRowIcon}>{icon}</div>
@@ -115,7 +117,7 @@ export const Profilo = ({ onNavigate }) => {
         if (!error) saved = true;
       }
     } catch (err) {
-      console.warn("Supabase insert report skipped/failed:", err);
+      logger.warn("Supabase insert report skipped/failed:", err);
     }
 
     if (!saved) {
@@ -125,7 +127,7 @@ export const Profilo = ({ onNavigate }) => {
         list.push({ ...reportData, id: `local_${Date.now()}` });
         localStorage.setItem('polisroad_local_segnalazioni', JSON.stringify(list));
       } catch (err) {
-        console.error("Local storage report backup failed:", err);
+        logger.error("Local storage report backup failed:", err);
       }
     }
 
@@ -312,7 +314,7 @@ export const Profilo = ({ onNavigate }) => {
       <div style={{ ...S.cardElevated, marginBottom: '24px', overflow: isEditing ? 'visible' : 'hidden' }}>
         <div style={PS.profileHeaderBg}>
           <div style={PS.profileAvatar}>
-            👮
+            <Icon name="user" size={32} />
             {featuredBadge && (
               <div style={{
                 position: 'absolute',
@@ -349,14 +351,14 @@ export const Profilo = ({ onNavigate }) => {
             </div>
           ) : (
             <>
-              <DataRow label="Grado / Qualifica" value={profile?.grado} icon="🎖️" />
-              <DataRow label="Nome" value={profile?.nome} icon="👤" />
+              <DataRow label="Grado / Qualifica" value={profile?.grado} icon={<Icon name="medal" size={16}/>} />
+              <DataRow label="Nome" value={profile?.nome} icon={<Icon name="user" size={16}/>} />
               <DataRow label="Cognome" value={profile?.cognome} icon="🆔" />
-              <DataRow label="Corpo / Forza" value={profile?.forza} icon="🏢" />
-              <DataRow label="Email di Servizio" value={profile?.email} icon="📧" />
-              <DataRow label="Contatto Telefonico" value={profile?.telefono} icon="📱" />
+              <DataRow label="Corpo / Forza" value={profile?.forza} icon={<Icon name="building" size={16}/>} />
+              <DataRow label="Email di Servizio" value={profile?.email} icon={<Icon name="mail" size={16}/>} />
+              <DataRow label="Contatto Telefonico" value={profile?.telefono} icon={<Icon name="smartphone" size={16}/>} />
               <div style={{ margin: '16px 0', padding: '16px', backgroundColor: C.accentLight, borderRadius: '12px' }}>
-                <DataRow label="Contestazioni Effettuate" value={stats?.total_contestazioni || 0} icon="🚨" />
+                <DataRow label="Contestazioni Effettuate" value={stats?.total_contestazioni || 0} icon={<Icon name="shield-alert" size={16}/>} />
                 <button
                   onClick={handleResetContestazioni}
                   disabled={resetContestazioniLoading || loading}
@@ -372,8 +374,8 @@ export const Profilo = ({ onNavigate }) => {
                   {resetContestazioniLoading ? 'Azzeramento...' : 'Azzera contestazioni'}
                 </button>
               </div>
-              <button onClick={() => setIsEditing(true)} style={{ ...S.btnOutline, marginBottom: '10px' }}>⚙️ Modifica Profilo</button>
-              <button onClick={handleExportData} style={{ ...S.btnOutline, borderColor: C.primary, color: C.primary }}>📥 Esporta i miei dati (Portabilità GDPR)</button>
+              <button onClick={() => setIsEditing(true)} style={{ ...S.btnOutline, marginBottom: '10px' }}><Icon name="settings" size={15}/> Modifica Profilo</button>
+              <button onClick={handleExportData} style={{ ...S.btnOutline, borderColor: C.primary, color: C.primary }}><Icon name="download" size={15}/> Esporta i miei dati (Portabilità GDPR)</button>
             </>
           )}
         </div>
@@ -381,7 +383,7 @@ export const Profilo = ({ onNavigate }) => {
 
       {/* Impostazioni Aspetto */}
       <div style={PS.profileSysBox}>
-        <h4 style={PS.profileSysTitle}>🎨 Impostazioni Aspetto</h4>
+        <h4 style={PS.profileSysTitle}><span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Icon name="palette" size={16}/>  Impostazioni Aspetto</span></h4>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <span style={{ color: C.text, fontWeight: '500' }}>Dark Mode (Tema Scuro)</span>
           <button 
@@ -396,7 +398,7 @@ export const Profilo = ({ onNavigate }) => {
               cursor: 'pointer'
             }}
           >
-            {isDarkMode ? '🌙 Attiva' : '☀️ Disattivata'}
+            {isDarkMode ? <><Icon name="moon" size={14}/> Attiva</> : <><Icon name="sun" size={14}/> Disattivata</>}
           </button>
         </div>
       </div>
@@ -413,7 +415,7 @@ export const Profilo = ({ onNavigate }) => {
             userSelect: 'none'
           }}
         >
-          <h4 style={{ ...PS.profileSysTitle, margin: 0 }}>🚨 Segnala un Problema</h4>
+          <h4 style={{ ...PS.profileSysTitle, margin: 0 }}><span style={{display:'inline-flex',alignItems:'center',gap:'6px'}}><Icon name="shield-alert" size={16}/> Segnala un Problema</span></h4>
           <span style={{ 
             fontSize: '0.8rem', 
             color: C.textLight, 
@@ -505,7 +507,7 @@ export const Profilo = ({ onNavigate }) => {
                 marginTop: '6px'
               }}
             >
-              {reportSending ? 'Registrazione...' : 'Invia e Apri Email 📧'}
+              {reportSending ? 'Registrazione...' : 'Invia e Apri Email'}
             </button>
           </form>
         )}
@@ -514,7 +516,7 @@ export const Profilo = ({ onNavigate }) => {
       {/* Pannello Amministratore (Solo se admin) */}
       {profile?.ruolo === 'admin' && (
         <div style={{ ...PS.profileSysBox, borderLeft: `4px solid ${C.accent}` }}>
-          <h4 style={PS.profileSysTitle}>⚙️ Pannello di Controllo Amministratore</h4>
+          <h4 style={PS.profileSysTitle}><span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Icon name="settings" size={16}/> Pannello di Controllo Amministratore</span></h4>
           <p style={{ fontSize: '0.85rem', color: C.textLight, marginBottom: '12px', lineHeight: '1.4' }}>
             Il tuo account dispone dei privilegi di amministratore. Accedi al pannello per gestire notizie, prontuario e leggere le segnalazioni inviate.
           </p>
@@ -545,7 +547,7 @@ export const Profilo = ({ onNavigate }) => {
             alignItems: 'center',
             gap: '8px'
           }}>
-            🎮 Progressi e Gamification
+            <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Icon name="gamepad" size={16}/> Progressi e Gamification</span>
           </h3>
           <LevelProgress
             level={level}
@@ -567,7 +569,7 @@ export const Profilo = ({ onNavigate }) => {
 
       {/* Informazioni di Sistema */}
       <div style={PS.profileSysBox}>
-        <h4 style={PS.profileSysTitle}>📦 Informazioni di Sistema</h4>
+        <h4 style={PS.profileSysTitle}><span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Icon name="package" size={16}/> Informazioni di Sistema</span></h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <SysRow label="Versione Database CdS:" value={DB_VERSION_CDS} valueStyle={{ color: C.primary }} />
           <SysRow label="Versione Prontuario:" value={DB_VERSION_PRONTUARIO} valueStyle={{ color: C.primary }} />
@@ -579,7 +581,7 @@ export const Profilo = ({ onNavigate }) => {
       {/* Sezione Documenti Legali */}
       <div style={{ marginTop: '24px', padding: '16px', backgroundColor: C.card, borderRadius: '12px', border: `1px solid ${C.border}`, marginBottom: '16px' }}>
         <h4 style={{ fontSize: '0.85rem', color: C.textLight, marginBottom: '12px', fontWeight: '600' }}>
-          📄 Documenti legali
+          <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Icon name="file-text" size={16}/> Documenti legali</span>
         </h4>
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
           <button onClick={() => onNavigate('privacy')} style={{ textAlign: 'left', color: C.accent, fontSize: '0.9rem', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
@@ -598,14 +600,14 @@ export const Profilo = ({ onNavigate }) => {
           Questa app è sviluppata per supportare il lavoro delle forze dell'ordine. Se la trovi utile, puoi offrire un caffè allo sviluppatore.
         </p>
         <a href="https://www.paypal.me" target="_blank" rel="noreferrer" style={PS.profileDonateBtn}>
-          ☕ Dona con PayPal
+          <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Icon name="zap" size={16}/> Dona con PayPal</span>
         </a>
       </div>
 
       {/* Zona Pericolosa */}
       <div style={{ marginTop: '24px', padding: '16px', borderRadius: '12px', border: `1px solid ${C.danger}` }}>
         <h4 style={{ color: C.danger, fontSize: '0.9rem', marginBottom: '8px', fontWeight: '700' }}>
-          ⚠️ Zona pericolosa
+          <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Icon name="triangle-alert" size={16}/> Zona pericolosa</span>
         </h4>
         <p style={{ fontSize: '0.8rem', color: C.textLight, marginBottom: '12px', lineHeight: 1.5 }}>
           L'eliminazione dell'account è irreversibile. Verranno cancellati in modo permanente il profilo, le statistiche, i badge, la cronologia XP, le note personali, i preferiti e le segnalazioni inviate.

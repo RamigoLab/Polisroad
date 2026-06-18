@@ -1,5 +1,26 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.6.0] - 18 Giugno 2026
+
+### 🎨 Redesign Grafico (Material 3-inspired)
+- Superfici tonali: nuovi token CSS (`--bg-surface-container`, `--bg-surface-container-high`) sostituiscono il grigio piatto; `--bg-global` e `--bg-surface` aggiornati
+- Font: sostituito Sora (usato solo in 2 pagine statiche) con Roboto (400/500/700), coerente con il linguaggio visivo Google
+- Scala raggi unificata: `--radius-sm/md/lg/pill` usata ovunque al posto di valori fissi sparsi
+- Bottoni: aggiunto componente `Button.jsx` con varianti (filled, tonal, outline, text, danger)
+- Bottom navigation: da 10 voci a scorrimento a 5 voci fisse (Home, Normativa, Prontuario, Cerca, Profilo) con indicatore "pillola" sull'attiva; Sidebar mantiene tutte e 10 le voci
+- Icone: installato `lucide-react`; tutte le emoji funzionali/navigazione sostituite con icone SVG coerenti tramite componente centralizzato `Icon.jsx`; emoji di gamification/reward lasciate invariate
+
+### 🐛 Correzioni
+- **Tasto Indietro:** listener `popstate` in `App.jsx`; il tasto Indietro del browser/Android ora torna alla pagina precedente dell'app
+- **Console log in produzione:** sostituiti ~39 `console.*` diretti in 14 file con il logger centralizzato `src/utils/logger.js`
+- **Theme-color barra di stato:** `index.html` aggiornato a `#1a3a5c` (blu brand); `useTheme.js` aggiorna il meta tag dinamicamente al cambio tema
+- **RSS dal browser:** aggiunta Edge Function `supabase/functions/fetch-rss` con parser RSS integrato e verifica ruolo admin lato server; rimossa chiamata diretta a `api.rss2json.com` dal client
+- **File orfani rimossi:** eliminati `public/favicon.svg`, `public/icons.svg`, `public/manifest.json`
+- **Dipendenza inutilizzata:** disinstallato `react-router-dom`
+- **ErrorBoundary:** colori hardcoded sostituiti con variabili CSS globali
+
+---
+
 ## [1.5.3] - 12 Giugno 2026
 
 ### 🛡️ Audit di Sicurezza & Privacy
@@ -26,12 +47,6 @@
 ### 🔎 Ricerca Normativa migliorata
 - Quando la barra di ricerca contiene **solo numeri** (es. `186`), l’articolo corrispondente viene mostrato **primo** nella sezione **Articoli Normativa**, seguito dagli altri risultati.
 - Implementato ri‑ordinamento dei risultati in `src/hooks/useSearch.js`.
-
-## [1.5.0] - 6 Giugno 2026
-
-Tutte le modifiche significative a questo progetto saranno documentate in questo file.
-
----
 
 ## [1.5.0] - 6 Giugno 2026
 

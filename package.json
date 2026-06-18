@@ -1,7 +1,7 @@
 {
   "name": "polisroad",
   "private": true,
-  "version": "1.5.3",
+  "version": "1.6.0",
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/update-version.js",
@@ -19,10 +19,10 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
     "dompurify": "^3.4.5",
+    "lucide-react": "^1.21.0",
     "posthog-js": "^1.373.5",
     "react": "^19.2.5",
-    "react-dom": "^19.2.5",
-    "react-router-dom": "^6.28.0"
+    "react-dom": "^19.2.5"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

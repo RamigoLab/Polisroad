@@ -14,6 +14,13 @@ export const useTheme = () => {
 
   const isDarkMode = theme === 'dark';
 
+  const applyThemeColor = (validTheme) => {
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', validTheme === 'dark' ? '#0d1117' : '#1a3a5c');
+    }
+  };
+
   const setTheme = (newTheme) => {
     const validTheme = newTheme === 'dark' ? 'dark' : 'light';
     setThemeState(validTheme);
@@ -23,6 +30,7 @@ export const useTheme = () => {
     } else {
       document.documentElement.removeAttribute('data-theme');
     }
+    applyThemeColor(validTheme);
   };
 
   const toggleTheme = () => {
@@ -41,7 +49,7 @@ export const useTheme = () => {
 
     mediaQuery.addEventListener('change', handleChange);
     return () => mediaQuery.removeEventListener('change', handleChange);
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Ensure document matches current theme state on mount/change
   useEffect(() => {
@@ -50,6 +58,7 @@ export const useTheme = () => {
     } else {
       document.documentElement.removeAttribute('data-theme');
     }
+    applyThemeColor(theme);
   }, [theme]);
 
   return {

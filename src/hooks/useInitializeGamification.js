@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { useGamification } from './useGamification';
 import { useAuth } from './useAuth';
 
+import { logger } from '../utils/logger';
 /**
  * Hook che si attiva ALL'AVVIO dell'app per:
  * 1. Aggiornare lo streak quotidiano
@@ -24,10 +25,10 @@ export const useInitializeGamification = () => {
         const newBadges = await checkNewBadges();
         
         if (newBadges && newBadges.length > 0) {
-          console.log('🏆 Nuovi badge sbloccati:', newBadges);
+          logger.log('🏆 Nuovi badge sbloccati:', newBadges);
         }
       } catch (e) {
-        console.error('❌ Gamification initialization error:', e);
+        logger.error('❌ Gamification initialization error:', e);
       }
     };
 

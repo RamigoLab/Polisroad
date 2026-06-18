@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { UIS } from '../../styles/ui';
+import { Icon } from './Icon';
 
 export const Toast = ({ message, onClose, duration = 3000 }) => {
   useEffect(() => {
@@ -21,7 +22,9 @@ export const Toast = ({ message, onClose, duration = 3000 }) => {
       </style>
       <div style={UIS.toast}>
         <span>{message}</span>
-        <button onClick={onClose} style={{ color: '#fff', opacity: 0.7 }}>✕</button>
+        <button onClick={onClose} style={{ color: '#fff', opacity: 0.7, display: 'flex', alignItems: 'center' }}>
+          <Icon name="close" size={16} />
+        </button>
       </div>
     </div>
   );

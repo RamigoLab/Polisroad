@@ -1,3 +1,4 @@
+import { logger } from './logger';
 // src/utils/storage.js
 // Simple wrapper around localStorage with base64 encoding for modest obfuscation.
 // Not cryptographically secure, but avoids plain-text storage of flags.
@@ -8,7 +9,7 @@ export const setItem = (key, value) => {
     const encoded = btoa(unescape(encodeURIComponent(stringValue)));
     localStorage.setItem(key, encoded);
   } catch (e) {
-    console.error('Storage setItem error:', e);
+    logger.error('Storage setItem error:', e);
   }
 };
 
@@ -23,7 +24,7 @@ export const getItem = (key) => {
       return decoded;
     }
   } catch (e) {
-    console.error('Storage getItem error:', e);
+    logger.error('Storage getItem error:', e);
     return null;
   }
 };
@@ -32,6 +33,6 @@ export const removeItem = (key) => {
   try {
     localStorage.removeItem(key);
   } catch (e) {
-    console.error('Storage removeItem error:', e);
+    logger.error('Storage removeItem error:', e);
   }
 };
