@@ -90,20 +90,20 @@ export const Privacy = ({ onNavigate }) => {
           I dati personali vengono conservati per tutta la durata dell'account. In caso di cancellazione dell'account da parte dell'utente, i dati vengono eliminati entro 30 giorni dalla richiesta.
         </p>
 
-        <h3 style={h3Style}>6. Responsabile del trattamento (sub-processor)</h3>
+        <h3 style={h3Style}>6. Responsabili del trattamento (sub-processor)</h3>
         <p style={pStyle}>
-          I dati personali di autenticazione, profilo, note e preferiti sono ospitati su Supabase (Supabase Inc.), fornitore di servizi cloud con server ubicati nell'Unione Europea (Frankfurt, Germania).
+          I dati personali di autenticazione, profilo, note e preferiti sono ospitati su <strong>Supabase</strong> (Supabase Inc.), fornitore di servizi cloud con server ubicati nell'Unione Europea (Frankfurt, Germania).
         </p>
         <p style={pStyle}>
-          Inoltre, per finalità di analisi del comportamento degli utenti e ottimizzazione dell'esperienza d'uso, l'App si avvale di PostHog (PostHog Inc.), con sede negli Stati Uniti. I trasferimenti di dati verso PostHog avvengono nel rispetto delle Clausole Contrattuali Standard (Standard Contractual Clauses - SCC). I dati trasmessi includono esclusivamente eventi comportamentali e metriche d'uso anonimizzate (ad esempio, la lunghezza e la presenza di numeri all'interno dei termini di ricerca, senza trasmettere mai il testo integrale della ricerca per proteggere dati personali di terzi come targhe o nominativi).
+          Per finalità di analisi del comportamento degli utenti e ottimizzazione dell'esperienza d'uso, l'App si avvale di <strong>PostHog</strong> (PostHog Inc.) con infrastruttura cloud ospitata nell'Unione Europea (EU Cloud). I dati trasmessi includono esclusivamente eventi comportamentali e metriche d'uso anonimizzate: ad esempio la lunghezza e la presenza di cifre all'interno dei termini di ricerca, senza mai trasmettere il testo integrale della ricerca, a tutela di eventuali dati personali di terzi (come targhe o nominativi). Essendo i server PostHog ubicati in UE, non sono necessari trasferimenti di dati verso paesi terzi.
         </p>
 
-        <h3 style={h3Style}>6.1. Cookie e tecnologie di tracciamento</h3>
+        <h3 style={h3Style}>6.1. Consenso analytics e opt-out</h3>
         <p style={pStyle}>
-          L'App utilizza PostHog per analizzare in modo pseudonimo l'utilizzo delle diverse funzionalità e migliorare l'interfaccia. PostHog può fare uso di tecnologie di memorizzazione locale (localStorage) o cookie tecnici per tracciare le sessioni.
+          Il tracciamento tramite PostHog è attivo per impostazione predefinita al fine di migliorare il servizio. L'utente può revocare il consenso in qualsiasi momento direttamente dalla sezione <strong>Profilo → Impostazioni Aspetto → Analytics (PostHog)</strong>, disattivando il relativo toggle. La revoca ha effetto immediato e permanente sul dispositivo in uso.
         </p>
         <p style={pStyle}>
-          È possibile inibire questo tracciamento disattivando i cookie dal proprio browser o bloccando le connessioni verso il dominio di PostHog (es. utilizzando estensioni ad-blocker).
+          PostHog utilizza tecnologie di memorizzazione locale (localStorage) per il tracciamento delle sessioni. La disattivazione tramite il toggle nel Profilo è il metodo raccomandato per esercitare il diritto di opposizione al trattamento analytics (art. 21 GDPR).
         </p>
 
         <h3 style={h3Style}>7. Contenuto normativo</h3>
