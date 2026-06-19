@@ -47,7 +47,11 @@ export const useSyncQueue = () => {
 
     try {
       if (type === 'SAVE_NOTE') {
-        const { prontuarioId, testo } = payload;
+        const { prontuarioId, testo } = payload ?? {};
+        if (!prontuarioId) {
+          logger.warn('SAVE_NOTE: prontuarioId mancante, azione scartata.', action);
+          return true; // scartiamo senza ritentare
+        }
         if (!testo || testo.trim() === '') {
           const { error } = await supabase
             .from('note')
@@ -61,6 +65,9 @@ export const useSyncQueue = () => {
           );
           if (error) throw error;
         }
+      } else {
+        logger.warn('useSyncQueue: tipo azione non riconosciuto, scartato:', type);
+        return true; // scartiamo senza bloccare la coda
       }
       return true; // Success
     } catch (err) {

@@ -1,22 +1,26 @@
 import { useState, useEffect, useCallback } from 'react';
+import { getItem, setItem, removeItem } from '../utils/storage';
+
+const STORAGE_KEY = 'polisroad_search_history';
 
 /**
  * Hook to manage user's recent search queries in localStorage.
+ * Uses the storage.js wrapper (btoa encoding) instead of raw localStorage.
  * Restricts the history count to 10 entries max and handles deduplication.
  */
 export const useSearchHistory = (maxEntries = 10) => {
   const [history, setHistory] = useState(() => {
     try {
-      const saved = localStorage.getItem('polisroad_search_history');
-      return saved ? JSON.parse(saved) : [];
+      const saved = getItem(STORAGE_KEY);
+      return Array.isArray(saved) ? saved : [];
     } catch {
       return [];
     }
   });
 
-  // Sync to localStorage
+  // Sync to localStorage via obfuscated wrapper
   useEffect(() => {
-    localStorage.setItem('polisroad_search_history', JSON.stringify(history));
+    setItem(STORAGE_KEY, history);
   }, [history]);
 
   const addSearch = useCallback((query) => {
@@ -37,6 +41,7 @@ export const useSearchHistory = (maxEntries = 10) => {
 
   const clearHistory = useCallback(() => {
     setHistory([]);
+    removeItem(STORAGE_KEY);
   }, []);
 
   return {
