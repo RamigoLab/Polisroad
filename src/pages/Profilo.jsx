@@ -19,6 +19,7 @@ import { sanitizers, validators } from '../utils/validation';
 import { supabase } from '../config/supabase';
 
 import { logger } from '../utils/logger';
+import posthog from 'posthog-js';
 const DataRow = ({ label, value, icon }) => (
   <div style={S.dataRow}>
     <div style={S.dataRowIcon}>{icon}</div>
@@ -53,6 +54,18 @@ export const Profilo = ({ onNavigate }) => {
   const { showToast } = useToast();
 
   const { isDarkMode, toggleTheme } = useTheme();
+
+  // Stato consenso analytics PostHog
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(() => !posthog.has_opted_out_capturing());
+  const toggleAnalytics = () => {
+    if (analyticsEnabled) {
+      posthog.opt_out_capturing();
+      setAnalyticsEnabled(false);
+    } else {
+      posthog.opt_in_capturing();
+      setAnalyticsEnabled(true);
+    }
+  };
 
   // Gamification context
   const {
@@ -408,6 +421,29 @@ export const Profilo = ({ onNavigate }) => {
             }}
           >
             {isDarkMode ? <><Icon name="moon" size={14}/> Attiva</> : <><Icon name="sun" size={14}/> Disattivata</>}
+          </button>
+        </div>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '16px' }}>
+          <div style={{ flex: 1, paddingRight: '12px' }}>
+            <span style={{ color: C.text, fontWeight: '500' }}>Analytics (PostHog)</span>
+            <p style={{ fontSize: '0.75rem', color: C.textLight, margin: '2px 0 0' }}>
+              Consenso all'invio di dati anonimi sull'utilizzo dell'app per migliorare il servizio.
+            </p>
+          </div>
+          <button
+            onClick={toggleAnalytics}
+            style={{
+              padding: '8px 16px',
+              backgroundColor: analyticsEnabled ? C.success : C.textLight,
+              color: '#fff',
+              borderRadius: '20px',
+              fontWeight: 'bold',
+              border: 'none',
+              cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            {analyticsEnabled ? <><Icon name="check" size={14}/> Attivo</> : <><Icon name="x" size={14}/> Disattivato</>}
           </button>
         </div>
       </div>
