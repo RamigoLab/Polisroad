@@ -1,10 +1,19 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+const ALLOWED_ORIGINS = [
+  'https://polisroad.vercel.app',
+  'https://polisroad.it',
+];
+
+const getCorsHeaders = (req: Request) => {
+  const origin = req.headers.get('origin') ?? '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  };
+};
 
 // Fonti RSS curate (prima vivevano come FEEDS in src/pages/admin/AdminNews.jsx).
 // Stanno qui, lato server, cosi' la function non diventa un proxy aperto a URL
@@ -16,7 +25,6 @@ const FEEDS = [
 ]
 
 // Estrae i campi utili da un feed RSS 2.0 senza dipendenze esterne
-// (sostituisce quello che prima faceva api.rss2json.com).
 function parseRss(xml: string) {
   const items: { title: string; link: string; description: string; pubDate: string }[] = []
   const itemBlocks = xml.match(/<item[\s\S]*?<\/item>/g) || []
@@ -39,6 +47,8 @@ function parseRss(xml: string) {
 }
 
 serve(async (req) => {
+  const corsHeaders = getCorsHeaders(req);
+
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
   }
@@ -67,7 +77,7 @@ serve(async (req) => {
       })
     }
 
-    // Solo gli admin possono sincronizzare le news (stesso campo "ruolo" usato da ProtectedRoute lato client)
+    // Solo gli admin possono sincronizzare le news
     const { data: profile, error: profileError } = await supabaseClient
       .from('profiles')
       .select('ruolo')

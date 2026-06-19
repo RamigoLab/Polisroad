@@ -2,5 +2,5 @@ const isDev = import.meta.env.DEV;
 export const logger = {
   log:   (...args) => isDev && console.log(...args),
   warn:  (...args) => isDev && console.warn(...args),
-  error: (...args) => console.error(...args), // errori sempre visibili
+  error: (...args) => isDev && console.error(...args),
 };
