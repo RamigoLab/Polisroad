@@ -5,7 +5,7 @@ import { LS } from '../../styles/layout';
 
 const ADMIN_TABS = [
   { id: 'dashboard', label: 'Dashboard', page: 'admin_dashboard' },
-  { id: 'segnalazioni', label: 'Segnalazioni <Icon name="shield-alert" size={18}/>', page: 'admin_segnalazioni' },
+  { id: 'segnalazioni', label: 'Segnalazioni', page: 'admin_segnalazioni', icon: 'shield-alert' },
   { id: 'news', label: 'News', page: 'admin_news' },
   { id: 'prontuario', label: 'Prontuario', page: 'admin_prontuario' },
   { id: 'normativa', label: 'Normativa', page: 'admin_normativa' },
@@ -31,6 +31,7 @@ export const AdminLayout = ({ children, currentTab, onNavigate }) => {
             onClick={() => onNavigate(tab.page)}
             style={LS.adminTab(currentTab === tab.id, C.accent)}
           >
+            {tab.icon && <Icon name={tab.icon} size={15} />}
             {tab.label}
           </button>
         ))}

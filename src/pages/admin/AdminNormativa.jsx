@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { S } from '../../styles/styles';
 import { PS } from '../../styles/pages';
+import { C } from '../../styles/theme';
 import { TextInput } from '../../components/ui/TextInput';
 import { TextArea } from '../../components/ui/TextArea';
+import { Icon } from '../../components/ui/Icon';
 import { useNormativa } from '../../hooks/useNormativa';
 import { useToast } from '../../components/ui/ToastManager';
-import { C } from '../../styles/theme';
-import { Icon } from '../../components/ui/Icon';
 
 export const AdminNormativa = () => {
   const { list, add, update, remove } = useNormativa();
@@ -358,7 +358,7 @@ export const AdminNormativa = () => {
     return (
       <div>
         <div style={S.formHeader}>
-          <button onClick={handleBackToList} style={{ fontSize: '1.2rem', padding: '6px', marginRight: '8px', cursor: 'pointer', background: 'none', border: 'none' }}>⬅️ Torna alla Lista</button>
+          <button onClick={handleBackToList} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', marginRight: '8px', cursor: 'pointer', background: 'none', border: 'none', fontSize: '1rem' }}><Icon name="chevron-left" size={18} /> Torna alla Lista</button>
           <h2 style={S.sectionTitle}>Modifica Articolo {selectedArticle.articolo_num}</h2>
         </div>
 

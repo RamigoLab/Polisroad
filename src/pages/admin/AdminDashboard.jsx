@@ -21,7 +21,7 @@ export const AdminDashboard = () => {
     const fetchCount = async () => {
       let count = 0;
       let errorOccurred = false;
-      const { supabase, isSupabaseConfigured } = await import('../../config/supabase');
+
       if (isSupabaseConfigured && supabase) {
         try {
           const { data, error } = await supabase.from('segnalazioni').select('id');

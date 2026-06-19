@@ -4,7 +4,7 @@ import {
   Lightbulb, PenLine, FileText, Construction, OctagonAlert, RotateCw,
   Rocket, CircleCheck, CircleX, TriangleAlert, Info, Medal, Building2,
   Mail, Smartphone, Download, Palette, Moon, Sun, Gamepad2, Package,
-  Megaphone, ScrollText, Unlock, Trash2, Save, PartyPopper, Zap,
+  Megaphone, ScrollText, Unlock, Trash2, Save, PartyPopper, Zap, ChevronLeft,
 } from 'lucide-react';
 
 // Mappa unica nome -> componente lucide-react. Si estende qui, non importando
@@ -22,7 +22,7 @@ const MAP = {
   mail: Mail, smartphone: Smartphone, download: Download, palette: Palette,
   moon: Moon, sun: Sun, gamepad: Gamepad2, package: Package, megaphone: Megaphone,
   scroll: ScrollText, unlock: Unlock, trash: Trash2, save: Save,
-  celebrate: PartyPopper, zap: Zap,
+  celebrate: PartyPopper, zap: Zap, 'chevron-left': ChevronLeft,
 };
 
 export const Icon = ({ name, size = 20, color, strokeWidth = 2, ...rest }) => {

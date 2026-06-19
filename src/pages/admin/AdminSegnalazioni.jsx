@@ -228,7 +228,7 @@ USING (public.is_admin());`;
           disabled={loading} 
           style={{ ...S.btnPrimarySmall, backgroundColor: C.primary, width: 'auto', border: 'none', cursor: 'pointer' }}
         >
-          {loading ? 'Aggiornamento...' : '<Icon name="rotate-cw" size={16}/> Ricarica'}
+          {loading ? 'Aggiornamento...' : <><Icon name="rotate-cw" size={16}/> Ricarica</>}
         </button>
       </div>
 
@@ -321,7 +321,10 @@ USING (public.is_admin());`;
                       fontWeight: 'bold',
                       color: item.risolto ? C.success : C.danger
                     }}>
-                      {item.risolto ? '● Risolta' : '○ Da Risolvere'}
+                      {item.risolto
+                        ? <><Icon name="circle-check" size={14}/> Risolta</>
+                        : <><Icon name="triangle-alert" size={14}/> Da Risolvere</>
+                      }
                     </span>
                   </div>
                 </div>
@@ -361,7 +364,10 @@ USING (public.is_admin());`;
                       cursor: 'pointer'
                     }}
                   >
-                    {item.risolto ? 'Riapri Segnalazione <Icon name="unlock" size={16}/>' : 'Segna come Risolta <Icon name="check" size={16}/>'}
+                    {item.risolto
+                      ? <><Icon name="unlock" size={16}/> Riapri Segnalazione</>
+                      : <><Icon name="check" size={16}/> Segna come Risolta</>
+                    }
                   </button>
                   <button 
                     onClick={() => handleDelete(item.id)}

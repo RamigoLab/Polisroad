@@ -62,14 +62,14 @@ export const Home = ({ onNavigate }) => {
       </button>
 
       <div style={PS.homeGrid}>
-        <NavCard icon="clipboard-list" title="Prontuario" onClick={() => onNavigate('prontuario')} />
-        <NavCard icon="book-open" title="Normativa" onClick={() => onNavigate('normativa')} />
-        <NavCard icon="calculator" title="Calcolatore" onClick={() => onNavigate('calcolatore')} />
-        <NavCard icon="star" title="Preferiti" onClick={() => onNavigate('preferiti')} />
-        <NavCard icon="graduation-cap" title="Guide Pratiche" onClick={() => onNavigate('guide')} />
-        <NavCard icon="newspaper" title="News" onClick={() => onNavigate('news')} />
-        <NavCard icon="link" title="Links Utili" onClick={() => onNavigate('links')} />
-        <NavCard icon="user" title="Profilo" onClick={() => onNavigate('profilo')} />
+        <NavCard icon="clipboard-list" title="Prontuario"    color="#1976d2" bg="#e3f0fb" onClick={() => onNavigate('prontuario')} />
+        <NavCard icon="book-open"      title="Normativa"     color="#1a7a4a" bg="#e6f4ed" onClick={() => onNavigate('normativa')} />
+        <NavCard icon="calculator"     title="Calcolatore"   color="#b45309" bg="#fdf3e0" onClick={() => onNavigate('calcolatore')} />
+        <NavCard icon="star"           title="Preferiti"     color="#c0392b" bg="#fbeaea" onClick={() => onNavigate('preferiti')} />
+        <NavCard icon="graduation-cap" title="Guide Pratiche" color="#7b2d8b" bg="#f3e8f9" onClick={() => onNavigate('guide')} />
+        <NavCard icon="newspaper"      title="News"          color="#1a3a5c" bg="#e8eef6" onClick={() => onNavigate('news')} />
+        <NavCard icon="link"           title="Links Utili"   color="#0d7377" bg="#e0f5f5" onClick={() => onNavigate('links')} />
+        <NavCard icon="user"           title="Profilo"       color="#555"    bg="#f0f0f0" onClick={() => onNavigate('profilo')} />
       </div>
 
       {bannerNews && (
@@ -183,9 +183,11 @@ export const Home = ({ onNavigate }) => {
   );
 };
 
-const NavCard = ({ icon, title, onClick }) => (
+const NavCard = ({ icon, title, color, bg, onClick }) => (
   <div onClick={onClick} style={PS.homeNavCard}>
-    <span style={PS.homeNavCardIcon}><Icon name={icon} size={22} /></span>
-    <span style={PS.homeNavCardLabel}>{title}</span>
+    <span style={{ ...PS.homeNavCardIcon, backgroundColor: bg, color }}>
+      <Icon name={icon} size={26} />
+    </span>
+    <span style={{ ...PS.homeNavCardLabel, color: '#333' }}>{title}</span>
   </div>
 );

@@ -360,7 +360,10 @@ export const AdminNews = () => {
                 fontWeight: 'bold',
                 color: item.pubblicato ? C.success : C.textLight 
               }}>
-                {item.pubblicato ? '● Pubblicata' : '○ Bozza'}
+                {item.pubblicato
+                  ? <><Icon name="circle-check" size={14}/> Pubblicata</>
+                  : <><Icon name="circle-x" size={14}/> Bozza</>
+                }
               </span>
             </div>
             <h3 style={{ ...PS.adminListItemTitle, margin: '8px 0', fontSize: '1.05rem', fontWeight: '700' }}>{item.titolo}</h3>
