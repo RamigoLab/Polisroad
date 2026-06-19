@@ -379,7 +379,7 @@ export const Profilo = ({ onNavigate }) => {
             <>
               <DataRow label="Grado / Qualifica" value={profile?.grado} icon={<Icon name="medal" size={16}/>} />
               <DataRow label="Nome" value={profile?.nome} icon={<Icon name="user" size={16}/>} />
-              <DataRow label="Cognome" value={profile?.cognome} icon="🆔" />
+              <DataRow label="Cognome" value={profile?.cognome} icon={<Icon name="user-check" size={16}/>} />
               <DataRow label="Corpo / Forza" value={profile?.forza} icon={<Icon name="building" size={16}/>} />
               <DataRow label="Email di Servizio" value={profile?.email} icon={<Icon name="mail" size={16}/>} />
               <DataRow label="Contatto Telefonico" value={profile?.telefono} icon={<Icon name="smartphone" size={16}/>} />
