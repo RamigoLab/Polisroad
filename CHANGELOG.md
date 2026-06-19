@@ -1,5 +1,24 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.6.1] - 19 Giugno 2026
+
+### 🛡️ Sicurezza & Best Practice
+
+- **Security Headers HTTP**: aggiunto `vercel.json` con CSP, HSTS, X-Frame-Options, X-Content-Type-Options, Referrer-Policy e Permissions-Policy
+- **CORS Edge Functions**: rimosso `Access-Control-Allow-Origin: *`; entrambe le Edge Functions (`delete-user`, `fetch-rss`) ora usano una whitelist di origini consentite
+- **Eliminazione account**: le DELETE sulle tabelle correlate ora avvengono in parallelo con `Promise.all`; gli errori parziali vengono raccolti e bloccano la chiamata alla Edge Function; aggiunto modale custom con campo di conferma testuale "ELIMINA" al posto dei `window.confirm` (compatibile PWA standalone)
+- **PostHog opt-out GDPR**: PostHog ora parte con `opt_out_capturing_by_default: true`; aggiunto toggle "Analytics" nel Profilo per consenso/revoca esplicita persistente
+- **logger.error in produzione**: silenziato come `log` e `warn`; stack trace non più esposti nella console in produzione
+- **AdminDashboard**: conteggio segnalazioni ora usa `select('*', { count: 'exact', head: true })` — zero righe trasferite
+- **useSearchHistory**: cronologia ricerche ora salvata via `storage.js` (btoa encoding) invece di `localStorage` diretto
+- **useSyncQueue**: aggiunta validazione payload per ogni tipo di azione; tipi non riconosciuti vengono scartati senza bloccare la coda
+- **useAuth**: `fetchProfile` ora usa `select` esplicito sui campi invece di `select('*')`
+- **ESLint**: aggiunte regole di sicurezza `no-eval`, `no-implied-eval`, `no-new-func`, `no-script-url`
+- **Dipendenze**: rimosso prefisso `^` (caret) da tutte le dipendenze per build riproducibili
+- **index.html**: aggiunti meta tag `noindex/nofollow`, `theme-color`, Apple PWA (`apple-mobile-web-app-capable`, `status-bar-style`, `title`) e `apple-touch-icon`
+
+---
+
 ## [1.6.0] - 18 Giugno 2026
 
 ### 🎨 Redesign Grafico (Material 3-inspired)

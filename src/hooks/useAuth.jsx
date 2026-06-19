@@ -44,7 +44,7 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const { data, error } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, nome, cognome, grado, forza, telefono, ruolo')
         .eq('id', userId)
         .single();
       

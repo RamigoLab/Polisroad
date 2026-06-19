@@ -21,6 +21,11 @@ export default defineConfig([
       'no-unused-vars': ['error', { varsIgnorePattern: '^React$' }],
       'react-hooks/set-state-in-effect': 'off',
       'react-refresh/only-export-components': 'off',
+      // Sicurezza: blocca costrutti pericolosi
+      'no-eval': 'error',
+      'no-implied-eval': 'error',
+      'no-new-func': 'error',
+      'no-script-url': 'error',
     },
   },
   {
