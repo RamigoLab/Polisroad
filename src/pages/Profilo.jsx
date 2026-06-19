@@ -648,7 +648,7 @@ export const Profilo = ({ onNavigate }) => {
         <p style={{ fontSize: '0.85rem', color: C.textLight, marginBottom: '12px' }}>
           Questa app è sviluppata per supportare il lavoro delle forze dell'ordine. Se la trovi utile, puoi offrire un caffè allo sviluppatore.
         </p>
-        <a href="https://www.paypal.me" target="_blank" rel="noreferrer" style={PS.profileDonateBtn}>
+        <a href="https://www.paypal.me/polisroad" target="_blank" rel="noreferrer" style={PS.profileDonateBtn}>
           <span style={{display:"inline-flex",alignItems:"center",gap:"6px"}}><Icon name="zap" size={16}/> Dona con PayPal</span>
         </a>
       </div>
