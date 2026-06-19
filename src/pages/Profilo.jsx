@@ -274,28 +274,37 @@ export const Profilo = ({ onNavigate }) => {
 
     try {
       const uid = profile.id;
-      // Cancella dati dalle tabelle correlate
-      await supabase.from('xp_history').delete().eq('user_id', uid);
-      await supabase.from('gamification').delete().eq('user_id', uid);
-      await supabase.from('note').delete().eq('user_id', uid);
-      await supabase.from('preferiti').delete().eq('user_id', uid);
-      
+
+      // Esegui tutte le DELETE in parallelo e raccogli gli eventuali errori
+      const deleteOps = [
+        supabase.from('xp_history').delete().eq('user_id', uid),
+        supabase.from('gamification').delete().eq('user_id', uid),
+        supabase.from('note').delete().eq('user_id', uid),
+        supabase.from('preferiti').delete().eq('user_id', uid),
+      ];
       if (profile?.email) {
-        await supabase.from('segnalazioni').delete().eq('email', profile.email);
+        deleteOps.push(supabase.from('segnalazioni').delete().eq('email', profile.email));
       }
-      
-      await supabase.from('profiles').delete().eq('id', uid);
-      
+      deleteOps.push(supabase.from('profiles').delete().eq('id', uid));
+
+      const results = await Promise.all(deleteOps);
+      const errors = results.filter(r => r.error).map(r => r.error.message);
+
+      if (errors.length > 0) {
+        throw new Error('Errore eliminazione dati: ' + errors.join('; '));
+      }
+
       // Invocazione Edge Function per cancellare l'utente auth da Supabase
       const { error: fnError } = await supabase.functions.invoke('delete-user', { body: { uid } });
       if (fnError) {
-        throw fnError;
+        throw new Error('Errore eliminazione account auth: ' + fnError.message);
       }
 
       // Logout
       await signOut();
       showToast('Account e tutti i dati cancellati con successo.', 'success');
     } catch (err) {
+      logger.error('handleDeleteAccount error:', err);
       showToast('Errore durante la cancellazione: ' + err.message, 'error');
     }
   };
