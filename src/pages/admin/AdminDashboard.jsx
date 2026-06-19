@@ -24,9 +24,11 @@ export const AdminDashboard = () => {
 
       if (isSupabaseConfigured && supabase) {
         try {
-          const { data, error } = await supabase.from('segnalazioni').select('id');
-          if (!error && data) {
-            count = data.length;
+          const { count: dbCount, error } = await supabase
+            .from('segnalazioni')
+            .select('*', { count: 'exact', head: true });
+          if (!error && dbCount !== null) {
+            count = dbCount;
           } else {
             errorOccurred = true;
           }

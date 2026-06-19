@@ -279,12 +279,14 @@ export const Profilo = ({ onNavigate }) => {
     }
   };
 
-  const handleDeleteAccount = async () => {
-    const confirm1 = window.confirm('Sei sicuro di voler eliminare il tuo account? Questa azione è irreversibile.');
-    if (!confirm1) return;
-    const confirm2 = window.confirm('Ultima conferma: tutti i tuoi dati (profilo, statistiche, badge, cronologia XP, note personali, preferiti e segnalazioni) verranno eliminati definitivamente.');
-    if (!confirm2) return;
+  // Stato modale eliminazione account
+  const [deleteModal, setDeleteModal] = useState(false); // step 1
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteLoading, setDeleteLoading] = useState(false);
 
+  const handleDeleteAccount = async () => {
+    if (deleteConfirmText !== 'ELIMINA') return;
+    setDeleteLoading(true);
     try {
       const uid = profile.id;
 
@@ -313,12 +315,14 @@ export const Profilo = ({ onNavigate }) => {
         throw new Error('Errore eliminazione account auth: ' + fnError.message);
       }
 
-      // Logout
       await signOut();
       showToast('Account e tutti i dati cancellati con successo.', 'success');
     } catch (err) {
       logger.error('handleDeleteAccount error:', err);
       showToast('Errore durante la cancellazione: ' + err.message, 'error');
+      setDeleteLoading(false);
+      setDeleteModal(false);
+      setDeleteConfirmText('');
     }
   };
 
@@ -658,12 +662,87 @@ export const Profilo = ({ onNavigate }) => {
           L'eliminazione dell'account è irreversibile. Verranno cancellati in modo permanente il profilo, le statistiche, i badge, la cronologia XP, le note personali, i preferiti e le segnalazioni inviate.
         </p>
         <button
-          onClick={handleDeleteAccount}
+          onClick={() => { setDeleteModal(true); setDeleteConfirmText(''); }}
           style={{ backgroundColor: 'transparent', border: `1px solid ${C.danger}`, color: C.danger, padding: '10px 16px', borderRadius: '8px', fontWeight: '600', fontSize: '0.85rem', cursor: 'pointer' }}
         >
           Elimina il mio account
         </button>
       </div>
+
+      {/* Modale conferma eliminazione account */}
+      {deleteModal && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 9999,
+          backgroundColor: 'rgba(0,0,0,0.6)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '24px',
+        }}>
+          <div style={{
+            backgroundColor: 'var(--color-card, #fff)',
+            borderRadius: '16px',
+            padding: '24px',
+            width: '100%',
+            maxWidth: '400px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+              <Icon name="triangle-alert" size={22} style={{ color: C.danger }} />
+              <h3 style={{ color: C.danger, fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>Elimina account</h3>
+            </div>
+            <p style={{ fontSize: '0.85rem', color: C.text, lineHeight: 1.6, marginBottom: '16px' }}>
+              Questa azione è <strong>irreversibile</strong>. Verranno eliminati definitivamente:
+              profilo, statistiche, badge, cronologia XP, note, preferiti e segnalazioni.
+            </p>
+            <p style={{ fontSize: '0.85rem', color: C.textLight, marginBottom: '8px' }}>
+              Digita <strong>ELIMINA</strong> per confermare:
+            </p>
+            <input
+              type="text"
+              value={deleteConfirmText}
+              onChange={e => setDeleteConfirmText(e.target.value)}
+              placeholder="ELIMINA"
+              style={{
+                width: '100%',
+                padding: '10px 12px',
+                borderRadius: '8px',
+                border: `1px solid ${deleteConfirmText === 'ELIMINA' ? C.danger : C.border || '#ccc'}`,
+                fontSize: '0.95rem',
+                marginBottom: '20px',
+                boxSizing: 'border-box',
+                outline: 'none',
+                backgroundColor: 'var(--color-background, #f5f7fa)',
+                color: C.text,
+              }}
+              autoCapitalize="characters"
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button
+                onClick={() => { setDeleteModal(false); setDeleteConfirmText(''); }}
+                disabled={deleteLoading}
+                style={{
+                  flex: 1, padding: '10px', borderRadius: '8px',
+                  border: `1px solid ${C.textLight}`, backgroundColor: 'transparent',
+                  color: C.text, fontWeight: '600', cursor: 'pointer',
+                }}
+              >
+                Annulla
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteConfirmText !== 'ELIMINA' || deleteLoading}
+                style={{
+                  flex: 1, padding: '10px', borderRadius: '8px',
+                  border: 'none',
+                  backgroundColor: deleteConfirmText === 'ELIMINA' && !deleteLoading ? C.danger : '#ccc',
+                  color: '#fff', fontWeight: '700', cursor: deleteConfirmText === 'ELIMINA' && !deleteLoading ? 'pointer' : 'not-allowed',
+                }}
+              >
+                {deleteLoading ? 'Eliminazione...' : 'Elimina definitivamente'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </PageWrapper>
   );
 };
