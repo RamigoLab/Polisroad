@@ -1,5 +1,25 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.6.3] - 20 Giugno 2026
+
+### 🔍 Ricerca intelligente in tutte e 3 le sezioni (Prontuario, Operatore, Normativa)
+
+Tutte e tre le pagine usano ora la stessa logica di ricerca prioritizzata:
+
+1. **Corrispondenza esatta** su numero articolo (es. `142` → mostra solo Art. 142)
+2. **Voci correlate** — `rif_normativo` / label articolo che inizia con "art. 142"
+3. **Altri risultati** — occorrenze testuali residue
+
+Prima del fix, cercare `142` in Normativa restituiva articoli che contenevano "14" o "42" nel testo dei commi, mescolati senza priorità. Stesso problema in Prontuario e Operatore risolto nella stessa release.
+
+**Prontuario** — vista principale raggruppata per articolo (Art. 6, Art. 7... Art. 142, Art. 142-bis). Ordinamento corretto per bis/ter/quater/quinquies.
+
+**Operatore** — ricerca con gruppo articolo espandibile inline per flusso rapido.
+
+**Normativa** — ricerca con tre sezioni distinte: corrispondenza esatta → articoli correlati → altri risultati testuali (commi inclusi).
+
+---
+
 ## [1.6.2] - 20 Giugno 2026
 
 ### 🎨 UX & Usabilità

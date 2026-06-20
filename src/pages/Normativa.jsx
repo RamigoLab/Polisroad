@@ -125,19 +125,37 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     const s = debouncedSearch.trim().toLowerCase();
     if (!s) return null;
 
-    return hierarchy.articoliMap.filter(art => {
-      if (
-        (art.titolo_articolo?.toLowerCase() || '').includes(s) || 
-        (art.articolo?.toLowerCase() || '').includes(s) || 
-        (art.articolo_num?.toString() || '') === debouncedSearch
-      ) {
-        return true;
-      }
-      return art.commi.some(c => 
+    const isNumeric = /^\d+$/.test(s);
+
+    const exact = [];
+    const partial = [];
+    const text = [];
+
+    hierarchy.articoliMap.forEach(art => {
+      const artNum = (art.articolo_num?.toString() || '').toLowerCase();
+      const artLabel = (art.articolo || '').toLowerCase(); // es. "art. 142"
+      const titolo = (art.titolo_articolo || '').toLowerCase();
+      const hasCommaMatch = art.commi.some(c =>
         (c.testo?.toLowerCase() || '').includes(s) ||
         (c.comma?.toLowerCase() || '').includes(s)
       );
+
+      if (isNumeric) {
+        if (artNum === s) {
+          exact.push(art);
+        } else if (artLabel.startsWith(`art. ${s}`) || artLabel.startsWith(`art.${s}`)) {
+          partial.push(art);
+        } else if (titolo.includes(s) || hasCommaMatch) {
+          text.push(art);
+        }
+      } else {
+        if (titolo.includes(s) || artLabel.includes(s) || hasCommaMatch) {
+          text.push(art);
+        }
+      }
     });
+
+    return { exact, partial, text, isNumeric };
   }, [hierarchy, debouncedSearch]);
 
   const handleBack = () => {
@@ -256,9 +274,36 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   if (loading) {
     viewContent = <div style={S.emptyState}>Caricamento in corso...</div>;
   } else if (filteredArticoli) {
+    const { exact, partial, text } = filteredArticoli;
+    const hasResults = exact.length > 0 || partial.length > 0 || text.length > 0;
+
+    const sectionLabel = (label) => (
+      <div style={{ padding: '8px 4px 2px', fontSize: '0.72rem', fontWeight: '700', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+        {label}
+      </div>
+    );
+
     viewContent = (
       <div style={S.list}>
-        {filteredArticoli.length > 0 ? filteredArticoli.map(renderArticleRow) : <div style={S.emptyState}>Nessun risultato trovato.</div>}
+        {!hasResults && <div style={S.emptyState}>Nessun risultato trovato.</div>}
+        {exact.length > 0 && (
+          <>
+            {sectionLabel(`Art. ${debouncedSearch.trim()} — corrispondenza esatta`)}
+            {exact.map(renderArticleRow)}
+          </>
+        )}
+        {partial.length > 0 && (
+          <>
+            {sectionLabel('Articoli correlati')}
+            {partial.map(renderArticleRow)}
+          </>
+        )}
+        {text.length > 0 && (
+          <>
+            {sectionLabel('Altri risultati')}
+            {text.map(renderArticleRow)}
+          </>
+        )}
       </div>
     );
   } else if (selectedCapo) {
