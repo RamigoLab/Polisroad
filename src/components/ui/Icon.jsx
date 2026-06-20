@@ -1,6 +1,6 @@
 import {
   Home, BookOpen, ClipboardList, Star, Search, Calculator, GraduationCap,
-  Newspaper, Link2, User, Bell, ShieldAlert, Settings, X, Check, Clock,
+  Newspaper, Link2, User, UserCheck, Bell, ShieldAlert, Settings, X, Check, Clock,
   Lightbulb, PenLine, FileText, Construction, OctagonAlert, RotateCw,
   Rocket, CircleCheck, CircleX, TriangleAlert, Info, Medal, Building2,
   Mail, Smartphone, Download, Palette, Moon, Sun, Gamepad2, Package,
@@ -13,7 +13,7 @@ import {
 const MAP = {
   home: Home, 'book-open': BookOpen, 'clipboard-list': ClipboardList, star: Star,
   search: Search, calculator: Calculator, 'graduation-cap': GraduationCap,
-  newspaper: Newspaper, link: Link2, user: User, bell: Bell,
+  newspaper: Newspaper, link: Link2, user: User, 'user-check': UserCheck, bell: Bell,
   'shield-alert': ShieldAlert, settings: Settings, close: X, check: Check,
   clock: Clock, lightbulb: Lightbulb, 'pen-line': PenLine, 'file-text': FileText,
   construction: Construction, 'octagon-alert': OctagonAlert, 'rotate-cw': RotateCw,

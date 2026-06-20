@@ -72,7 +72,7 @@ export class ErrorBoundary extends React.Component {
             L'applicazione ha riscontrato un problema inatteso. Puoi provare a ricaricare la pagina.
           </p>
           
-          {this.state.error && (
+          {this.state.error && import.meta.env.DEV && (
             <div
               style={{
                 backgroundColor: C.surface,

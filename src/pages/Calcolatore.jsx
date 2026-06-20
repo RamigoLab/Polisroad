@@ -75,7 +75,7 @@ export const Calcolatore = ({ onNavigate }) => {
         />
       </div>
 
-      {min && (
+      {min ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
           <div style={PS.calcResultPrimary}>
             <div style={PS.calcResultLabel}>PMR – Pagamento in Misura Ridotta</div>
@@ -92,6 +92,10 @@ export const Calcolatore = ({ onNavigate }) => {
             <div style={{ ...PS.calcResultValueMd, color: C.danger }}>€ {calcNotturna}</div>
             <div style={PS.calcResultSub}>Scontata 30%: <strong>€ {calcNotturnaScontata}</strong></div>
           </div>
+        </div>
+      ) : (
+        <div style={{ textAlign: 'center', padding: '32px 16px', color: C.textLight }}>
+          <p style={{ fontSize: '0.95rem' }}>Inserisci un importo PMR per calcolare le sanzioni.</p>
         </div>
       )}
     </PageWrapper>

@@ -149,9 +149,9 @@ export const Ricerca = ({ onNavigate }) => {
                     <p style={PS.ricercaResultTitle}>{item.titolo}</p>
                   </div>
                 ))}
-                {risultatiProntuario.length > 5 && (
+                {risultatiProntuario.length >= 5 && (
                   <button onClick={() => onNavigate('prontuario')} style={{ color: C.primary, fontSize: '0.85rem', textAlign: 'center', padding: '8px' }}>
-                    Vedi tutti in Prontuario
+                    Vedi tutti ({risultatiProntuario.length}) in Prontuario
                   </button>
                 )}
               </div>
@@ -179,9 +179,9 @@ export const Ricerca = ({ onNavigate }) => {
                     </p>
                   </div>
                 ))}
-                {risultatiNormativa.length > 5 && (
+                {risultatiNormativa.length >= 5 && (
                   <button onClick={() => onNavigate('normativa')} style={{ color: C.success, fontSize: '0.85rem', textAlign: 'center', padding: '8px' }}>
-                    Vedi tutti in Normativa
+                    Vedi tutti ({risultatiNormativa.length}) in Normativa
                   </button>
                 )}
               </div>

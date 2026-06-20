@@ -2,8 +2,6 @@ import React from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { C } from '../styles/theme';
 
-const faviconUrl = (domain) => `https://www.google.com/s2/favicons?domain=${domain}&sz=128`;
-
 const LINKS = [
   {
     title: 'Polizia di Stato',
@@ -171,16 +169,15 @@ const fallbackLogoStyle = {
 const LinkLogo = ({ link }) => {
   const [failed, setFailed] = React.useState(false);
 
-  if (failed) {
+  // Solo loghi locali — nessuna richiesta a Google
+  if (!link.logo || failed) {
     return <div style={fallbackLogoStyle}>{link.fallback}</div>;
   }
-
-  const src = link.logo || faviconUrl(link.domain);
 
   return (
     <div style={logoWrapStyle}>
       <img
-        src={src}
+        src={link.logo}
         alt={`Logo ${link.title}`}
         style={logoStyle}
         loading="lazy"

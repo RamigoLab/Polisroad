@@ -1,6 +1,7 @@
 import React from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { Badge } from '../components/ui/Badge';
+import { Icon } from '../components/ui/Icon';
 import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { useProntuario } from '../hooks/useProntuario';
@@ -12,11 +13,7 @@ export const Preferiti = ({ onNavigate }) => {
   const preferitiList = list.filter(item => preferiti.includes(item.id));
 
   const handleToggleFavorite = async (itemId) => {
-    const isFav = preferiti.includes(itemId);
     await toggle(itemId);
-    if (isFav) {
-      // L'utente sta rimuovendo da preferiti: nessuna penalità XP.
-    }
   };
 
   return (
@@ -43,16 +40,24 @@ export const Preferiti = ({ onNavigate }) => {
             <div key={item.id} style={S.card}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '8px' }}>
                 <Badge>{item.rif_normativo}</Badge>
-                <button onClick={() => handleToggleFavorite(item.id)} style={{ fontSize: '1.2rem' }}>⭐</button>
+                {/* UX-02: usa Icon invece di emoji ⭐ */}
+                <button
+                  onClick={() => handleToggleFavorite(item.id)}
+                  style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f0c040', padding: '4px' }}
+                  title="Rimuovi dai preferiti"
+                >
+                  <Icon name="star" size={22} color="#f0c040" />
+                </button>
               </div>
               <h3 style={{ fontSize: '1rem', color: C.text, marginBottom: '8px', lineHeight: 1.3 }}>{item.titolo}</h3>
               <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', color: C.textLight }}>
                 <span>Cod: {item.codice_violazione}</span>
                 <span style={S.valueDanger}>PMR: €{item.pmr}</span>
               </div>
+              {/* UX-01: passa selectedId per aprire direttamente la voce */}
               <button
-                onClick={() => onNavigate('prontuario')}
-                style={{ width: '100%', padding: '8px', marginTop: '12px', backgroundColor: C.accentLight, color: C.accent, borderRadius: '8px', fontWeight: 'bold' }}
+                onClick={() => onNavigate('prontuario', { selectedId: item.id })}
+                style={{ width: '100%', padding: '8px', marginTop: '12px', backgroundColor: C.accentLight, color: C.accent, borderRadius: '8px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
               >
                 Vedi Dettagli in Prontuario
               </button>

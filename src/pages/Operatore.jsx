@@ -10,6 +10,19 @@ import { useAuth } from '../hooks/useAuth';
 import { useGamificationContext } from '../context/GamificationContext';
 import { useToast } from '../components/ui/ToastManager';
 
+// Componente orologio isolato: si aggiorna ogni secondo senza
+// causare re-render dell'intera pagina Operatore.
+const Clock = () => {
+  const [time, setTime] = useState(new Date());
+  useEffect(() => {
+    const timer = setInterval(() => setTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+  return (
+    <span>{time.toLocaleTimeString('it-IT')} | {time.toLocaleDateString('it-IT')}</span>
+  );
+};
+
 export const Operatore = ({ onNavigate }) => {
   const { list } = useProntuario();
   const { preferiti } = usePreferiti();
@@ -20,7 +33,6 @@ export const Operatore = ({ onNavigate }) => {
   const { showToast } = useToast();
 
   const [search, setSearch] = useState('');
-  const [time, setTime] = useState(new Date());
   const [expandedId, setExpandedId] = useState(null);
   const [registering, setRegistering] = useState(false);
 
@@ -30,11 +42,6 @@ export const Operatore = ({ onNavigate }) => {
     showToast(`Contestazione registrata: ${item.rif_normativo}`, 'success');
     setRegistering(false);
   };
-
-  useEffect(() => {
-    const timer = setInterval(() => setTime(new Date()), 1000);
-    return () => clearInterval(timer);
-  }, []);
 
   const displayList = useMemo(() => {
     let result;
@@ -69,7 +76,7 @@ export const Operatore = ({ onNavigate }) => {
         </div>
         <div style={PS.operatoreHeaderMeta}>
           <span>{profile?.grado} {profile?.nome} {profile?.cognome}</span>
-          <span>{time.toLocaleTimeString('it-IT')} | {time.toLocaleDateString('it-IT')}</span>
+          <Clock />
         </div>
       </div>
 

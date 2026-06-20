@@ -54,6 +54,7 @@ function App() {
     try {
       return saved ? JSON.parse(saved) : null;
     } catch {
+      removeItem('polisroad_navigation_params');
       return null;
     }
   });

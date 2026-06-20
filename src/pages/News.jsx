@@ -10,7 +10,8 @@ export const News = ({ onNavigate }) => {
   const [activeFilter, setActiveFilter] = React.useState('tutte');
   const { list, loading } = useNews();
 
-  const publishedNews = list.filter(n => n.pubblicato);
+  // Escludi categorie interne (banner/popup gestite in Home)
+  const publishedNews = list.filter(n => n.pubblicato && n.categoria !== 'banner' && n.categoria !== 'popup');
 
   const filteredNews = React.useMemo(() => {
     if (activeFilter === 'tutte') return publishedNews;
@@ -21,7 +22,7 @@ export const News = ({ onNavigate }) => {
     { id: 'tutte', label: 'Tutte' },
     { id: 'normativa', label: 'Normativa' },
     { id: 'sicurezza', label: 'Sicurezza' },
-    { id: 'informativa', label: 'Utility' }
+    { id: 'informativa', label: 'Informativa' },
   ];
 
   return (

@@ -1,5 +1,29 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.6.2] - 20 Giugno 2026
+
+### 🎨 UX & Usabilità
+
+- **Preferiti → navigazione diretta**: il bottone "Vedi Dettagli in Prontuario" ora apre direttamente la voce selezionata invece di portare all'inizio della lista
+- **Preferiti → icona stella**: sostituita emoji ⭐ hardcoded con componente `<Icon name="star">` — rispetta il tema dark mode e lo stile coerente dell'app
+- **Calcolatore**: aggiunto messaggio "Inserisci un importo PMR per calcolare" quando il campo è vuoto, invece di mostrare una pagina bianca
+- **Ricerca → "Vedi tutti"**: il link appare ora quando i risultati sono ≥ 5 (prima solo > 5) e mostra il conteggio totale
+- **News → filtro categorie**: rimossi banner e popup dalla lista pubblica; label "Utility" rinominato in "Informativa" per allinearlo alla categoria reale del DB
+- **Home → footer**: anno e versione ora dinamici (`new Date().getFullYear()` e `APP_VERSION`) — si aggiornano automaticamente ad ogni release
+
+### ⚡ Performance
+
+- **Operatore → orologio**: estratto in componente `<Clock />` isolato — il re-render ogni secondo non coinvolge più la lista del prontuario, eliminando ricalcoli inutili su `useMemo`
+
+### 🔒 Sicurezza & Privacy
+
+- **ErrorBoundary**: il dettaglio tecnico dell'errore (stack trace) è ora visibile solo in modalità sviluppo (`import.meta.env.DEV`), nascosto in produzione
+- **Home → popup**: dismissal dei popup ora salvato tramite `storage.js` (btoa encoding) invece di `localStorage` diretto, coerente con il resto dell'app
+- **Links → favicon**: rimossa chiamata a `https://www.google.com/s2/favicons` (Google S2) — le icone ora usano solo loghi locali in `/public/logos/` o fallback testo, eliminando il tracciamento involontario verso Google
+- **App.jsx**: pulizia automatica di `navigationParams` corrotti da storage (chiamata `removeItem` nel catch)
+
+---
+
 ## [1.6.1] - 19 Giugno 2026
 
 ### 🛡️ Sicurezza & Best Practice

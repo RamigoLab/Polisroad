@@ -7,6 +7,7 @@ import { useAuth } from '../hooks/useAuth';
 import { useNews } from '../hooks/useNews';
 import { APP_VERSION } from '../config/constants';
 import { Icon } from '../components/ui/Icon';
+import { getItem, setItem } from '../utils/storage';
 
 export const Home = ({ onNavigate }) => {
   const { profile } = useAuth();
@@ -23,7 +24,7 @@ export const Home = ({ onNavigate }) => {
     if (popupNewsList.length > 0) {
       // Show the latest popup if not already dismissed
       const latestPopup = popupNewsList[0];
-      const dismissed = localStorage.getItem(`polisroad_dismissed_popup_${latestPopup.id}`);
+      const dismissed = getItem(`polisroad_dismissed_popup_${latestPopup.id}`);
       if (!dismissed) {
         setCurrentPopup(latestPopup);
         setShowPopup(true);
@@ -33,7 +34,7 @@ export const Home = ({ onNavigate }) => {
 
   const handleDismissPopup = () => {
     if (currentPopup) {
-      localStorage.setItem(`polisroad_dismissed_popup_${currentPopup.id}`, 'true');
+      setItem(`polisroad_dismissed_popup_${currentPopup.id}`, 'true');
     }
     setShowPopup(false);
   };
@@ -117,7 +118,7 @@ export const Home = ({ onNavigate }) => {
         lineHeight: '1.6'
       }}>
         <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-          2026 Polisroad – Applicazione sviluppata da Giorgio Raimondi
+          {new Date().getFullYear()} PolisRoad v{APP_VERSION} – Applicazione sviluppata da Giorgio Raimondi
         </p>
         <p style={{ marginBottom: '4px' }}>
           Sistema informativo di supporto alle attività di controllo in materia di circolazione stradale.
