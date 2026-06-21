@@ -23,7 +23,7 @@ if (posthogKey) {
     api_host: posthogHost,
     person_profiles: 'identified_only',
     capture_pageview: true,
-    opt_out_capturing_by_default: true, // GDPR: opt-out di default, l'utente attiva dal Profilo
+    opt_out_capturing_by_default: false, // Analytics attivo di default (l'utente può disattivarlo dal Profilo)
   });
 }
 
