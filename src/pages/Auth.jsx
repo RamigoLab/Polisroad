@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
-import { Toast } from '../components/ui/Toast';
+import { useToast } from '../components/ui/ToastManager';
 import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { useAuth } from '../hooks/useAuth';
@@ -64,39 +64,33 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
   const [grado, setGrado] = useState('');
   const [forza, setForza] = useState('');
   const [loading, setLoading] = useState(false);
-  const [toast, setToast] = useState('');
-  const [toastType, setToastType] = useState('error');
+  const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
     if (e) e.preventDefault();
     const normalizedEmail = email.trim().toLowerCase();
     const emailError = validators.email(normalizedEmail);
     if (emailError) {
-      setToastType('error');
-      setToast(emailError);
+      showToast(emailError, 'error');
       return;
     }
     if (!password) {
-      setToastType('error');
-      setToast('Password obbligatoria');
+      showToast('Password obbligatoria', 'error');
       return;
     }
 
     const attempt = loginRateLimiter.canAttempt(normalizedEmail);
     if (isLogin && !attempt.allowed) {
-      setToastType('error');
-      setToast(attempt.reason);
+      showToast(attempt.reason, 'error');
       return;
     }
 
     setLoading(true);
-    setToast('');
     if (isLogin) {
       const { error } = await signIn(normalizedEmail, password);
       loginRateLimiter.recordAttempt(normalizedEmail, !error);
       if (error) {
-        setToastType('error');
-        setToast(error.message);
+        showToast(error.message, 'error');
       }
     } else {
       const passwordError = validators.password(password);
@@ -108,8 +102,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
         passwordError;
 
       if (requiredError) {
-        setToastType('error');
-        setToast(requiredError);
+        showToast(requiredError, 'error');
         setLoading(false);
         return;
       }
@@ -121,10 +114,9 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
         forza: sanitizers.text(forza)
       });
       if (error) {
-        setToastType('error');
-        setToast(error.message);
+        showToast(error.message, 'error');
       }
-      else { setToastType('success'); setToast('Registrazione completata!'); setIsLogin(true); }
+      else { showToast('Registrazione completata!', 'success'); setIsLogin(true); }
     }
     setLoading(false);
   };
@@ -134,46 +126,42 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
     const normalizedEmail = email.trim().toLowerCase();
     const emailError = validators.email(normalizedEmail);
     if (emailError) {
-      setToastType('error');
-      setToast(emailError);
+      showToast(emailError, 'error');
       return;
     }
 
     setLoading(true);
-    setToast('');
     const { error } = await resetPassword(normalizedEmail);
     setLoading(false);
-    setToastType(error ? 'error' : 'success');
-    setToast(error ? error.message : 'Controlla la tua email per completare il recupero password.');
+    if (error) {
+      showToast(error.message, 'error');
+    } else {
+      showToast('Controlla la tua email per completare il recupero password.', 'success');
+    }
   };
 
   const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     const passwordError = validators.password(password);
     if (passwordError) {
-      setToastType('error');
-      setToast(passwordError);
+      showToast(passwordError, 'error');
       return;
     }
     if (password !== confirmPassword) {
-      setToastType('error');
-      setToast('Le password non coincidono');
+      showToast('Le password non coincidono', 'error');
       return;
     }
 
     setLoading(true);
-    setToast('');
     const { error } = await updatePassword(password);
     setLoading(false);
     if (error) {
-      setToastType('error');
-      setToast(error.message);
+      showToast(error.message, 'error');
     }
     else {
       setPassword('');
       setConfirmPassword('');
-      setToastType('success');
-      setToast('Password aggiornata correttamente.');
+      showToast('Password aggiornata correttamente.', 'success');
     }
   };
 
@@ -310,8 +298,6 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
           )}
         </div>
       </div>
-
-      {toast && <Toast message={toast} type={toastType} onClose={() => setToast('')} />}
     </PageWrapper>
   );
 };
