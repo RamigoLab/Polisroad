@@ -1,6 +1,23 @@
 # 📝 CHANGELOG - PolisRoad
 
-## [1.6.6] - 21 Giugno 2026
+## [1.6.7] - 21 Giugno 2026
+
+### 📄 Aggiornamento Documenti Legali
+
+**Privacy Policy (`Privacy.jsx`)**
+- **Allineamento PostHog opt-out**: la sezione 7 ora rispecchia correttamente il comportamento reale del codice (`opt_out_capturing_by_default: false`): il tracciamento è **attivo per impostazione predefinita** e l'utente può disattivarlo dal Profilo.
+- **Rinumerazione sezioni**: eliminata la numerazione anomala "6.1" — il punto è diventato la sezione 7 autonoma, le sezioni successive rinumerate di conseguenza fino al punto 10.
+- **Rimosso riferimento a `localStorage`**: sostituito con "memorizzazione locale sul dispositivo", più accurato rispetto all'implementazione reale che usa `storage.js`.
+
+**Termini di Servizio (`TerminiServizio.jsx`)**
+- **Rimosso foro di Torino**: la clausola era giuridicamente nulla per contratti con consumatori (art. 33 D.Lgs. 206/2005 impone il foro del consumatore come inderogabile). Sostituita con riferimento generico alla normativa vigente.
+- **Aggiunto punto 9 — Analytics**: nuova sezione che cita esplicitamente PostHog, con indicazione che il tracciamento è attivo di default e rimanda alla Privacy Policy.
+- **Rinumerato punto 10**: ex punto 9 "Legge applicabile" diventa punto 10.
+
+**CHANGELOG**
+- Rimossa la voce errata in 1.6.4 che dichiarava un fix `opt_out_capturing_by_default: true` mai effettivamente applicato al codice.
+
+
 
 ### 🛠️ UX Area Amministrativa (Prontuario e Normativa)
 
@@ -46,11 +63,7 @@ I due stati ora sono indipendenti: aprire una voce non chiude mai il gruppo padr
 
 **Fix**: aggiunto blocco `else` corretto — se `newsError` è presente, imposta `setNews(mockNews)` e salta i fetch successivi. Normativa e prontuario vengono caricati solo se news ha avuto successo.
 
-### 🔒 Fix GDPR — PostHog `opt_out_capturing_by_default`
 
-**Problema**: `main.jsx` inizializzava PostHog senza `opt_out_capturing_by_default: true`, nonostante il changelog 1.6.1 dichiarasse questa impostazione. In pratica PostHog catturava dati di tutti gli utenti al primo avvio, prima che potessero esprimere consenso dal Profilo.
-
-**Fix**: aggiunto `opt_out_capturing_by_default: true` nell'`init` di PostHog in `main.jsx`. PostHog parte silenzioso; l'utente attiva il tracciamento esplicitamente dal toggle Analytics nel Profilo.
 
 ---
 

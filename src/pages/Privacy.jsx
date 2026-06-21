@@ -95,23 +95,23 @@ export const Privacy = ({ onNavigate }) => {
           I dati personali di autenticazione, profilo, note e preferiti sono ospitati su <strong>Supabase</strong> (Supabase Inc.), fornitore di servizi cloud con server ubicati nell'Unione Europea (Frankfurt, Germania).
         </p>
         <p style={pStyle}>
-          Per finalità di analisi del comportamento degli utenti e ottimizzazione dell'esperienza d'uso, l'App si avvale di <strong>PostHog</strong> (PostHog Inc.) con infrastruttura cloud ospitata nell'Unione Europea (EU Cloud). I dati trasmessi includono esclusivamente eventi comportamentali e metriche d'uso anonimizzate: ad esempio la lunghezza e la presenza di cifre all'interno dei termini di ricerca, senza mai trasmettere il testo integrale della ricerca, a tutela di eventuali dati personali di terzi (come targhe o nominativi). Essendo i server PostHog ubicati in UE, non sono necessari trasferimenti di dati verso paesi terzi.
+          Per finalità di analisi del comportamento degli utenti e ottimizzazione dell'esperienza d'uso, l'App può avvalersi di <strong>PostHog</strong> (PostHog Inc.) con infrastruttura cloud ospitata nell'Unione Europea (EU Cloud). I dati trasmessi includono esclusivamente eventi comportamentali e metriche d'uso anonimizzate: ad esempio la lunghezza e la presenza di cifre all'interno dei termini di ricerca, senza mai trasmettere il testo integrale della ricerca, a tutela di eventuali dati personali di terzi (come targhe o nominativi). Essendo i server PostHog ubicati in UE, non sono necessari trasferimenti di dati verso paesi terzi.
         </p>
 
-        <h3 style={h3Style}>6.1. Consenso analytics e opt-out</h3>
+        <h3 style={h3Style}>7. Consenso analytics e opt-out</h3>
         <p style={pStyle}>
-          Il tracciamento tramite PostHog è attivo per impostazione predefinita al fine di migliorare il servizio. L'utente può revocare il consenso in qualsiasi momento direttamente dalla sezione <strong>Profilo → Impostazioni Aspetto → Analytics (PostHog)</strong>, disattivando il relativo toggle. La revoca ha effetto immediato e permanente sul dispositivo in uso.
+          Il tracciamento tramite PostHog è <strong>attivo per impostazione predefinita</strong> al fine di migliorare il servizio. L'utente può revocare il consenso in qualsiasi momento direttamente dalla sezione <strong>Profilo → Analytics (PostHog)</strong>, disattivando il relativo toggle. La revoca ha effetto immediato e permanente sul dispositivo in uso.
         </p>
         <p style={pStyle}>
-          PostHog utilizza tecnologie di memorizzazione locale (localStorage) per il tracciamento delle sessioni. La disattivazione tramite il toggle nel Profilo è il metodo raccomandato per esercitare il diritto di opposizione al trattamento analytics (art. 21 GDPR).
+          PostHog utilizza tecnologie di memorizzazione locale sul dispositivo per la gestione delle sessioni di analisi. Il toggle nel Profilo è il metodo raccomandato per esercitare il diritto di opposizione al trattamento analytics (art. 21 GDPR).
         </p>
 
-        <h3 style={h3Style}>7. Contenuto normativo</h3>
+        <h3 style={h3Style}>8. Contenuto normativo</h3>
         <p style={pStyle}>
           Il contenuto normativo presente nell'App (Codice della Strada e relativi aggiornamenti) è tratto da fonti ufficiali (Normattiva). Il Titolare non è responsabile di eventuali imprecisioni o ritardi nell'aggiornamento dei contenuti. Il Prontuario delle sanzioni è una rielaborazione a scopo informativo e non costituisce fonte normativa ufficiale. L'utente è l'unico responsabile dell'applicazione delle disposizioni normative nell'esercizio delle proprie funzioni.
         </p>
 
-        <h3 style={h3Style}>8. Diritti dell'utente</h3>
+        <h3 style={h3Style}>9. Diritti dell'utente</h3>
         <p style={pStyle}>
           L'utente ha il diritto di:
         </p>
@@ -127,7 +127,7 @@ export const Privacy = ({ onNavigate }) => {
           Per esercitare i propri diritti, l'utente può contattare il Titolare all'indirizzo: <a href="mailto:privacy@polisroad.it" style={{ color: C.accent }}>privacy@polisroad.it</a>
         </p>
 
-        <h3 style={h3Style}>9. Reclami</h3>
+        <h3 style={h3Style}>10. Reclami</h3>
         <p style={pStyle}>
           L'utente ha il diritto di proporre reclamo al Garante per la Protezione dei Dati Personali (www.garanteprivacy.it).
         </p>

@@ -85,9 +85,14 @@ export const TerminiServizio = ({ onNavigate }) => {
           L'App, il suo design, il codice sorgente e i contenuti originali (escluso il contenuto normativo di dominio pubblico) sono di proprietà del Titolare. È vietata la riproduzione non autorizzata.
         </p>
 
-        <h3 style={h3Style}>9. Legge applicabile e foro competente</h3>
+        <h3 style={h3Style}>9. Strumenti di analisi (Analytics)</h3>
         <p style={pStyle}>
-          I presenti Termini sono regolati dalla legge italiana. Per qualsiasi controversia è competente il Foro di Torino.
+          L'App utilizza <strong>PostHog</strong> (PostHog Inc., EU Cloud) per raccogliere metriche di utilizzo anonimizzate al fine di migliorare il servizio. Il tracciamento è attivo per impostazione predefinita e può essere disattivato in qualsiasi momento dalla sezione Profilo. Per maggiori dettagli si rimanda alla Privacy Policy.
+        </p>
+
+        <h3 style={h3Style}>10. Legge applicabile</h3>
+        <p style={pStyle}>
+          I presenti Termini sono regolati dalla legge italiana. In caso di controversia si applica la normativa vigente in materia di competenza territoriale, nel rispetto delle disposizioni inderogabili a tutela del consumatore (D.Lgs. 206/2005).
         </p>
       </div>
     </PageWrapper>
