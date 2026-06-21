@@ -1,6 +1,45 @@
 # 📝 CHANGELOG - PolisRoad
 
-## [1.6.8] - 21 Giugno 2026
+## [1.6.9] - 22 Giugno 2026
+
+### 📋 Prontuario — Ridisegno Vista Dettaglio
+
+**Problema (screenshot 22:38)**
+Il titolo dell'articolo era mostrato nell'header blu insieme al badge gamification del profilo utente, risultando visivamente schizofrenico: informazione operativa (titolo violazione) mescolata con elemento personale (badge), con testo enorme su sfondo scuro che occupava metà schermo.
+
+**Soluzione**
+
+`AppHeader.jsx` — Badge gamification
+- Il `featuredBadge` ora appare **solo sulle pagine top-level** (senza pulsante ← Indietro). Nelle viste dettaglio (prontuario, normativa, ecc.) il badge è nascosto. Logica: se `leftAction` è presente = siamo in un dettaglio = no badge. Eliminata la precedente eccezione hardcoded `title !== "Profilo Operatore"`.
+
+`ProntuarioDetail.jsx` — Nuovo componente estratto
+- Estratta la vista dettaglio da `Prontuario.jsx` in un componente dedicato `src/components/ProntuarioDetail.jsx`, riutilizzabile anche da `Operatore.jsx`.
+- **Layout ridisegnato**:
+  1. **Card Titolo articolo** (card bianca, stile coerente con le altre card): riferimento normativo in colore primario + titolo voce in grassetto
+  2. **Card Norme Comuni dell'Articolo** (nuova): mostra il campo `note_comuni` dalla tabella `prontuario` — stesso valore per tutte le casistiche dello stesso articolo (es. Art. 6 ha 22 voci, le note comuni sono identiche per tutte). Appare solo se il campo è valorizzato.
+  3. Card Descrizione Violazione
+  4. Card Sanzioni
+  5. Note al Verbale / Note Operative
+  6. Memo Personale
+  7. Registra Contestazione
+- L'header blu in dettaglio mostra solo: `rif_normativo` come subtitle + pulsante Indietro + Aggiungi preferito.
+
+`AdminProntuario.jsx` — Note comuni visibili in admin
+- Quando un gruppo è espanso, le `note_comuni` appaiono in evidenza (bordo azzurro) sopra le voci, visibili una sola volta per gruppo.
+- Campo `note_comuni` aggiunto al form di creazione/modifica voce.
+
+`Operatore.jsx` — Note comuni nel dettaglio inline
+- Aggiunto blocco "NORME COMUNI ARTICOLO" nel dettaglio espanso della voce, prima della descrizione violazione, con lo stesso stile delle note operative.
+- Aggiunto `useNormativa` rimosso — il campo `note_comuni` vive già nella tabella `prontuario`, nessun fetch aggiuntivo necessario.
+- Importate le utility da `prontuarioUtils.js` invece di ridefinirle inline.
+
+### 🧹 Refactor — Utility Condivise
+
+`src/utils/prontuarioUtils.js` — Nuovo file
+- Estratte da `Prontuario.jsx` le funzioni `parseArticoloNum`, `sortSuffix`, `sortItems`, `groupByArticolo` in un file utility condiviso.
+- Importate in `Prontuario.jsx` e `useSearch.js`, eliminando la duplicazione.
+
+
 
 ### 🔍 Ricerca Globale — Risultati Raggruppati e Prioritizzati
 

@@ -64,7 +64,7 @@ export const AdminProntuario = () => {
       rif_normativo: '', articolo_numero: '', codice_caso: '', codice_violazione: '',
       titolo: '', descrizione: '', pmr: '', scontato_30: '',
       sanzione_notturna_importo: '', sanzione_notturna_scontata: '',
-      punti_patente: '', sanzione_accessoria: '', note_verbale: '', note_operative: '',
+      punti_patente: '', sanzione_accessoria: '', note_verbale: '', note_operative: '', note_comuni: '',
       sanzione_penale: '', aggiornamento: '',
     });
   };
@@ -107,6 +107,7 @@ export const AdminProntuario = () => {
           </div>
 
           <TextInput label="Sanzione Accessoria" value={formData.sanzione_accessoria || ''} onChange={e => setFormData({ ...formData, sanzione_accessoria: e.target.value })} />
+          <TextArea label="Note Comuni (stesse per tutte le casistiche dell'articolo)" value={formData.note_comuni || ''} onChange={e => setFormData({ ...formData, note_comuni: e.target.value })} />
           <TextArea label="Note al Verbale" value={formData.note_verbale || ''} onChange={e => setFormData({ ...formData, note_verbale: e.target.value })} />
           <TextArea label="Note Operative" value={formData.note_operative || ''} onChange={e => setFormData({ ...formData, note_operative: e.target.value })} />
           <TextInput label="Aggiornamento Legislativo" value={formData.aggiornamento || ''} onChange={e => setFormData({ ...formData, aggiornamento: e.target.value })} />
@@ -173,6 +174,12 @@ export const AdminProntuario = () => {
                     gap: '8px' 
                   }}
                 >
+                  {group.voci[0]?.note_comuni && (
+                    <div style={{ padding: '8px 10px', backgroundColor: C.background, borderRadius: '8px', borderLeft: `3px solid ${C.accent}` }}>
+                      <span style={{ fontSize: '0.7rem', fontWeight: '700', color: C.accent, textTransform: 'uppercase', letterSpacing: '0.4px' }}>Note Comuni Articolo</span>
+                      <p style={{ fontSize: '0.82rem', color: C.text, marginTop: '4px', lineHeight: 1.5, whiteSpace: 'pre-wrap' }}>{group.voci[0].note_comuni}</p>
+                    </div>
+                  )}
                   {group.voci.map(item => (
                     <div 
                       key={item.id} 

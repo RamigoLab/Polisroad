@@ -2,7 +2,7 @@
 
 Progressive Web App React/Vite per la consultazione rapida del Codice della Strada, prontuario infrazioni, calcolo sanzioni, preferiti, news, profilo operatore e funzioni amministrative.
 
-Versione corrente: **1.6.8**
+Versione corrente: **1.6.9**
 
 ---
 
@@ -104,7 +104,7 @@ Su Vercel (configurazione inclusa in `vercel.json` con header CSP, HSTS, CORS):
 
 ```
 src/
-├── components/       # componenti riutilizzabili (Icon, AppHeader, ProntuarioItem…)
+├── components/       # componenti riutilizzabili (Icon, AppHeader, ProntuarioItem, ProntuarioDetail…)
 │   ├── gamification/ # BadgeShowcase, LevelProgress, StreakCounter
 │   ├── layout/       # AppHeader, BottomNav, PageWrapper, Sidebar, Splash
 │   └── ui/           # Badge, Icon, SearchBar, TextInput, TextArea, ToastManager…
@@ -113,7 +113,7 @@ src/
 ├── pages/            # schermate app
 │   └── admin/        # AdminDashboard, AdminNews, AdminNormativa, AdminProntuario…
 ├── styles/           # theme.js, styles.js, layout.js, pages.js, ui.js
-├── utils/            # logger, rateLimiter, storage, validation
+├── utils/            # logger, rateLimiter, storage, validation, prontuarioUtils
 └── config/           # constants.js, badges.js, navigation.js, supabase.js
 supabase/
 ├── functions/        # Edge Functions (fetch-rss, delete-user)
@@ -158,20 +158,16 @@ scripts/              # script Node.js per import/generazione dati
 
 ---
 
-## Note versione 1.6.8 (21 Giugno 2026)
+## Note versione 1.6.9 (22 Giugno 2026)
 
-### Ricerca globale — risultati raggruppati e prioritizzati
-- Cercando un numero di articolo (es. `186`) viene mostrato prima il contenitore **Art. 186** con tutte le casistiche (Prontuario) o tutti i commi (Normativa), espandibile inline.
-- Sotto, in sezione "Anche in altri articoli", gli eventuali articoli che contengono il termine nel testo.
-- Stessa UX dei contenitori espandibili già presenti in Modalità Operatore e Area Amministrativa.
+### Vista dettaglio Prontuario ridisegnata
+- Il titolo dell'articolo è ora in una **card bianca in grassetto**, non nell'header blu.
+- Nuova sezione **Norme di Riferimento** con i commi della normativa corrispondenti all'articolo.
+- Il **badge gamification** non compare più nelle viste dettaglio (solo nelle pagine top-level).
+- Vista dettaglio estratta in componente separato `ProntuarioDetail.jsx` (riutilizzabile).
 
-### Code audit
-- **Bug**: `useInitializeGamification` istanziava `useGamification` direttamente, creando una seconda connessione Supabase parallela a quella del context. Risolto: usa ora `useGamificationContext`.
-- **Performance**: rimosso fetch Supabase inutile in `addXP` — ogni azione XP generava 2 chiamate invece di 1.
-- **Dead code**: rimosso alias `salvaNota` duplicato in `useNote`, rimossi 4 stili orfani da `styles.js`.
-
-### Documenti legali aggiornati
-- Privacy Policy e Termini di Servizio allineati al comportamento reale di PostHog (attivo di default, opt-out dal Profilo), rimossa clausola foro competente non applicabile ai consumatori, aggiunta sezione Analytics nei Termini.
+### Refactor
+- `src/utils/prontuarioUtils.js`: funzioni di sort/group centralizzate, non più duplicate tra `Prontuario.jsx` e `useSearch.js`.
 
 ---
 

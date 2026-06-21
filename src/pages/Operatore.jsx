@@ -160,6 +160,13 @@ export const Operatore = ({ onNavigate }) => {
                         </div>
                       </div>
 
+                      {item.note_comuni && (
+                        <div style={PS.operatoreNoteOpBlock}>
+                          <span style={PS.operatoreNoteOpLabel}>NORME COMUNI ARTICOLO</span>
+                          <span style={PS.operatoreTextSm}>{item.note_comuni}</span>
+                        </div>
+                      )}
+
                       <div style={PS.operatoreDescBlock}>
                         <span style={PS.operatoreDescLabel}>DESCRIZIONE VIOLAZIONE</span>
                         <p style={PS.operatoreDescText}>{item.descrizione}</p>

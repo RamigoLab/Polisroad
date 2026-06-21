@@ -14,11 +14,12 @@ export const AppHeader = ({
   rightAction,
 }) => {
   const { featuredBadge: featuredBadgeId } = useGamificationContext();
-  // featuredBadge nel context è un ID stringa (es. 'novice'); lo risolviamo nell'oggetto badge completo
   const featuredBadge = featuredBadgeId
     ? Object.values(BADGES).find(b => b.id === featuredBadgeId) || null
     : null;
 
+  // Il badge appare solo sulle pagine "top level" (senza pulsante Indietro)
+  const showBadge = !!featuredBadge && !leftAction;
   const hasText = subtitle || title || meta;
 
   return (
@@ -41,7 +42,7 @@ export const AppHeader = ({
           {title && (
             <h2 style={LS.appHeaderTitle}>
               {title}
-              {featuredBadge && title !== "Profilo Operatore" && (
+              {showBadge && (
                 <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>
               )}
             </h2>
@@ -50,7 +51,7 @@ export const AppHeader = ({
           {!hasText && (
             <h2 style={LS.appHeaderTitle}>
               PolisRoad
-              {featuredBadge && <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>}
+              {showBadge && <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>}
             </h2>
           )}
         </div>

@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { useDebounce } from './useDebounce';
+import { parseArticoloNum, sortItems, groupByArticolo } from '../utils/prontuarioUtils';
 
 /**
  * Custom hook che centralizza la logica di ricerca per Prontuario e Normativa.
@@ -65,12 +66,10 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
       }
     });
 
-    // Ordina per numero articolo
-    const sortGroups = arr => arr.sort((a, b) => {
-      const nA = parseInt((a.articolo_numero || '').replace(/\D/g, ''), 10) || 0;
-      const nB = parseInt((b.articolo_numero || '').replace(/\D/g, ''), 10) || 0;
-      return nA - nB;
-    });
+    // Ordina per numero articolo usando l'utility condivisa
+    const sortGroups = arr => arr.sort((a, b) =>
+      parseArticoloNum(a.articolo_numero) - parseArticoloNum(b.articolo_numero)
+    );
 
     return { exact: sortGroups(exact), other: sortGroups(other) };
   }, [debouncedSearch, prontuarioList, minChars]);
