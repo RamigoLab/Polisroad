@@ -84,28 +84,4 @@ export const UIS = {
     };
   },
 
-  // Toast
-  toastContainer: {
-    position: 'fixed',
-    bottom: '80px',
-    left: '20px',
-    right: '20px',
-    zIndex: 1000,
-    display: 'flex',
-    justifyContent: 'center',
-    pointerEvents: 'none',
-  },
-  toast: {
-    backgroundColor: '#333',
-    color: '#fff',
-    padding: '12px 20px',
-    borderRadius: '24px',
-    fontSize: '0.9rem',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    pointerEvents: 'auto',
-    animation: 'slideUp 0.3s ease-out',
-  },
 };

@@ -33,7 +33,8 @@ export const Operatore = ({ onNavigate }) => {
   const { showToast } = useToast();
 
   const [search, setSearch] = useState('');
-  const [expandedId, setExpandedId] = useState(null);
+  const [expandedGroupId, setExpandedGroupId] = useState(null); // id gruppo articolo (es. "grp_6")
+  const [expandedItemId, setExpandedItemId] = useState(null);   // id voce prontuario (numerico)
   const [registering, setRegistering] = useState(false);
 
   const handleRegistraContestazione = async (item) => {
@@ -128,11 +129,11 @@ export const Operatore = ({ onNavigate }) => {
           {/* Render item card riutilizzabile */}
           {(() => {
             const renderItem = (item) => {
-              const isExpanded = expandedId === item.id;
+              const isExpanded = expandedItemId === item.id;
               const itemNote = note[item.id];
               return (
                 <div key={item.id} style={PS.operatoreItemCard}>
-                  <div onClick={() => setExpandedId(isExpanded ? null : item.id)} style={PS.operatoreItemHeader}>
+                  <div onClick={() => setExpandedItemId(isExpanded ? null : item.id)} style={PS.operatoreItemHeader}>
                     <div>
                       <span style={PS.operatoreItemRef}>{item.rif_normativo} (Sanzione: €{item.pmr})</span>
                       <span style={PS.operatoreItemTitle}>{item.titolo || item.articolo_nome || (item.descrizione ? (item.descrizione.substring(0, 80) + '...') : 'Voce prontuario')}</span>
@@ -215,7 +216,11 @@ export const Operatore = ({ onNavigate }) => {
             const renderGroupHeader = (group) => (
               <div
                 key={`grp_${group.articolo_numero}`}
-                onClick={() => setExpandedId(expandedId === `grp_${group.articolo_numero}` ? null : `grp_${group.articolo_numero}`)}
+                onClick={() => {
+                  const gid = `grp_${group.articolo_numero}`;
+                  setExpandedGroupId(expandedGroupId === gid ? null : gid);
+                  setExpandedItemId(null); // chiudi eventuale voce aperta quando si chiude il gruppo
+                }}
                 style={{ ...PS.operatoreItemCard, backgroundColor: C.accentLight, borderLeft: `4px solid ${C.accent}`, cursor: 'pointer' }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
@@ -224,9 +229,9 @@ export const Operatore = ({ onNavigate }) => {
                     {group.titolo && <span style={{ fontSize: '0.82rem', color: C.text, marginLeft: '8px' }}>{group.titolo}</span>}
                     <div style={{ fontSize: '0.78rem', color: C.textLight, marginTop: '2px' }}>{group.count} {group.count === 1 ? 'voce' : 'voci'}</div>
                   </div>
-                  <span style={{ color: C.accent }}>{expandedId === `grp_${group.articolo_numero}` ? '▲' : '▼'}</span>
+                  <span style={{ color: C.accent }}>{expandedGroupId === `grp_${group.articolo_numero}` ? '▲' : '▼'}</span>
                 </div>
-                {expandedId === `grp_${group.articolo_numero}` && (
+                {expandedGroupId === `grp_${group.articolo_numero}` && (
                   <div style={{ padding: '0 8px 8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
                     {group.voci.map(renderItem)}
                   </div>

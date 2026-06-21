@@ -1,5 +1,53 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.6.4] - 21 Giugno 2026
+
+### 🐛 Bugfix Critico — Modalità Operatore
+
+**Problema**: nella Modalità Operatore, cliccare su una voce all'interno di un gruppo articolo (es. Art. 6) causava la chiusura del gruppo invece di espandere la voce selezionata. Il gruppo azzurro collassava e l'utente veniva rimandato alla vista di ricerca senza vedere il dettaglio.
+
+**Causa**: un singolo stato `expandedId` veniva usato sia per il gruppo articolo (con chiave stringa `"grp_6"`) che per le voci interne (id numerico). Al click su una voce, `setExpandedId(item.id)` sovrascriveva `"grp_6"`, chiudendo il gruppo.
+
+**Fix**: separati in due stati distinti:
+- `expandedGroupId` — traccia quale gruppo articolo è aperto (es. `"grp_6"`)
+- `expandedItemId` — traccia quale singola voce è espansa all'interno del gruppo
+
+I due stati ora sono indipendenti: aprire una voce non chiude mai il gruppo padre. Alla chiusura del gruppo, la voce aperta viene resettata automaticamente.
+
+### 🧹 Pulizia — File Orfani Rimossi
+
+- **`Toast.jsx`** — componente dead code: non era più importato da nessun file dopo la migrazione a `ToastManager`. Rimossi anche gli stili correlati `toastContainer` e `toast` da `styles/ui.js`.
+- **`Button.jsx`** — componente mai utilizzato in nessuna pagina o componente dell'app. Rimosso.
+- **`src/assets/react.svg`**, **`vite.svg`**, **`hero.png`** — asset di default Vite non referenziati da nessun file sorgente. Rimossi.
+- **`manifest.json` (root)** — duplicato identico di `public/manifest.json`. Il plugin `vite-plugin-pwa` genera il manifest dal `vite.config.js`; quello nella root era un residuo. Rimosso.
+
+### 🐛 Bugfix — `DataContext.jsx` (flusso fetch dati)
+
+**Problema**: in caso di errore sul fetch `news`, il codice impostava `setError()` ma poi **continuava a eseguire** i fetch di normativa e prontuario (mancava `else`). Questo causava chiamate Supabase inutili e potenzialmente `setNews(undefined)` invece del fallback `mockNews`.
+
+**Fix**: aggiunto blocco `else` corretto — se `newsError` è presente, imposta `setNews(mockNews)` e salta i fetch successivi. Normativa e prontuario vengono caricati solo se news ha avuto successo.
+
+### 🔒 Fix GDPR — PostHog `opt_out_capturing_by_default`
+
+**Problema**: `main.jsx` inizializzava PostHog senza `opt_out_capturing_by_default: true`, nonostante il changelog 1.6.1 dichiarasse questa impostazione. In pratica PostHog catturava dati di tutti gli utenti al primo avvio, prima che potessero esprimere consenso dal Profilo.
+
+**Fix**: aggiunto `opt_out_capturing_by_default: true` nell'`init` di PostHog in `main.jsx`. PostHog parte silenzioso; l'utente attiva il tracciamento esplicitamente dal toggle Analytics nel Profilo.
+
+---
+
+
+
+**Problema 1 — Banner "offline ready" ripetuto ad ogni avvio**
+Il banner "App pronta per funzionare offline!" compariva ad ogni riapertura dell'app perché il dismiss (click su "Chiudi") non era persistito. Fix: il dismiss viene ora salvato via `storage.js` (`polisroad_pwa_offline_dismissed`). Il banner non compare più dopo la prima chiusura.
+
+**Problema 2 — Conflitto di priorità `needRefresh` vs `offlineReady`**
+Se `offlineReady` era `true` e successivamente arrivava `needRefresh: true`, il testo mostrato era ancora quello "offline ready" mentre il bottone era "Riavvia & Aggiorna", creando un messaggio incoerente. Fix: `needRefresh` ha ora priorità esplicita nel rendering — se è `true`, mostra sempre il messaggio di aggiornamento indipendentemente da `offlineReady`.
+
+**Problema 3 — Doppio sistema toast (`Toast.jsx` + `ToastManager`)**
+`App.jsx` importava sia il vecchio componente `Toast.jsx` (dead code con `zIndex: 1000`) che il sistema `ToastProvider/useToast` (con `zIndex: 9999`). I due popup si potevano sovrapporre visivamente a `bottom: 80px`. Fix: rimosso `Toast.jsx` e l'import relativo da `App.jsx`. Il `dataError` viene ora mostrato tramite `showToast('...', 'error')` del `ToastProvider`, unificando il sistema. `App.jsx` è stato refactored in un componente `AppInner` per poter usare `useToast` all'interno del `ToastProvider` già presente in `main.jsx`.
+
+---
+
 ## [1.6.3] - 20 Giugno 2026
 
 ### 🔍 Ricerca intelligente in tutte e 3 le sezioni (Prontuario, Operatore, Normativa)

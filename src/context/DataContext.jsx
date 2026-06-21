@@ -50,7 +50,7 @@ export const DataProvider = ({ children }) => {
     };
 
     try {
-      // Fetch impaginate automatiche per bypassare i blocchi del server (SOLO per news)
+      // Fetch news (non paginata, limite 100 risultati)
       const { data: newsData, error: newsError } = await supabase
         .from('news')
         .select('*')
@@ -58,13 +58,11 @@ export const DataProvider = ({ children }) => {
         .limit(100);
 
       if (newsError) {
-        logger.error('Data Fetch Errors:', {
-          news: newsError
-        });
-        
+        logger.error('Data Fetch Errors:', { news: newsError });
+
         const anyError = newsError;
         let userMsg = "Si è verificato un errore durante il caricamento dei dati.";
-        
+
         if (anyError.message?.includes('fetch') || anyError.message?.includes('Network')) {
           userMsg = "Errore di rete: controlla la tua connessione internet o la VPN.";
         } else if (anyError.code === '42P01') {
@@ -74,11 +72,11 @@ export const DataProvider = ({ children }) => {
         } else {
           userMsg = "Impossibile caricare i dati aggiornati. Riprova più tardi.";
         }
-        
-        setError(userMsg);
-      }
 
-        // Fetch normative data with pagination
+        setError(userMsg);
+        setNews(mockNews);
+      } else {
+        // Fetch normativa con paginazione
         const { data: normativaData, error: normativaError } = await fetchAllRows('codice_strada', 'ordine');
         if (normativaError) {
           logger.error('Normativa fetch error:', normativaError);
@@ -88,7 +86,7 @@ export const DataProvider = ({ children }) => {
           setNormativa(normativaData);
         }
 
-        // Fetch prontuario data with pagination
+        // Fetch prontuario con paginazione
         const { data: prontuarioData, error: prontuarioError } = await fetchAllRows('prontuario', 'articolo_numero');
         if (prontuarioError) {
           logger.error('Prontuario fetch error:', prontuarioError);
@@ -98,21 +96,22 @@ export const DataProvider = ({ children }) => {
           setProntuario(prontuarioData);
         }
 
-      const fetchedNews = newsData || mockNews;
-      const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-      const now = Date.now();
-      
-      const validNews = fetchedNews.filter(item => {
-        if (item.pubblicato) {
-          const createdAt = new Date(item.data_creazione || item.created_at).getTime();
-          if (Number.isFinite(createdAt) && (now - createdAt) > THIRTY_DAYS_MS) {
-            return false;
-          }
-        }
-        return true;
-      });
+        const fetchedNews = newsData || mockNews;
+        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+        const now = Date.now();
 
-      setNews(validNews);
+        const validNews = fetchedNews.filter(item => {
+          if (item.pubblicato) {
+            const createdAt = new Date(item.data_creazione || item.created_at).getTime();
+            if (Number.isFinite(createdAt) && (now - createdAt) > THIRTY_DAYS_MS) {
+              return false;
+            }
+          }
+          return true;
+        });
+
+        setNews(validNews);
+      }
 
     } catch (err) {
       logger.error('General Data Fetch Error:', err);

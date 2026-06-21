@@ -11,6 +11,8 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { PageLoader } from './components/ui/PageLoader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PwaUpdater } from './components/PwaUpdater';
+import { useToast } from './components/ui/ToastManager';
+import { getItem, setItem, removeItem } from './utils/storage';
 
 // Lazy loading pages for high performance & smaller initial bundle size
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
@@ -34,16 +36,15 @@ const AdminProntuario = lazy(() => import('./pages/admin/AdminProntuario').then(
 const AdminNormativa = lazy(() => import('./pages/admin/AdminNormativa').then(m => ({ default: m.AdminNormativa })));
 const AdminSegnalazioni = lazy(() => import('./pages/admin/AdminSegnalazioni').then(m => ({ default: m.AdminSegnalazioni })));
 
-import { Toast } from './components/ui/Toast';
-import { getItem, setItem, removeItem } from './utils/storage';
-
-function App() {
+// Inner component that can safely use useToast (inside ToastProvider)
+function AppInner() {
   const { session, loading: authLoading, passwordRecovery } = useAuth();
   const { loading: dataLoading, error: dataError } = useData();
-  
+  const { showToast } = useToast();
+
   // Initialize gamification on app load
   useInitializeGamification();
-  
+
   const loading = authLoading || dataLoading;
   const [currentPage, setCurrentPage] = useState(() => {
     const saved = getItem('polisroad_current_page');
@@ -58,15 +59,15 @@ function App() {
       return null;
     }
   });
-  const [errorToast, setErrorToast] = useState('');
 
+  // Mostra dataError come toast (sostituisce il vecchio componente <Toast>)
   useEffect(() => {
     if (dataError) {
-      setErrorToast(dataError);
+      showToast(dataError, 'error');
     }
-  }, [dataError]);
+  }, [dataError, showToast]);
 
-  // A1: sincronizza lo stato iniziale nella history e ascolta il tasto Indietro
+  // Sincronizza lo stato iniziale nella history e ascolta il tasto Indietro
   useEffect(() => {
     window.history.replaceState({ page: currentPage, params: navigationParams }, '', `?page=${currentPage}`);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -81,13 +82,10 @@ function App() {
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-
   const navigate = (page, params = null) => {
-    // Aggiungi un nuovo stato nella history solo se la pagina cambia o i parametri cambiano
     if (page !== currentPage || JSON.stringify(params) !== JSON.stringify(navigationParams)) {
       window.history.pushState({ page, params }, '', `?page=${page}`);
     }
-    
     setCurrentPage(page);
     setNavigationParams(params);
     setItem('polisroad_current_page', page);
@@ -97,11 +95,10 @@ function App() {
       removeItem('polisroad_navigation_params');
     }
   };
+
   const [showSplash, setShowSplash] = useState(() => {
     const savedPage = getItem('polisroad_current_page');
-    if (savedPage && savedPage !== 'home') {
-      return false;
-    }
+    if (savedPage && savedPage !== 'home') return false;
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
     const hasShown = sessionStorage.getItem('polisroad_splash_shown');
     return !hasShown && !isStandalone;
@@ -117,21 +114,12 @@ function App() {
     }
   }, [showSplash]);
 
-  if (showSplash || loading) {
-    return <Splash />;
-  }
-
-  if (!session) {
-    return <Auth onNavigate={navigate} />;
-  }
-
-  if (passwordRecovery) {
-    return <Auth passwordUpdateMode onNavigate={navigate} />;
-  }
+  if (showSplash || loading) return <Splash />;
+  if (!session) return <Auth onNavigate={navigate} />;
+  if (passwordRecovery) return <Auth passwordUpdateMode onNavigate={navigate} />;
 
   const renderPage = () => {
     const props = { onNavigate: navigate, navigationParams };
-    
     switch (currentPage) {
       case 'home': return <Home {...props} />;
       case 'prontuario': return <Prontuario {...props} />;
@@ -146,8 +134,6 @@ function App() {
       case 'guide': return <GuidePratiche {...props} />;
       case 'privacy': return <Privacy {...props} />;
       case 'termini': return <TerminiServizio {...props} />;
-      
-      // Admin Pages
       case 'admin_dashboard': return (
         <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="dashboard" {...props}><AdminDashboard /></AdminLayout>
@@ -173,7 +159,6 @@ function App() {
           <AdminLayout currentTab="normativa" {...props}><AdminNormativa /></AdminLayout>
         </ProtectedRoute>
       );
-      
       default: return <Home {...props} />;
     }
   };
@@ -191,10 +176,13 @@ function App() {
           </div>
           {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
         </div>
-        {errorToast && <Toast message={errorToast} onClose={() => setErrorToast('')} />}
       </Suspense>
     </ErrorBoundary>
   );
+}
+
+function App() {
+  return <AppInner />;
 }
 
 export default App;
