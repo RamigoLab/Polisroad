@@ -1,5 +1,13 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.6.5] - 21 Giugno 2026
+
+### 👥 Gestione Utenti in Area Amministrativa
+
+- **Nuova Scheda "Utenti"**: Aggiunta una sezione dedicata in Area Amministrativa per visualizzare tutti i profili registrati con funzionalità di ricerca per nome, cognome, email o forza di polizia.
+- **Modifica Profili**: Gli amministratori possono ora modificare i dettagli degli utenti (Nome, Cognome, Grado, Forza di Polizia, Telefono) ed elevare o revocare i permessi di amministrazione modificando il ruolo di sistema (`admin` / `operatore`).
+- **Policy RLS Supabase**: Creata la migrazione SQL per consentire agli utenti con ruolo `admin` di aggiornare i profili degli altri utenti (operazione prima bloccata dalla policy di sicurezza base).
+
 ## [1.6.4] - 21 Giugno 2026
 
 ### 🐛 Bugfix Critico — Modalità Operatore
