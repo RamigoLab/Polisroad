@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { useGamification } from './useGamification';
+import { useGamificationContext } from '../context/GamificationContext';
 import { useAuth } from './useAuth';
 
 import { logger } from '../utils/logger';
@@ -8,10 +8,13 @@ import { logger } from '../utils/logger';
  * 1. Aggiornare lo streak quotidiano
  * 2. Controllare e sbloccare nuovi badge
  * 3. Registrare l'accesso dell'utente
+ *
+ * Usa useGamificationContext invece di useGamification direttamente,
+ * evitando una seconda istanza separata dell'hook con fetch duplicati.
  */
 export const useInitializeGamification = () => {
   const { session } = useAuth();
-  const { stats, loading, updateStreak, checkNewBadges } = useGamification();
+  const { stats, loading, updateStreak, checkNewBadges } = useGamificationContext();
 
   useEffect(() => {
     if (!session?.user?.id || loading || !stats) return;

@@ -67,15 +67,8 @@ export const useGamification = () => {
           return { error: 'Invalid XP amount' };
         }
 
-        const { data: latestStats, error: fetchError } = await supabase
-          .from('gamification')
-          .select('*')
-          .eq('user_id', userId)
-          .single();
-        if (fetchError) throw fetchError;
-
-        const currentStats = latestStats || stats;
-        const currentXp = currentStats.xp || 0;
+        // Usa lo stato locale (già aggiornato ottimisticamente) invece di un fetch extra
+        const currentXp = stats.xp || 0;
         const newXp = currentXp + safeAmount;
         const newLevel = Math.floor(Math.sqrt(newXp / 10)) + 1;
 
@@ -85,14 +78,12 @@ export const useGamification = () => {
           level: newLevel,
           updated_at: new Date()
         };
-        if (action === 'search') updates.total_searches = (currentStats.total_searches || 0) + 1;
-        if (action === 'favorite') updates.total_favorites = (currentStats.total_favorites || 0) + 1;
-        if (action === 'calculator') updates.calculator_uses = (currentStats.calculator_uses || 0) + 1;
-        if (action === 'article') updates.total_articles_viewed = (currentStats.total_articles_viewed || 0) + 1;
-        if (action === 'contestazione') updates.total_contestazioni = (currentStats.total_contestazioni || 0) + 1;
-        if (action === 'streak_bonus') {
-          // lo streak_bonus è solo XP extra, niente contatore aggiuntivo
-        }
+        if (action === 'search') updates.total_searches = (stats.total_searches || 0) + 1;
+        if (action === 'favorite') updates.total_favorites = (stats.total_favorites || 0) + 1;
+        if (action === 'calculator') updates.calculator_uses = (stats.calculator_uses || 0) + 1;
+        if (action === 'article') updates.total_articles_viewed = (stats.total_articles_viewed || 0) + 1;
+        if (action === 'contestazione') updates.total_contestazioni = (stats.total_contestazioni || 0) + 1;
+        // streak_bonus è solo XP extra, niente contatore aggiuntivo
 
         const { error: err } = await supabase
           .from('gamification')

@@ -1,6 +1,45 @@
 # 📝 CHANGELOG - PolisRoad
 
-## [1.6.7] - 21 Giugno 2026
+## [1.6.8] - 21 Giugno 2026
+
+### 🔍 Ricerca Globale — Risultati Raggruppati e Prioritizzati
+
+**`useSearch.js` — riscrittura logica risultati**
+- I risultati non vengono più restituiti come lista piatta di voci/commi singoli, ma **raggruppati per articolo** con separazione in due livelli di priorità:
+  - **Corrispondenza esatta**: cercando "186" viene mostrato prima `Art. 186` come contenitore con tutte le sue casistiche (Prontuario) o tutti i suoi commi (Normativa).
+  - **Anche in altri articoli**: sotto, eventuali articoli che contengono il termine nel testo (es. un comma di Art. 141 che menziona "186").
+- Il metodo di ritorno cambia da array piatto a `{ exact: [], other: [] }` per entrambe le sezioni.
+
+**`Ricerca.jsx` — UI ridisegnata**
+- Ogni articolo è ora un **contenitore espandibile** (stesso pattern di Operatore e Admin): clic sul gruppo mostra le voci/commi interni, clic sulla singola voce naviga al dettaglio.
+- I gruppi con corrispondenza esatta hanno bordo e colore accentuato + etichetta "corrispondenza esatta".
+- I gruppi testuali in "Anche in altri articoli" sono visivamente distinti.
+- Label separatore "Anche in altri articoli" appare solo quando ci sono sia risultati esatti che testuali.
+- Pulsante "Vedi tutti" mantiene il limite di 5 gruppi nella sezione "altri".
+- Espansione dei gruppi si resetta automaticamente al cambio query.
+
+**`useSearch.test.js` — test aggiornati**
+- Tutti i test allineati alla nuova struttura `{ exact, other }`.
+- Aggiunto test specifico per ricerca numerica esatta che verifica il raggruppamento corretto.
+
+### 🔧 Code Audit — Cleanup & Ottimizzazioni
+
+**Bug critico — doppia istanza `useGamification` (`useInitializeGamification.js`)**
+- `useInitializeGamification` importava e istanziava `useGamification` direttamente, creando una seconda connessione Supabase indipendente da quella già gestita da `GamificationContext`. Al primo avvio dell'app venivano quindi eseguiti due fetch paralleli alla tabella `gamification` per lo stesso utente.
+- Fix: `useInitializeGamification` ora usa `useGamificationContext` (il context già montato) invece di istanziare nuovamente l'hook diretto.
+
+**Performance — fetch inutile in `addXP` (`useGamification.js`)**
+- Prima di ogni aggiornamento XP, veniva eseguita una query `SELECT * FROM gamification` per "leggere i dati freschi", nonostante lo stato locale `stats` venisse già aggiornato ottimisticamente ad ogni operazione. Risultato: ogni azione dell'utente (ricerca, articolo, preferito, contestazione) generava 2 chiamate Supabase invece di 1.
+- Fix: rimossa la query di pre-fetch. `addXP` usa ora direttamente `stats` dallo stato locale, che è sempre sincronizzato.
+
+**Dead code — alias duplicato in `useNote.js`**
+- Il return di `useNote` esponeva sia `save` che `salvaNota` come alias della stessa funzione. Nessun consumer usava `salvaNota` direttamente.
+- Fix: rimosso `salvaNota` dal return, mantenuto solo `save`.
+
+**Dead code — stili inutilizzati in `styles.js`**
+- Rimosse 4 chiavi mai referenziate in nessun componente: `pageHeader`, `pageTitle`, `successBox`, `labelSmall`.
+
+
 
 ### 📄 Aggiornamento Documenti Legali
 

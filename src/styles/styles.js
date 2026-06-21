@@ -10,18 +10,6 @@ export const S = {
   // ─────────────────────────────────────────────
   // LAYOUT
   // ─────────────────────────────────────────────
-  pageHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-  },
-  pageTitle: {
-    color: C.primary,
-    fontSize: '1.4rem',
-    fontWeight: '700',
-    margin: 0,
-  },
   sectionTitle: {
     color: C.primary,
     marginBottom: '16px',
@@ -176,12 +164,6 @@ export const S = {
     fontSize: '0.95rem',
     fontWeight: '700',
   },
-  successBox: {
-    backgroundColor: C.successLight,
-    padding: '16px',
-    borderRadius: '12px',
-    borderLeft: `4px solid ${C.success}`,
-  },
 
   // ─────────────────────────────────────────────
   // PROFILO / DATA ROW
@@ -213,10 +195,6 @@ export const S = {
   // ─────────────────────────────────────────────
   // TESTO / BADGE
   // ─────────────────────────────────────────────
-  labelSmall: {
-    fontSize: '0.75rem',
-    color: C.textLight,
-  },
   labelUppercase: {
     fontSize: '0.8rem',
     color: C.textLight,
