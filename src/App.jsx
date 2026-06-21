@@ -35,6 +35,7 @@ const AdminNews = lazy(() => import('./pages/admin/AdminNews').then(m => ({ defa
 const AdminProntuario = lazy(() => import('./pages/admin/AdminProntuario').then(m => ({ default: m.AdminProntuario })));
 const AdminNormativa = lazy(() => import('./pages/admin/AdminNormativa').then(m => ({ default: m.AdminNormativa })));
 const AdminSegnalazioni = lazy(() => import('./pages/admin/AdminSegnalazioni').then(m => ({ default: m.AdminSegnalazioni })));
+const AdminUtenti = lazy(() => import('./pages/admin/AdminUtenti').then(m => ({ default: m.AdminUtenti })));
 
 // Inner component that can safely use useToast (inside ToastProvider)
 function AppInner() {
@@ -137,6 +138,11 @@ function AppInner() {
       case 'admin_dashboard': return (
         <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="dashboard" {...props}><AdminDashboard /></AdminLayout>
+        </ProtectedRoute>
+      );
+      case 'admin_utenti': return (
+        <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
+          <AdminLayout currentTab="utenti" {...props}><AdminUtenti /></AdminLayout>
         </ProtectedRoute>
       );
       case 'admin_segnalazioni': return (

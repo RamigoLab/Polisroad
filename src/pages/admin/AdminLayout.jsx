@@ -5,6 +5,7 @@ import { LS } from '../../styles/layout';
 
 const ADMIN_TABS = [
   { id: 'dashboard', label: 'Dashboard', page: 'admin_dashboard' },
+  { id: 'utenti', label: 'Utenti', page: 'admin_utenti', icon: 'user' },
   { id: 'segnalazioni', label: 'Segnalazioni', page: 'admin_segnalazioni', icon: 'shield-alert' },
   { id: 'news', label: 'News', page: 'admin_news' },
   { id: 'prontuario', label: 'Prontuario', page: 'admin_prontuario' },
