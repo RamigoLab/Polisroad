@@ -7,6 +7,9 @@
 - **Nuova Scheda "Utenti"**: Aggiunta una sezione dedicata in Area Amministrativa per visualizzare tutti i profili registrati con funzionalità di ricerca per nome, cognome, email o forza di polizia.
 - **Modifica Profili**: Gli amministratori possono ora modificare i dettagli degli utenti (Nome, Cognome, Grado, Forza di Polizia, Telefono) ed elevare o revocare i permessi di amministrazione modificando il ruolo di sistema (`admin` / `operatore`).
 - **Policy RLS Supabase**: Creata la migrazione SQL per consentire agli utenti con ruolo `admin` di aggiornare i profili degli altri utenti (operazione prima bloccata dalla policy di sicurezza base).
+- **Validazione Obbligatorietà Nome/Cognome**:
+  - Risolto un bug nel componente `TextInput` che ignorava alcune proprietà (come `onKeyDown`).
+  - Creata una migrazione SQL per impostare i vincoli `NOT NULL` e `CHECK` (stringa non vuota) sulle colonne `nome` e `cognome` della tabella `profiles` sul database, rendendole obbligatorie e bloccando registrazioni vuote.
 
 ## [1.6.4] - 21 Giugno 2026
 
