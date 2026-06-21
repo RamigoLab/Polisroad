@@ -2,7 +2,7 @@
 
 Progressive Web App React/Vite per la consultazione rapida del Codice della Strada, prontuario infrazioni, calcolo sanzioni, preferiti, news, profilo operatore e funzioni amministrative.
 
-Versione corrente: **1.6.3**
+Versione corrente: **1.6.8**
 
 ---
 
@@ -12,7 +12,7 @@ Versione corrente: **1.6.3**
 - **Supabase** — autenticazione e database (RLS)
 - **Vite PWA** — service worker e installazione offline
 - **lucide-react** — icone SVG coerenti
-- **PostHog** — analytics opzionale
+- **PostHog EU Cloud** — analytics (attivo di default, disattivabile dal Profilo)
 - **DOMPurify** — sanitizzazione input HTML
 
 ---
@@ -33,10 +33,7 @@ Versione corrente: **1.6.3**
 VITE_SUPABASE_URL=https://xxxxx.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_USE_SUPABASE=true
-VITE_DEMO_MODE=false
 ```
-
-La modalità demo è pensata solo per sviluppo locale. In produzione lascia `VITE_DEMO_MODE=false`.
 
 Variabili opzionali:
 
@@ -87,15 +84,15 @@ In produzione viene mostrato un popup quando è disponibile un aggiornamento con
 - I ruoli admin sono verificati lato database tramite RLS/policy Supabase — non solo lato client.
 - Non committare mai file `.env` con chiavi reali.
 - La chiave Supabase `anon` è sicura lato client solo se le policy RLS sono configurate correttamente.
-- La gamification aggiorna Supabase dal client; per anti-abuso robusto è consigliata una RPC Supabase dedicata per l'assegnazione XP.
 - RSS feed letti tramite Edge Function `supabase/functions/fetch-rss` con verifica ruolo admin lato server — nessuna chiamata diretta dal browser a servizi terzi.
 - I `console.*` di produzione sono gestiti dal logger centralizzato `src/utils/logger.js` (silenziati in build).
+- Stack trace degli errori visibili solo in sviluppo (`import.meta.env.DEV`), nascosti in produzione.
 
 ---
 
 ## Deploy
 
-Su Vercel o servizi simili:
+Su Vercel (configurazione inclusa in `vercel.json` con header CSP, HSTS, CORS):
 
 1. Collega il repository GitHub.
 2. Configura le variabili d'ambiente nel pannello del progetto.
@@ -107,14 +104,20 @@ Su Vercel o servizi simili:
 
 ```
 src/
-├── components/       # componenti riutilizzabili (Button, Icon, AppHeader…)
+├── components/       # componenti riutilizzabili (Icon, AppHeader, ProntuarioItem…)
+│   ├── gamification/ # BadgeShowcase, LevelProgress, StreakCounter
+│   ├── layout/       # AppHeader, BottomNav, PageWrapper, Sidebar, Splash
+│   └── ui/           # Badge, Icon, SearchBar, TextInput, TextArea, ToastManager…
 ├── context/          # DataContext, GamificationContext
-├── hooks/            # useAuth, useSearch, useTheme…
-├── pages/            # schermate app (Home, Normativa, Prontuario, Profilo…)
-├── utils/            # logger, rateLimiter, helpers
-└── config/           # constants.js (versione, colori)
+├── hooks/            # useAuth, useSearch, useNormativa, useProntuario, useTheme…
+├── pages/            # schermate app
+│   └── admin/        # AdminDashboard, AdminNews, AdminNormativa, AdminProntuario…
+├── styles/           # theme.js, styles.js, layout.js, pages.js, ui.js
+├── utils/            # logger, rateLimiter, storage, validation
+└── config/           # constants.js, badges.js, navigation.js, supabase.js
 supabase/
-└── functions/        # Edge Functions (fetch-rss, delete-user)
+├── functions/        # Edge Functions (fetch-rss, delete-user)
+└── migrations/       # migrazioni SQL con RLS e policy
 scripts/              # script Node.js per import/generazione dati
 ```
 
@@ -122,37 +125,53 @@ scripts/              # script Node.js per import/generazione dati
 
 ## Funzionalità principali
 
+### Consultazione
 - **Codice della Strada** — navigazione gerarchica (Titoli › Capi › Articoli › Commi) con ricerca full-text e per numero articolo
-- **Prontuario** — database infrazioni con importi, contestazione e +XP
+- **Prontuario** — database infrazioni raggruppato per articolo, con importi, note personali, preferiti e registrazione contestazioni
 - **Calcolatore Sanzioni** — calcolo automatico con aggravanti e attenuanti
-- **Preferiti** — salvataggio e gestione articoli preferiti (Supabase)
-- **News & Notifiche** — gestione editoriale admin con popup, banner e comunicazioni home
-- **Gamification** — sistema XP, livelli, badge, streak giornaliero, esportazione dati GDPR
-- **Profilo Operatore** — stats, badge featured, cronologia XP, eliminazione account
-- **Admin Panel** — gestione prontuario, normativa, news, segnalazioni, dashboard
+- **Ricerca Globale** — ricerca simultanea su Prontuario e Normativa con risultati raggruppati per articolo e priorità: corrispondenza esatta prima, poi occorrenze in altri articoli
+
+### Operativa
+- **Modalità Operatore** — interfaccia semplificata per uso sul campo: preferiti in evidenza, ricerca rapida, dettaglio sanzione espandibile inline, registrazione contestazione con un tap
+- **Preferiti** — salvataggio e gestione articoli preferiti sincronizzati su Supabase
+
+### Profilo & Gamification
+- **Profilo Operatore** — grado, forza di appartenenza, stats, badge featured, cronologia XP, esportazione dati GDPR, eliminazione account
+- **Sistema XP e Livelli** — punti esperienza per ricerche, articoli, preferiti, contestazioni, streak giornaliero
+- **Badge** — traguardi sbloccabili automaticamente (Bronze → Diamond, Streak Master, Scholar…)
+- **Streak giornaliero** — bonus XP per accessi consecutivi
+
+### News & Comunicazioni
+- **News** — feed editoriale con filtro categorie, aggiornamento RSS tramite Edge Function
+- **Notifiche Home** — banner e popup gestibili dall'admin
+
+### Amministrazione
+- **Area Amministrativa** — dashboard con stats, gestione utenti, segnalazioni, news, prontuario e normativa
+- **Gestione Prontuario** — voci raggruppate per articolo, modifica e aggiunta inline senza navigare tra schermate
+- **Gestione Normativa** — articoli espandibili con modifica intestazione e commi individuali inline
+- **Gestione Utenti** — modifica profili, promozione/revoca ruolo admin
+
+### PWA & Offline
+- **Offline Mode** — funzionamento completo senza connessione, con sync queue per le azioni in attesa
 - **Dark Mode** — tema chiaro/scuro con persistenza e sincronizzazione `theme-color` PWA
 - **Guide Pratiche** — sezione in espansione (WIP)
 
 ---
 
-## Note versione 1.6.0 (18 Giugno 2026)
+## Note versione 1.6.8 (21 Giugno 2026)
 
-### Redesign grafico (Material 3-inspired)
-- Nuovi token CSS superfici tonali (`--bg-surface-container`, `--bg-surface-container-high`)
-- Font Roboto (400/500/700) al posto di Sora — coerente con il linguaggio visivo Google
-- Scala raggi unificata (`--radius-sm/md/lg/pill`)
-- Nuovo componente `Button.jsx` con varianti: filled, tonal, outline, text, danger
-- Bottom navigation ridotta a 5 voci fisse (Home, Normativa, Prontuario, Cerca, Profilo) con indicatore "pillola" sulla voce attiva; Sidebar mantiene tutte le 10 voci
-- Componente centralizzato `Icon.jsx` con icone lucide-react; emoji funzionali sostituite con SVG coerenti
+### Ricerca globale — risultati raggruppati e prioritizzati
+- Cercando un numero di articolo (es. `186`) viene mostrato prima il contenitore **Art. 186** con tutte le casistiche (Prontuario) o tutti i commi (Normativa), espandibile inline.
+- Sotto, in sezione "Anche in altri articoli", gli eventuali articoli che contengono il termine nel testo.
+- Stessa UX dei contenitori espandibili già presenti in Modalità Operatore e Area Amministrativa.
 
-### Correzioni
-- **Tasto Indietro**: listener `popstate` in `App.jsx` — il tasto Indietro di browser/Android torna alla pagina precedente
-- **Console log**: ~39 `console.*` in 14 file sostituiti con `src/utils/logger.js`
-- **Theme-color**: `index.html` impostato a `#1a3a5c`; `useTheme.js` aggiorna il meta tag dinamicamente
-- **RSS**: aggiunta Edge Function `supabase/functions/fetch-rss` con parser RSS e verifica ruolo admin lato server
-- **File orfani rimossi**: `public/favicon.svg`, `public/icons.svg`, `public/manifest.json`
-- **Dipendenza inutilizzata**: rimosso `react-router-dom`
-- **ErrorBoundary**: colori hardcoded sostituiti con variabili CSS globali
+### Code audit
+- **Bug**: `useInitializeGamification` istanziava `useGamification` direttamente, creando una seconda connessione Supabase parallela a quella del context. Risolto: usa ora `useGamificationContext`.
+- **Performance**: rimosso fetch Supabase inutile in `addXP` — ogni azione XP generava 2 chiamate invece di 1.
+- **Dead code**: rimosso alias `salvaNota` duplicato in `useNote`, rimossi 4 stili orfani da `styles.js`.
+
+### Documenti legali aggiornati
+- Privacy Policy e Termini di Servizio allineati al comportamento reale di PostHog (attivo di default, opt-out dal Profilo), rimossa clausola foro competente non applicabile ai consumatori, aggiunta sezione Analytics nei Termini.
 
 ---
 
