@@ -132,7 +132,7 @@ export const Operatore = ({ onNavigate }) => {
               const isExpanded = expandedItemId === item.id;
               const itemNote = note[item.id];
               return (
-                <div key={item.id} style={PS.operatoreItemCard}>
+                <div key={item.id} style={PS.operatoreItemCard} onClick={(e) => e.stopPropagation()}>
                   <div onClick={() => setExpandedItemId(isExpanded ? null : item.id)} style={PS.operatoreItemHeader}>
                     <div>
                       <span style={PS.operatoreItemRef}>{item.rif_normativo} (Sanzione: €{item.pmr})</span>
