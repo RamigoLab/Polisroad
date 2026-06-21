@@ -12,12 +12,12 @@ export const AdminNormativa = () => {
   const { list, add, update, remove } = useNormativa();
   const { showToast } = useToast();
 
-  const [selectedArticle, setSelectedArticle] = useState(null);
-  const [editingId, setEditingId] = useState(null); // 'new' for adding new article
+  const [expandedGroupId, setExpandedGroupId] = useState(null); // id del gruppo articolo espanso (es. "art_186")
+  const [editingId, setEditingId] = useState(null); // 'new' per aggiungere un nuovo articolo
   const [search, setSearch] = useState('');
   const [loading, setLoading] = useState(false);
 
-  // Form states for modifying article header
+  // Stati del modulo per modificare l'intestazione dell'articolo
   const [artNum, setArtNum] = useState('');
   const [artTitle, setArtTitle] = useState('');
   const [titoloNum, setTitoloNum] = useState('');
@@ -25,7 +25,7 @@ export const AdminNormativa = () => {
   const [capoNum, setCapoNum] = useState('');
   const [capoNome, setCapoNome] = useState('');
 
-  // Form state for creating a brand new article
+  // Stato per la creazione di un nuovo articolo da zero
   const [newArt, setNewArt] = useState({
     titolo_numero: '',
     titolo_nome: '',
@@ -37,10 +37,10 @@ export const AdminNormativa = () => {
     testo: ''
   });
 
-  // State for temporary edits inside the selected article's commi
+  // Stato per salvare temporaneamente le modifiche ai singoli commi
   const [commiEdits, setCommiEdits] = useState({});
 
-  // Group normativa by article (just like in the main user view)
+  // Raggruppa la normativa per articolo
   const groupedList = React.useMemo(() => {
     const groups = Object.values(list.reduce((acc, item) => {
       const art = item.articolo_num;
@@ -70,9 +70,8 @@ export const AdminNormativa = () => {
     return title.replace(/^\s*\(\s*/, '').replace(/\s*\)\s*\.?\s*$/, '').trim();
   };
 
-  // Open the detailed article editor
-  const handleEditArticle = (group) => {
-    setSelectedArticle(group);
+  // Carica i dati dell'articolo per la modifica quando viene espanso
+  const handleExpandArticle = (group) => {
     setArtNum(group.articolo_num);
     setArtTitle(cleanTitle(group.titolo_articolo));
     setTitoloNum(group.titolo_numero || '');
@@ -80,7 +79,7 @@ export const AdminNormativa = () => {
     setCapoNum(group.capo_numero || '');
     setCapoNome(group.capo_nome || '');
     
-    // Initialize temporary comma edits state
+    // Inizializza lo stato dei singoli commi
     const edits = {};
     group.commi.forEach(c => {
       edits[c.id] = {
@@ -91,14 +90,8 @@ export const AdminNormativa = () => {
     setCommiEdits(edits);
   };
 
-  // Close editors and return to list
-  const handleBackToList = () => {
-    setSelectedArticle(null);
-    setEditingId(null);
-  };
-
-  // Save the article's core metadata across all its commi
-  const handleSaveArticleMeta = async () => {
+  // Salva i metadati dell'articolo su tutti i suoi commi
+  const handleSaveArticleMeta = async (group) => {
     if (!artNum) {
       showToast('Il numero articolo è obbligatorio', 'error');
       return;
@@ -108,12 +101,12 @@ export const AdminNormativa = () => {
     const artString = `Art. ${parsedNum}.`;
 
     try {
-      const promises = selectedArticle.commi.map(c => 
+      const promises = group.commi.map(c => 
         update(c.id, {
           articolo: artString,
           articolo_num: parsedNum,
           titolo_articolo: artTitle,
-          titolo: artTitle, // keep fallback
+          titolo: artTitle,
           titolo_numero: titoloNum,
           titolo_nome: titoloNome,
           capo_numero: capoNum,
@@ -122,18 +115,6 @@ export const AdminNormativa = () => {
       );
       await Promise.all(promises);
       showToast('Intestazione articolo aggiornata con successo!', 'success');
-      
-      // Update local state to reflect changes without full reload
-      setSelectedArticle({
-        ...selectedArticle,
-        articolo: artString,
-        articolo_num: parsedNum,
-        titolo_articolo: artTitle,
-        titolo_numero: titoloNum,
-        titolo_nome: titoloNome,
-        capo_numero: capoNum,
-        capo_nome: capoNome
-      });
     } catch {
       showToast('Errore durante il salvataggio dell\'intestazione', 'error');
     } finally {
@@ -141,7 +122,7 @@ export const AdminNormativa = () => {
     }
   };
 
-  // Save an individual comma's edits to Supabase
+  // Salva le modifiche a un singolo comma
   const handleSaveComma = async (commaId) => {
     const edit = commiEdits[commaId];
     if (!edit || !edit.comma) {
@@ -167,7 +148,7 @@ export const AdminNormativa = () => {
     }
   };
 
-  // Delete a specific comma from Supabase
+  // Elimina un singolo comma
   const handleDeleteComma = async (commaId, commaLabel) => {
     if (!window.confirm(`Sei sicuro di voler eliminare definitivamente il Comma ${commaLabel}?`)) return;
 
@@ -177,39 +158,29 @@ export const AdminNormativa = () => {
 
     if (!error) {
       showToast(`Comma ${commaLabel} eliminato!`, 'success');
-      // Update selected article's local commi state
-      const updatedCommi = selectedArticle.commi.filter(c => c.id !== commaId);
-      
-      if (updatedCommi.length === 0) {
-        // If no commi remain, go back to list
-        setSelectedArticle(null);
-      } else {
-        setSelectedArticle({ ...selectedArticle, commi: updatedCommi });
-      }
     } else {
       showToast('Errore durante l\'eliminazione del comma: ' + error.message, 'error');
     }
   };
 
-  // Add a brand new comma to the currently selected article
-  const handleAddNewComma = async () => {
+  // Aggiungi un nuovo comma all'articolo corrente
+  const handleAddNewComma = async (group) => {
     setLoading(true);
-    // Find the next logical comma number
-    const maxCommaNum = selectedArticle.commi.reduce((max, c) => Math.max(max, c.comma_num || 0), 0);
+    const maxCommaNum = group.commi.reduce((max, c) => Math.max(max, c.comma_num || 0), 0);
     const nextCommaNum = maxCommaNum + 1;
 
     const newCommaItem = {
-      titolo_numero: selectedArticle.titolo_numero,
-      titolo_nome: selectedArticle.titolo_nome,
-      capo_numero: selectedArticle.capo_numero,
-      capo_nome: selectedArticle.capo_nome,
-      articolo: selectedArticle.articolo,
-      articolo_num: selectedArticle.articolo_num,
-      titolo_articolo: selectedArticle.titolo_articolo,
-      titolo: selectedArticle.titolo_articolo, // fallback
+      titolo_numero: group.titolo_numero,
+      titolo_nome: group.titolo_nome,
+      capo_numero: group.capo_numero,
+      capo_nome: group.capo_nome,
+      articolo: group.articolo,
+      articolo_num: group.articolo_num,
+      titolo_articolo: group.titolo_articolo,
+      titolo: group.titolo_articolo,
       comma: `${nextCommaNum}.`,
       comma_num: nextCommaNum,
-      testo: 'Inserisci qui il testo del nuovo comma...',
+      testo: 'Nuovo comma...',
       ordine: list.length + 1
     };
 
@@ -217,19 +188,31 @@ export const AdminNormativa = () => {
     setLoading(false);
 
     if (!error) {
-      showToast(`Nuovo Comma ${nextCommaNum} aggiunto! Ora puoi modificarne il testo.`, 'success');
-      setTimeout(() => {
-        const updatedGroup = groupedList.find(g => g.articolo_num === selectedArticle.articolo_num);
-        if (updatedGroup) {
-          handleEditArticle(updatedGroup);
-        }
-      }, 500);
+      showToast(`Nuovo Comma ${nextCommaNum} aggiunto!`, 'success');
     } else {
       showToast('Errore durante l\'aggiunta del comma: ' + error.message, 'error');
     }
   };
 
-  // Create a brand new article with its first comma
+  // Elimina un intero articolo (tutti i suoi commi)
+  const handleDeleteArticle = async (group) => {
+    const commiCount = group.commi.length;
+    if (!window.confirm(`Sei sicuro di voler eliminare interamente l'Articolo ${group.articolo_num} e tutti i suoi ${commiCount} commi? Questa azione è irreversibile.`)) return;
+
+    setLoading(true);
+    try {
+      const promises = group.commi.map(c => remove(c.id));
+      await Promise.all(promises);
+      showToast(`Articolo ${group.articolo_num} ed i suoi commi sono stati eliminati.`, 'success');
+      setExpandedGroupId(null);
+    } catch {
+      showToast('Errore durante l\'eliminazione dell\'articolo', 'error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Crea un nuovo articolo da zero
   const handleCreateNewArticle = async () => {
     if (!newArt.articolo_num || !newArt.titolo_articolo || !newArt.testo) {
       showToast('I campi (articolo, titolo, testo) sono obbligatori', 'error');
@@ -250,7 +233,7 @@ export const AdminNormativa = () => {
       articolo: artString,
       articolo_num: parsedNum,
       titolo_articolo: newArt.titolo_articolo,
-      titolo: newArt.titolo_articolo, // fallback
+      titolo: newArt.titolo_articolo,
       comma: commaString,
       comma_num: commaNum,
       testo: newArt.testo,
@@ -263,31 +246,12 @@ export const AdminNormativa = () => {
     if (!error) {
       showToast('Nuovo articolo creato con successo!', 'success');
       setEditingId(null);
-      // Reset form
       setNewArt({ titolo_numero: '', titolo_nome: '', capo_numero: '', capo_nome: '', articolo_num: '', titolo_articolo: '', comma: '1', testo: '' });
     } else {
       showToast('Errore durante la creazione: ' + error.message, 'error');
     }
   };
 
-  // Delete an entire article (all its commi)
-  const handleDeleteArticle = async (group) => {
-    const commiCount = group.commi.length;
-    if (!window.confirm(`Sei sicuro di voler eliminare interamente l'Articolo ${group.articolo_num} e tutti i suoi ${commiCount} commi? Questa azione è irreversibile.`)) return;
-
-    setLoading(true);
-    try {
-      const promises = group.commi.map(c => remove(c.id));
-      await Promise.all(promises);
-      showToast(`Articolo ${group.articolo_num} ed i suoi commi sono stati eliminati.`, 'success');
-    } catch {
-      showToast('Errore durante l\'eliminazione dell\'articolo', 'error');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Filtered grouped articles based on search query
   const filteredGroups = groupedList.filter(group => {
     const query = search.toLowerCase();
     return (
@@ -297,13 +261,12 @@ export const AdminNormativa = () => {
     );
   });
 
-  // Render view: CREATE NEW ARTICLE
   if (editingId === 'new') {
     return (
       <div>
         <div style={S.formHeader}>
           <h2 style={S.sectionTitle}>Nuovo Articolo Normativa</h2>
-          <button onClick={handleBackToList} style={S.btnCancel}>Annulla</button>
+          <button onClick={() => setEditingId(null)} style={S.btnCancel}>Annulla</button>
         </div>
         <div style={S.formCard}>
           <div style={PS.adminSanzioniGrid}>
@@ -315,37 +278,11 @@ export const AdminNormativa = () => {
             <TextInput label="Nome del Capo" value={newArt.capo_nome} onChange={e => setNewArt({ ...newArt, capo_nome: e.target.value })} />
           </div>
           
-          <TextInput 
-            label="Articolo (Numero)" 
-            type="number" 
-            value={newArt.articolo_num} 
-            onChange={e => setNewArt({ ...newArt, articolo_num: e.target.value })} 
-            placeholder="Es. 186"
-          />
-          <TextInput 
-            label="Nome/Rubrica dell'Articolo" 
-            value={newArt.titolo_articolo} 
-            onChange={e => setNewArt({ ...newArt, titolo_articolo: e.target.value })} 
-            placeholder="Es. Guida sotto l'influenza dell'alcool"
-          />
-          <TextInput 
-            label="Numero Comma di partenza" 
-            value={newArt.comma} 
-            onChange={e => setNewArt({ ...newArt, comma: e.target.value })} 
-            placeholder="Es. 1 o 1-bis"
-          />
-          <TextArea 
-            label="Testo del Primo Comma" 
-            rows={8} 
-            value={newArt.testo} 
-            onChange={e => setNewArt({ ...newArt, testo: e.target.value })} 
-            placeholder="Inserisci qui la legge del comma..."
-          />
-          <button 
-            onClick={handleCreateNewArticle} 
-            disabled={loading} 
-            style={{ ...S.btnPrimary, marginTop: '8px' }}
-          >
+          <TextInput label="Articolo (Numero)" type="number" value={newArt.articolo_num} onChange={e => setNewArt({ ...newArt, articolo_num: e.target.value })} placeholder="Es. 186" />
+          <TextInput label="Nome/Rubrica dell'Articolo" value={newArt.titolo_articolo} onChange={e => setNewArt({ ...newArt, titolo_articolo: e.target.value })} placeholder="Es. Guida sotto l'influenza dell'alcool" />
+          <TextInput label="Numero Comma" value={newArt.comma} onChange={e => setNewArt({ ...newArt, comma: e.target.value })} placeholder="Es. 1" />
+          <TextArea label="Testo del Primo Comma" rows={6} value={newArt.testo} onChange={e => setNewArt({ ...newArt, testo: e.target.value })} placeholder="Inserisci qui la legge del comma..." />
+          <button onClick={handleCreateNewArticle} disabled={loading} style={{ ...S.btnPrimary, marginTop: '8px' }}>
             {loading ? 'Creazione in corso...' : 'Crea Articolo'}
           </button>
         </div>
@@ -353,136 +290,122 @@ export const AdminNormativa = () => {
     );
   }
 
-  // Render view: DETAILED ARTICLE EDITOR (COMMA MANAGER)
-  if (selectedArticle) {
-    return (
-      <div>
-        <div style={S.formHeader}>
-          <button onClick={handleBackToList} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 10px', marginRight: '8px', cursor: 'pointer', background: 'none', border: 'none', fontSize: '1rem' }}><Icon name="chevron-left" size={18} /> Torna alla Lista</button>
-          <h2 style={S.sectionTitle}>Modifica Articolo {selectedArticle.articolo_num}</h2>
-        </div>
-
-        {/* SECTION 1: ARTICLE HEAD METADATA */}
-        <div style={{ ...S.formCard, marginBottom: '24px', borderLeft: `4px solid ${C.primary}` }}>
-          <h3 style={{ ...S.infoBoxTitle, marginBottom: '12px' }}><Icon name="settings" size={16}/> Intestazione dell'Articolo</h3>
-          <div style={{ display: 'flex', gap: '16px', flexDirection: 'column' }}>
-            <div style={PS.adminSanzioniGrid}>
-              <TextInput label="Titolo (Es. Titolo I)" value={titoloNum} onChange={e => setTitoloNum(e.target.value)} />
-              <TextInput label="Nome del Titolo" value={titoloNome} onChange={e => setTitoloNome(e.target.value)} />
-            </div>
-            <div style={PS.adminSanzioniGrid}>
-              <TextInput label="Capo (Es. Capo I)" value={capoNum} onChange={e => setCapoNum(e.target.value)} />
-              <TextInput label="Nome del Capo" value={capoNome} onChange={e => setCapoNome(e.target.value)} />
-            </div>
-
-            <TextInput 
-              label="Articolo (Numero)" 
-              type="number" 
-              value={artNum} 
-              onChange={e => setArtNum(e.target.value)} 
-            />
-            <TextInput 
-              label="Nome dell'Articolo" 
-              value={artTitle} 
-              onChange={e => setArtTitle(e.target.value)} 
-            />
-            <button 
-              onClick={handleSaveArticleMeta} 
-              disabled={loading} 
-              style={{ ...S.btnPrimarySmall, width: 'fit-content', alignSelf: 'flex-end' }}
-            >
-              {loading ? 'Aggiornamento...' : 'Salva Intestazione'}
-            </button>
-          </div>
-        </div>
-
-        {/* SECTION 2: INDIVIDUAL COMMA CARDS */}
-        <div style={{ marginBottom: '16px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
-            <h3 style={S.sectionTitle}><Icon name="scroll" size={16}/> Commi dell'Articolo ({(selectedArticle.commi || []).length})</h3>
-            <button onClick={handleAddNewComma} disabled={loading} style={S.btnPrimarySmall}>+ Aggiungi Comma</button>
-          </div>
-
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-            {selectedArticle.commi.map((c) => {
-              const edit = commiEdits[c.id] || { comma: '', testo: '' };
-              return (
-                <div key={c.id} style={{ ...S.card, border: `1px solid ${C.border}` }}>
-                  <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
-                    <div style={{ width: '120px' }}>
-                      <TextInput 
-                        label="Comma" 
-                        value={edit.comma} 
-                        onChange={e => setCommiEdits({
-                          ...commiEdits,
-                          [c.id]: { ...edit, comma: e.target.value }
-                        })} 
-                        placeholder="Es. 1 o 1-bis"
-                      />
-                    </div>
-                    <span style={{ fontSize: '0.8rem', color: C.textLight, marginTop: '16px' }}>
-                      ID: {c.id}
-                    </span>
-                  </div>
-
-                  <TextArea 
-                    label="Testo del Comma" 
-                    rows={4} 
-                    value={edit.testo} 
-                    onChange={e => setCommiEdits({
-                      ...commiEdits,
-                      [c.id]: { ...edit, testo: e.target.value }
-                    })} 
-                  />
-
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '12px' }}>
-                    <button 
-                      onClick={() => handleDeleteComma(c.id, edit.comma)} 
-                      disabled={loading} 
-                      style={S.btnDanger}
-                    >
-                      Elimina Comma
-                    </button>
-                    <button 
-                      onClick={() => handleSaveComma(c.id)} 
-                      disabled={loading} 
-                      style={S.btnAccent}
-                    >
-                      Salva Comma
-                    </button>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  // Render view: PRIMARY GROUPED ARTICLES LIST
   return (
     <div>
       <div style={S.formHeader}>
-        <h2 style={S.sectionTitle}>Gestione Normativa</h2>
+        <h2 style={S.sectionTitle}>Gestione Normativa ({groupedList.length} articoli)</h2>
         <button onClick={() => setEditingId('new')} style={S.btnPrimarySmall}>+ Nuovo Articolo</button>
       </div>
-      <TextInput 
-        placeholder="Cerca per n° articolo o titolo..." 
-        value={search} 
-        onChange={e => setSearch(e.target.value)} 
-      />
-      <div style={{ ...S.list, marginTop: '16px' }}>
-        {filteredGroups.map(group => (
-          <div key={group.id} style={S.card}>
-            <span style={PS.adminItemRef}>ART. {group.articolo_num}</span>
-            <h3 style={PS.adminItemTitle}>{cleanTitle(group.titolo_articolo) || 'Senza Nome'}</h3>
-            <div style={PS.adminListItemActions}>
-              <button onClick={() => handleEditArticle(group)} style={S.btnAccent}>Modifica</button>
-              <button onClick={() => handleDeleteArticle(group)} style={S.btnDanger}>Elimina</button>
+
+      <div style={{ marginBottom: '16px' }}>
+        <TextInput placeholder="Cerca per n° articolo o parole chiave..." value={search} onChange={e => setSearch(e.target.value)} />
+      </div>
+
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        {filteredGroups.map(group => {
+          const isExpanded = expandedGroupId === group.id;
+          return (
+            <div
+              key={group.id}
+              onClick={() => {
+                const expanding = !isExpanded;
+                setExpandedGroupId(expanding ? group.id : null);
+                if (expanding) {
+                  handleExpandArticle(group);
+                }
+              }}
+              style={{
+                ...S.card,
+                backgroundColor: C.accentLight,
+                borderLeft: `4px solid ${C.accent}`,
+                cursor: 'pointer',
+                padding: '12px 16px'
+              }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div>
+                  <span style={{ fontWeight: '800', color: C.accent, fontSize: '1rem' }}>ART. {group.articolo_num}</span>
+                  <span style={{ fontSize: '0.82rem', color: C.text, marginLeft: '8px' }}>{cleanTitle(group.titolo_articolo) || 'Senza Nome'}</span>
+                  <div style={{ fontSize: '0.78rem', color: C.textLight, marginTop: '2px' }}>{group.commi.length} {group.commi.length === 1 ? 'comma' : 'commi'}</div>
+                </div>
+                <span style={{ color: C.accent }}>{isExpanded ? '▲' : '▼'}</span>
+              </div>
+
+              {isExpanded && (
+                <div onClick={(e) => e.stopPropagation()} style={{ marginTop: '16px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                  {/* METADATA DELL'ARTICOLO */}
+                  <div style={{ ...S.formCard, backgroundColor: C.card, padding: '16px', border: `1px solid ${C.border}`, borderRadius: '8px', margin: 0 }}>
+                    <h4 style={{ fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '6px' }}>
+                      <Icon name="settings" size={14}/> Intestazione dell'Articolo
+                    </h4>
+                    <div style={{ display: 'flex', gap: '10px', flexDirection: 'column' }}>
+                      <div style={PS.adminSanzioniGrid}>
+                        <TextInput label="Titolo (Es. Titolo I)" value={titoloNum} onChange={e => setTitoloNum(e.target.value)} />
+                        <TextInput label="Nome del Titolo" value={titoloNome} onChange={e => setTitoloNome(e.target.value)} />
+                      </div>
+                      <div style={PS.adminSanzioniGrid}>
+                        <TextInput label="Capo (Es. Capo I)" value={capoNum} onChange={e => setCapoNum(e.target.value)} />
+                        <TextInput label="Nome del Capo" value={capoNome} onChange={e => setCapoNome(e.target.value)} />
+                      </div>
+                      <div style={PS.adminSanzioniGrid}>
+                        <TextInput label="Articolo (Numero)" type="number" value={artNum} onChange={e => setArtNum(e.target.value)} />
+                        <TextInput label="Nome dell'Articolo" value={artTitle} onChange={e => setArtTitle(e.target.value)} />
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '10px' }}>
+                        <button onClick={() => handleDeleteArticle(group)} disabled={loading} style={S.btnDanger}>Elimina Articolo</button>
+                        <button onClick={() => handleSaveArticleMeta(group)} disabled={loading} style={S.btnPrimarySmall}>Salva Intestazione</button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* LISTA DEI COMMI E AGGIUNTA */}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h4 style={{ fontSize: '0.9rem', fontWeight: 'bold' }}>Commi dell'Articolo</h4>
+                      <button onClick={() => handleAddNewComma(group)} disabled={loading} style={S.btnPrimarySmall}>+ Aggiungi Comma</button>
+                    </div>
+
+                    {group.commi.map(c => {
+                      const edit = commiEdits[c.id] || { comma: '', testo: '' };
+                      return (
+                        <div key={c.id} style={{ ...S.card, backgroundColor: C.card, border: `1px solid ${C.border}`, padding: '12px', margin: 0 }}>
+                          <div style={{ display: 'flex', gap: '12px', alignItems: 'center', marginBottom: '8px' }}>
+                            <div style={{ width: '80px' }}>
+                              <TextInput 
+                                label="Comma" 
+                                value={edit.comma} 
+                                onChange={e => setCommiEdits({
+                                  ...commiEdits,
+                                  [c.id]: { ...edit, comma: e.target.value }
+                                })} 
+                                placeholder="Es. 1"
+                              />
+                            </div>
+                            <span style={{ fontSize: '0.78rem', color: C.textLight, marginTop: '16px' }}>ID: {c.id}</span>
+                          </div>
+                          <TextArea 
+                            label="Testo del Comma" 
+                            rows={3} 
+                            value={edit.testo} 
+                            onChange={e => setCommiEdits({
+                              ...commiEdits,
+                              [c.id]: { ...edit, testo: e.target.value }
+                            })} 
+                          />
+                          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '8px' }}>
+                            <button onClick={() => handleDeleteComma(c.id, edit.comma)} disabled={loading} style={{ ...S.btnDanger, padding: '4px 8px', fontSize: '0.75rem' }}>Elimina</button>
+                            <button onClick={() => handleSaveComma(c.id)} disabled={loading} style={{ ...S.btnAccent, padding: '4px 8px', fontSize: '0.75rem' }}>Salva</button>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
-          </div>
-        ))}
+          );
+        })}
+
         {filteredGroups.length === 0 && (
           <div style={S.emptyState}>Nessun articolo trovato.</div>
         )}

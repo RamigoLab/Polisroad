@@ -1,5 +1,13 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.6.6] - 21 Giugno 2026
+
+### 🛠️ UX Area Amministrativa (Prontuario e Normativa)
+
+- **Contenitori Articoli Espandibili**: Modificate le sezioni di amministrazione di Prontuario e Normativa in Area Amministrativa per raggruppare i contenuti per articolo (es. Articolo 186) in contenitori azzurrini espandibili inline, allineandoli alla UX visiva degli operatori.
+- **Gestione Prontuario Inline**: Cliccando su un articolo si apre l'elenco delle relative voci/violazioni. Ogni voce può essere modificata o eliminata direttamente, mantenendo l'utente nella stessa schermata.
+- **Gestione Normativa & Commi Inline**: L'espansione dell'articolo mostra ora sia il modulo per aggiornare i metadati dell'intestazione (Titolo, Capo, Articolo), sia l'elenco dei singoli commi modificabili e salvabili individualmente senza dover navigare in una pagina separata a schermo intero.
+
 ## [1.6.5] - 21 Giugno 2026
 
 ### 👥 Gestione Utenti in Area Amministrativa
