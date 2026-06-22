@@ -16,6 +16,7 @@ export const PageWrapper = ({
   headerLeftAction,
   headerRightAction,
   onHeaderTitleClick,
+  showBadge = false,   // solo Home lo imposta true
 }) => {
   const hasHeader = onNavigate && !hideLogo && !hideHeader && (title || subtitle || meta || headerChildren || headerLeftAction || headerRightAction);
 
@@ -30,6 +31,7 @@ export const PageWrapper = ({
           onTitleClick={onHeaderTitleClick}
           leftAction={headerLeftAction}
           rightAction={headerRightAction}
+          showBadge={showBadge}
         >
           {headerChildren}
         </AppHeader>

@@ -2,7 +2,7 @@
 
 Progressive Web App React/Vite per la consultazione rapida del Codice della Strada, prontuario infrazioni, calcolo sanzioni, preferiti, news, profilo operatore e funzioni amministrative.
 
-Versione corrente: **1.6.9**
+Versione corrente: **1.7.0**
 
 ---
 
@@ -13,7 +13,7 @@ Versione corrente: **1.6.9**
 - **Vite PWA** — service worker e installazione offline
 - **lucide-react** — icone SVG coerenti
 - **PostHog EU Cloud** — analytics (attivo di default, disattivabile dal Profilo)
-- **DOMPurify** — sanitizzazione input HTML
+- **@tanstack/react-query v5** — caching query, aggiornamenti ottimistici, zero fetch duplicati
 
 ---
 
@@ -113,7 +113,7 @@ src/
 ├── pages/            # schermate app
 │   └── admin/        # AdminDashboard, AdminNews, AdminNormativa, AdminProntuario…
 ├── styles/           # theme.js, styles.js, layout.js, pages.js, ui.js
-├── utils/            # logger, rateLimiter, storage, validation, prontuarioUtils
+├── services/         # service layer Supabase (prontuarioService, gamificationService, authService)
 └── config/           # constants.js, badges.js, navigation.js, supabase.js
 supabase/
 ├── functions/        # Edge Functions (fetch-rss, delete-user)
@@ -158,16 +158,16 @@ scripts/              # script Node.js per import/generazione dati
 
 ---
 
-## Note versione 1.6.9 (22 Giugno 2026)
+## Note versione 1.7.0 (22 Giugno 2026)
 
-### Vista dettaglio Prontuario ridisegnata
-- Il titolo dell'articolo è ora in una **card bianca in grassetto**, non nell'header blu.
-- Nuova sezione **Norme di Riferimento** con i commi della normativa corrispondenti all'articolo.
-- Il **badge gamification** non compare più nelle viste dettaglio (solo nelle pagine top-level).
-- Vista dettaglio estratta in componente separato `ProntuarioDetail.jsx` (riutilizzabile).
+### Service layer + TanStack Query
+- Creato `src/services/` con `prontuarioService.js`, `gamificationService.js`, `authService.js` — tutte le chiamate Supabase centralizzate, hook disaccoppiati dal DB.
+- Installato `@tanstack/react-query` v5: `usePreferiti`, `useNote`, `useGamification` ora usano `useQuery`/`useMutation` con cache 5 min, aggiornamenti ottimistici e rollback automatico su errore.
 
-### Refactor
-- `src/utils/prontuarioUtils.js`: funzioni di sort/group centralizzate, non più duplicate tra `Prontuario.jsx` e `useSearch.js`.
+### Fix immediati
+- Badge gamification visibile **solo in Home** (prop esplicita `showBadge`).
+- Tasto "Chiudi" area admin ora visibile (contrasto bianco su sfondo scuro).
+- Migrazione SQL `note_comuni` per DB pre-1.6.9.
 
 ---
 

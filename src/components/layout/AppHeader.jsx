@@ -12,14 +12,13 @@ export const AppHeader = ({
   children,
   leftAction,
   rightAction,
+  showBadge = false,   // esplicito: solo Home lo imposta a true
 }) => {
   const { featuredBadge: featuredBadgeId } = useGamificationContext();
-  const featuredBadge = featuredBadgeId
+  const featuredBadge = showBadge && featuredBadgeId
     ? Object.values(BADGES).find(b => b.id === featuredBadgeId) || null
     : null;
 
-  // Il badge appare solo sulle pagine "top level" (senza pulsante Indietro)
-  const showBadge = !!featuredBadge && !leftAction;
   const hasText = subtitle || title || meta;
 
   return (

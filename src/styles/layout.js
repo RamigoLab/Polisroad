@@ -247,12 +247,15 @@ export const LS = {
     fontSize: '1.2rem',
     margin: 0,
   },
-  adminCloseBtn: (accentLight) => ({
+  adminCloseBtn: () => ({
     color: '#fff',
-    backgroundColor: accentLight,
-    padding: '4px 8px',
-    borderRadius: '4px',
-    border: `1px solid ${C.border}`,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    padding: '6px 14px',
+    borderRadius: '8px',
+    border: '1.5px solid rgba(255,255,255,0.5)',
+    fontWeight: '600',
+    fontSize: '0.85rem',
+    cursor: 'pointer',
   }),
   adminTabBar: {
     display: 'flex',

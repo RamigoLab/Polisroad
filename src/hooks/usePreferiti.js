@@ -1,83 +1,78 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../config/supabase';
-import { USE_SUPABASE } from '../config/constants';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
-
+import { USE_SUPABASE } from '../config/constants';
+import { getPreferiti, addPreferito, removePreferito } from '../services/prontuarioService';
 import { logger } from '../utils/logger';
+
+// Chiave di cache: include userId così utenti diversi non condividono la cache
+const queryKey = (userId) => ['preferiti', userId];
+
 export const usePreferiti = () => {
   const { session } = useAuth();
-  const [preferiti, setPreferiti] = useState([]);
-  const [error, setError] = useState(null);
+  const userId = session?.user?.id;
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    const loadPreferiti = async () => {
-      const { data, error } = await supabase.from('preferiti').select('prontuario_id').eq('user_id', session.user.id);
-      if (error) {
-        logger.error('Failed to load favorites:', error);
-        setError(error);
-        return;
-      }
-      if (data) {
-        setPreferiti(data.map(d => d.prontuario_id));
-        setError(null);
-      }
+  // ─── MOCK (no Supabase) ───────────────────────────────────────────────────
+  if (!USE_SUPABASE) {
+    const saved = localStorage.getItem('cds_preferiti');
+    const preferiti = saved ? JSON.parse(saved) : [];
+    const toggle = (id) => {
+      const isFav = preferiti.includes(id);
+      const next = isFav ? preferiti.filter(x => x !== id) : [...preferiti, id];
+      localStorage.setItem('cds_preferiti', JSON.stringify(next));
     };
+    return { preferiti, error: null, toggle, togglePreferito: toggle, isPreferito: (id) => preferiti.includes(id) };
+  }
 
-    if (!USE_SUPABASE) {
-      const saved = localStorage.getItem('cds_preferiti');
-      if (saved) {
-        try { setPreferiti(JSON.parse(saved)); } catch { /* ignore */ }
+  // ─── QUERY: carica preferiti (con cache 5 min) ────────────────────────────
+  const { data: preferiti = [], error } = useQuery({
+    queryKey: queryKey(userId),
+    queryFn: () => getPreferiti(userId),
+    enabled: !!userId,
+    onError: (e) => logger.error('Failed to load favorites:', e),
+  });
+
+  // ─── MUTATION: toggle preferito con aggiornamento ottimistico ─────────────
+  const mutation = useMutation({
+    mutationFn: async (id) => {
+      const isFav = preferiti.includes(id);
+      if (isFav) {
+        await removePreferito(userId, id);
+      } else {
+        await addPreferito(userId, id);
       }
-      return;
-    }
-    
-    if (session?.user) {
-      loadPreferiti();
-    } else {
-      setPreferiti([]);
-    }
-  }, [session]);
-
-
-
-  const togglePreferito = async (id) => {
-    if (!USE_SUPABASE) {
-      setPreferiti(prev => {
-        const isFav = prev.includes(id);
-        const newArr = isFav ? prev.filter(x => x !== id) : [...prev, id];
-        localStorage.setItem('cds_preferiti', JSON.stringify(newArr));
-        return newArr;
-      });
-      return { error: null };
-    }
-
-    if (!session?.user) return { error: { message: 'Utente non loggato' } };
-    const isFav = preferiti.includes(id);
-    
-    if (isFav) {
-      const { error } = await supabase.from('preferiti').delete().match({ user_id: session.user.id, prontuario_id: id });
-      if (error) {
-        logger.error('Failed to remove favorite:', error);
-        setError(error);
-        return { error };
+      return { id, wasFav: isFav };
+    },
+    onMutate: async (id) => {
+      // Cancella query in volo per evitare sovrascritture
+      await queryClient.cancelQueries({ queryKey: queryKey(userId) });
+      const previous = queryClient.getQueryData(queryKey(userId));
+      // Aggiornamento ottimistico immediato
+      queryClient.setQueryData(queryKey(userId), (old = []) =>
+        old.includes(id) ? old.filter(x => x !== id) : [...old, id]
+      );
+      return { previous };
+    },
+    onError: (err, _id, context) => {
+      // Rollback se la mutation fallisce
+      logger.error('Toggle preferito failed:', err);
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey(userId), context.previous);
       }
-      setPreferiti(prev => prev.filter(x => x !== id));
-      setError(null);
-      return { error: null };
-    } else {
-      const { error } = await supabase.from('preferiti').insert({ user_id: session.user.id, prontuario_id: id });
-      if (error) {
-        logger.error('Failed to add favorite:', error);
-        setError(error);
-        return { error };
-      }
-      setPreferiti(prev => [...prev, id]);
-      setError(null);
-      return { error: null };
-    }
+    },
+    onSettled: () => {
+      // Invalida la cache per sincronizzare col server
+      queryClient.invalidateQueries({ queryKey: queryKey(userId) });
+    },
+  });
+
+  const toggle = (id) => mutation.mutate(id);
+
+  return {
+    preferiti,
+    error: error || null,
+    toggle,
+    togglePreferito: toggle,
+    isPreferito: (id) => preferiti.includes(id),
   };
-
-  const isPreferito = (id) => preferiti.includes(id);
-
-  return { preferiti, error, togglePreferito, isPreferito, toggle: togglePreferito };
 };

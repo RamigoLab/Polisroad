@@ -49,6 +49,7 @@ export const Home = ({ onNavigate }) => {
       subtitle="Bentornato,"
       title={operatorName}
       meta={profile?.forza}
+      showBadge={true}
       onHeaderTitleClick={() => onNavigate('profilo')}
       headerChildren={
         <div style={PS.homeQuickActions}>

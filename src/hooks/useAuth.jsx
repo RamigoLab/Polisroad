@@ -1,18 +1,24 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
-
+import {
+  fetchProfile,
+  upsertProfile,
+  fetchUserCount as fetchUserCountService,
+  signIn as signInService,
+  signUp as signUpService,
+  resetPassword as resetPasswordService,
+  updatePassword as updatePasswordService,
+  signOut as signOutService,
+} from '../services/authService';
 import { logger } from '../utils/logger';
+
 const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' && !import.meta.env.PROD;
 
 const DEMO_USER = {
   id: import.meta.env.VITE_DEMO_USER_ID || 'demo-1',
   email: import.meta.env.VITE_DEMO_USER_EMAIL || 'admin@polisroad.it',
-  nome: 'Demo',
-  cognome: 'User',
-  grado: 'Operatore',
-  forza: 'Test',
-  telefono: '',
-  ruolo: import.meta.env.VITE_DEMO_USER_ROLE || 'operatore'
+  nome: 'Demo', cognome: 'User', grado: 'Operatore', forza: 'Test',
+  telefono: '', ruolo: import.meta.env.VITE_DEMO_USER_ROLE || 'operatore',
 };
 
 const AuthContext = createContext();
@@ -24,34 +30,26 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
 
-  const fetchUserCount = async () => {
+  const loadUserCount = async () => {
     if (!isSupabaseConfigured || !supabase) {
       setUserCount(isDemoMode ? 1 : 0);
       return;
     }
     try {
-      const { count, error } = await supabase
-        .from('profiles')
-        .select('*', { count: 'exact', head: true });
-      if (!error) setUserCount(count);
+      const count = await fetchUserCountService();
+      setUserCount(count);
     } catch (err) {
-      logger.warn("User count fetch failed:", err);
+      logger.warn('User count fetch failed:', err);
     }
   };
 
-  const fetchProfile = async (userId) => {
+  const loadProfile = async (userId) => {
     try {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, email, nome, cognome, grado, forza, telefono, ruolo')
-        .eq('id', userId)
-        .single();
-      
-      if (error) throw error;
+      const data = await fetchProfile(userId);
       setProfile(data);
-    } catch (error) {
-      logger.error('Error fetching profile:', error.message);
+    } catch (err) {
+      logger.error('Error fetching profile:', err.message);
     } finally {
       setLoading(false);
     }
@@ -59,114 +57,89 @@ export const AuthProvider = ({ children }) => {
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
-      if (!isDemoMode) {
-        setLoading(false);
-        return;
-      }
+      if (!isDemoMode) { setLoading(false); return; }
       const localSession = localStorage.getItem('polisroad_demo_session');
-      if (localSession) {
-        setSession({ user: DEMO_USER });
-        setProfile(DEMO_USER);
-      }
+      if (localSession) { setSession({ user: DEMO_USER }); setProfile(DEMO_USER); }
       setLoading(false);
       return;
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) fetchProfile(session.user.id);
+      if (session) loadProfile(session.user.id);
       else setLoading(false);
     });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       setPasswordRecovery(event === 'PASSWORD_RECOVERY');
       setSession(session);
-      if (session) fetchProfile(session.user.id);
-      else {
-        setProfile(null);
-        setLoading(false);
-      }
+      if (session) loadProfile(session.user.id);
+      else { setProfile(null); setLoading(false); }
     });
 
-    fetchUserCount();
-
+    loadUserCount();
     return () => subscription.unsubscribe();
   }, []);
 
   const signIn = async (email, password) => {
     if (!isSupabaseConfigured || !supabase) {
-        if (isDemoMode &&
-            email === import.meta.env.VITE_DEMO_USER_EMAIL &&
-            password === import.meta.env.VITE_DEMO_USER_PASSWORD) {
-          localStorage.setItem('polisroad_demo_session', 'true');
-          setSession({ user: DEMO_USER });
-          setProfile(DEMO_USER);
-          return { error: null };
-        }
-        return { error: { message: 'Supabase non configurato. Controlla le variabili VITE_SUPABASE_URL e VITE_SUPABASE_ANON_KEY.' } };
+      if (isDemoMode && email === import.meta.env.VITE_DEMO_USER_EMAIL && password === import.meta.env.VITE_DEMO_USER_PASSWORD) {
+        localStorage.setItem('polisroad_demo_session', 'true');
+        setSession({ user: DEMO_USER }); setProfile(DEMO_USER);
+        return { error: null };
+      }
+      return { error: { message: 'Supabase non configurato.' } };
     }
     try {
-      return await supabase.auth.signInWithPassword({ email, password });
-    } catch {
-      return { error: { message: "Errore di connessione al server." } };
+      await signInService(email, password);
+      return { error: null };
+    } catch (err) {
+      return { error: { message: err.message || 'Errore di connessione.' } };
     }
   };
 
-
   const signUp = async (email, password, userData) => {
-    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Registrazione non disponibile: Supabase non configurato.' } };
-    
-    const { data, error } = await supabase.auth.signUp({ email, password });
-    if (error) return { error };
-
-    if (data?.user) {
-      const { error: profileError } = await supabase.from('profiles').upsert([
-        { id: data.user.id, email, ...userData, ruolo: 'operatore' }
-      ]);
-      if (profileError) return { error: profileError };
+    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Registrazione non disponibile.' } };
+    try {
+      const data = await signUpService(email, password, userData);
+      return { data, error: null };
+    } catch (err) {
+      return { error: { message: err.message } };
     }
-    return { data, error: null };
   };
 
   const resetPassword = async (email) => {
-    if (!isSupabaseConfigured || !supabase) {
-      return { error: { message: 'Recupero password non disponibile: Supabase non configurato.' } };
-    }
-
+    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Recupero password non disponibile.' } };
     try {
-      return await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: window.location.origin,
-      });
-    } catch {
-      return { error: { message: 'Errore durante la richiesta di recupero password.' } };
+      await resetPasswordService(email, window.location.origin);
+      return { error: null };
+    } catch (err) {
+      return { error: { message: err.message } };
     }
   };
 
   const updatePassword = async (password) => {
-    if (!isSupabaseConfigured || !supabase) {
-      return { error: { message: 'Aggiornamento password non disponibile: Supabase non configurato.' } };
-    }
-
+    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Aggiornamento password non disponibile.' } };
     try {
-      const result = await supabase.auth.updateUser({ password });
-      if (!result.error) setPasswordRecovery(false);
-      return result;
-    } catch {
-      return { error: { message: 'Errore durante l\'aggiornamento della password.' } };
+      await updatePasswordService(password);
+      setPasswordRecovery(false);
+      return { error: null };
+    } catch (err) {
+      return { error: { message: err.message } };
     }
   };
 
   const signOut = async () => {
     if (!isSupabaseConfigured || !supabase) {
       localStorage.removeItem('polisroad_demo_session');
-      setSession(null);
-      setProfile(null);
+      setSession(null); setProfile(null);
       return { error: null };
     }
     try {
-      return await supabase.auth.signOut();
-    } catch (error) {
-      return { error };
+      await signOutService();
+      return { error: null };
+    } catch (err) {
+      return { error: err };
     }
   };
 
@@ -175,36 +148,27 @@ export const AuthProvider = ({ children }) => {
       setProfile({ ...profile, ...updates });
       return { error: null };
     }
-    
     const currentId = profile?.id || session?.user?.id;
     if (!currentId) return { error: { message: 'Utente non loggato' } };
-
-    const { error } = await supabase.from('profiles').upsert({ id: currentId, ...updates });
-    if (!error) setProfile({ ...profile, ...updates, id: currentId });
-    return { error };
+    try {
+      await upsertProfile(currentId, updates);
+      setProfile({ ...profile, ...updates, id: currentId });
+      return { error: null };
+    } catch (err) {
+      return { error: err };
+    }
   };
 
   return (
     <AuthContext.Provider value={{
-      session,
-      profile,
-      userCount,
-      loading,
-      passwordRecovery,
-      signIn,
-      signUp,
-      signOut,
-      resetPassword,
-      updatePassword,
-      updateProfile,
+      session, profile, userCount, loading, passwordRecovery,
+      signIn, signUp, signOut, resetPassword, updatePassword, updateProfile,
       clearPasswordRecovery: () => setPasswordRecovery(false),
-      refreshUserCount: fetchUserCount
+      refreshUserCount: loadUserCount,
     }}>
       {children}
     </AuthContext.Provider>
   );
 };
 
-export const useAuth = () => {
-  return useContext(AuthContext);
-};
+export const useAuth = () => useContext(AuthContext);

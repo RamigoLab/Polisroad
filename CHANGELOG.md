@@ -1,6 +1,69 @@
 # 📝 CHANGELOG - PolisRoad
 
-## [1.6.9] - 22 Giugno 2026
+## [1.7.0] - 22 Giugno 2026
+
+### 🏗️ TASK 2 — Service Layer (`src/services/`)
+
+Creato layer di servizio che centralizza tutte le chiamate Supabase. Gli hook non parlano più direttamente col DB.
+
+**`src/services/prontuarioService.js`** (nuovo)
+- `getPreferiti(userId)` — lista id preferiti
+- `addPreferito(userId, prontuarioId)` / `removePreferito(...)` — toggle favoriti
+- `getNote(userId)` — mappa `{prontuarioId: testo}` di tutte le note
+- `upsertNota(userId, prontuarioId, testo)` / `deleteNota(...)` — salvataggio note
+
+**`src/services/gamificationService.js`** (nuovo)
+- `getGamificationStats(userId)` — fetch con auto-create se riga mancante
+- `updateGamificationStats(userId, updates)` — update atomico
+- `insertXpHistory(userId, action, xpEarned)` — log XP
+
+**`src/services/authService.js`** (nuovo)
+- `fetchProfile`, `upsertProfile`, `fetchUserCount`
+- `signIn`, `signUp`, `resetPassword`, `updatePassword`, `signOut`
+
+**Hook refactored**: `usePreferiti`, `useNote`, `useGamification`, `useAuth` — ora importano dai service. Nessuna chiamata `supabase.from(...)` diretta negli hook.
+
+---
+
+### ⚡ TASK 3 — TanStack Query (caching e zero fetch duplicati)
+
+Installato `@tanstack/react-query` v5. Configurato `QueryClientProvider` in `main.jsx`:
+- `staleTime: 5 min` — dati considerati freschi per 5 minuti
+- `gcTime: 30 min` — cache mantenuta in memoria 30 minuti
+- `retry: 2` — 2 retry automatici su errore di rete
+- `refetchOnWindowFocus: false` — no re-fetch al cambio tab
+
+**`usePreferiti`** — riscrittura completa con `useQuery` + `useMutation`:
+- Aggiornamento ottimistico immediato: il toggle è istantaneo visivamente, si rollbacka se il server risponde con errore
+- Cache condivisa per chiave `['preferiti', userId]` — navigazioni successive non generano nuovi fetch
+
+**`useNote`** — riscrittura completa con `useQuery` + `useMutation`:
+- Stesso pattern ottimistico: la nota appare salvata subito, si rollbacka su errore
+- Compatibilità con `useSyncQueue` mantenuta per la modalità offline
+
+**`useGamification`** — riscrittura con `useQuery`:
+- Statistiche caricate una volta e cachate; `updateCache()` helper aggiorna la cache locale ottimisticamente ad ogni addXP/updateStreak senza refetch
+- `checkNewBadges` e `setFeaturedBadge` scrivono su cache + server in parallelo
+
+---
+
+### 🔴 TASK 1 — Fix immediati
+
+**1A — Badge gamification solo in Home** (`AppHeader.jsx`, `PageWrapper.jsx`, `Home.jsx`)
+- Rimossa la logica `!leftAction` che mostrava il badge su tutte le pagine top-level
+- Introdotta prop esplicita `showBadge` (default `false`) su `PageWrapper` e `AppHeader`
+- Solo `Home.jsx` passa `showBadge={true}` — tutte le altre pagine non mostrano il badge
+
+**1B — Tasto "Chiudi" area amministrativa** (`layout.js`, `AdminLayout.jsx`)
+- Precedente stile: `color: #fff` su `backgroundColor: accentLight` (azzurro chiaro) → contrasto invisibile
+- Nuovo stile: testo bianco su `rgba(255,255,255,0.15)` con bordo `rgba(255,255,255,0.5)` — leggibile sull'header scuro
+- Firma funzione semplificata: `adminCloseBtn()` senza argomenti (il parametro `accentLight` era inutilizzato nel nuovo stile)
+
+**1C — Migrazione SQL `note_comuni`** (`supabase/migrations/20260622_add_note_comuni_prontuario.sql`)
+- Aggiunge colonna `note_comuni TEXT` alla tabella `prontuario` con `IF NOT EXISTS`
+- Necessaria per chi aveva il DB prima della 1.6.9
+
+
 
 ### 📋 Prontuario — Ridisegno Vista Dettaglio
 

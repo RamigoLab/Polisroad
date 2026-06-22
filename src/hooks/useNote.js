@@ -1,103 +1,85 @@
-import { useState, useEffect } from 'react';
-import { supabase } from '../config/supabase';
-import { USE_SUPABASE } from '../config/constants';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
 import { useSyncQueue } from './useSyncQueue';
-
+import { USE_SUPABASE } from '../config/constants';
+import { getNote, upsertNota, deleteNota } from '../services/prontuarioService';
 import { logger } from '../utils/logger';
+
+const queryKey = (userId) => ['note', userId];
+
 export const useNote = () => {
   const { session } = useAuth();
-  const [note, setNote] = useState({});
-  const [error, setError] = useState(null);
+  const userId = session?.user?.id;
+  const queryClient = useQueryClient();
   const { addToQueue } = useSyncQueue();
 
-  useEffect(() => {
-    const loadNote = async () => {
-      const { data, error } = await supabase.from('note').select('prontuario_id, testo').eq('user_id', session.user.id);
-      if (error) {
-        logger.error('Failed to load notes:', error);
-        setError(error);
-        return;
-      }
-      if (data) {
-        const noteMap = {};
-        data.forEach(n => noteMap[n.prontuario_id] = n.testo);
-        setNote(noteMap);
-        setError(null);
-      }
+  // ─── MOCK (no Supabase) ───────────────────────────────────────────────────
+  if (!USE_SUPABASE) {
+    const saved = localStorage.getItem('cds_note');
+    const note = saved ? JSON.parse(saved) : {};
+    const save = (prontuarioId, testo) => {
+      const updated = { ...note, [prontuarioId]: testo };
+      if (!testo?.trim()) delete updated[prontuarioId];
+      localStorage.setItem('cds_note', JSON.stringify(updated));
     };
+    return { note, error: null, save, getNota: (id) => note[id] || '' };
+  }
 
-    if (!USE_SUPABASE) {
-      const saved = localStorage.getItem('cds_note');
-      if (saved) {
-        try { setNote(JSON.parse(saved)); } catch { /* ignore */ }
+  // ─── QUERY: carica tutte le note utente (con cache) ───────────────────────
+  const { data: note = {}, error } = useQuery({
+    queryKey: queryKey(userId),
+    queryFn: () => getNote(userId),
+    enabled: !!userId,
+    onError: (e) => logger.error('Failed to load notes:', e),
+  });
+
+  // ─── MUTATION: salva/elimina nota con aggiornamento ottimistico ───────────
+  const mutation = useMutation({
+    mutationFn: async ({ prontuarioId, testo }) => {
+      if (!navigator.onLine) {
+        addToQueue('SAVE_NOTE', { prontuarioId, testo });
+        return { queued: true };
       }
-      return;
-    }
-    
-    if (session?.user) {
-      loadNote();
-    } else {
-      setNote({});
-    }
-  }, [session]);
-
-
-
-  const salvaNota = async (prontuarioId, testo) => {
-    if (!USE_SUPABASE) {
-      setNote(prev => {
-        const updated = { ...prev, [prontuarioId]: testo };
-        if (!testo || testo.trim() === '') delete updated[prontuarioId];
-        localStorage.setItem('cds_note', JSON.stringify(updated));
+      if (!testo?.trim()) {
+        await deleteNota(userId, prontuarioId);
+      } else {
+        await upsertNota(userId, prontuarioId, testo);
+      }
+    },
+    onMutate: async ({ prontuarioId, testo }) => {
+      await queryClient.cancelQueries({ queryKey: queryKey(userId) });
+      const previous = queryClient.getQueryData(queryKey(userId));
+      queryClient.setQueryData(queryKey(userId), (old = {}) => {
+        const updated = { ...old };
+        if (!testo?.trim()) {
+          delete updated[prontuarioId];
+        } else {
+          updated[prontuarioId] = testo;
+        }
         return updated;
       });
-      return { error: null };
-    }
-
-    if (!session?.user) return { error: { message: 'Utente non loggato' } };
-
-    if (!navigator.onLine) {
-      setNote(prev => {
-        const updated = { ...prev, [prontuarioId]: testo };
-        if (!testo || testo.trim() === '') delete updated[prontuarioId];
-        return updated;
-      });
-      addToQueue('SAVE_NOTE', { prontuarioId, testo });
-      return { error: null };
-    }
-    
-    if (!testo || testo.trim() === '') {
-      const { error } = await supabase.from('note').delete().match({ user_id: session.user.id, prontuario_id: prontuarioId });
-      if (error) {
-        logger.error('Failed to delete note:', error);
-        setError(error);
-        return { error };
+      return { previous };
+    },
+    onError: (err, _vars, context) => {
+      logger.error('Save nota failed:', err);
+      if (context?.previous) {
+        queryClient.setQueryData(queryKey(userId), context.previous);
       }
-      setNote(prev => {
-        const updated = { ...prev };
-        delete updated[prontuarioId];
-        return updated;
-      });
-      setError(null);
-      return { error: null };
-    } else {
-      const { error } = await supabase.from('note').upsert(
-        { user_id: session.user.id, prontuario_id: prontuarioId, testo: testo },
-        { onConflict: 'user_id, prontuario_id' }
-      );
-      if (error) {
-        logger.error('Failed to save note:', error);
-        setError(error);
-        return { error };
+    },
+    onSettled: (_data, _err, vars) => {
+      // Invalida solo se non era offline (l'offline è già in coda)
+      if (navigator.onLine) {
+        queryClient.invalidateQueries({ queryKey: queryKey(userId) });
       }
-      setNote(prev => ({ ...prev, [prontuarioId]: testo }));
-      setError(null);
-      return { error: null };
-    }
+    },
+  });
+
+  const save = (prontuarioId, testo) => mutation.mutateAsync({ prontuarioId, testo });
+
+  return {
+    note,
+    error: error || null,
+    save,
+    getNota: (id) => note[id] || '',
   };
-
-  const getNota = (prontuarioId) => note[prontuarioId] || '';
-
-  return { note, error, save: salvaNota, getNota };
 };

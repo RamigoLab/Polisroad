@@ -20,7 +20,7 @@ export const AdminLayout = ({ children, currentTab, onNavigate }) => {
           <span><Icon name="settings" size={18}/></span>
           <h2 style={LS.adminHeaderTitle}>Area Amministrativa</h2>
         </div>
-        <button onClick={() => onNavigate('home')} style={LS.adminCloseBtn(C.accentLight)}>
+        <button onClick={() => onNavigate('home')} style={LS.adminCloseBtn()}>
           Chiudi
         </button>
       </header>
