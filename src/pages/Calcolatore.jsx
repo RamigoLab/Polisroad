@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import posthog from 'posthog-js';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
 import { SelectInput } from '../components/ui/SelectInput';
@@ -22,6 +23,7 @@ export const Calcolatore = ({ onNavigate }) => {
     const item = list.find(p => p.id === id);
     if (item) {
       await addXP(20, 'calculator');
+      posthog.capture('calcolatore_used', { prontuario_id: id });
       setMin(item.pmr ? item.pmr.toString() : '');
       setMax('');
       setPunti(item.punti_patente ? item.punti_patente.toString() : '');

@@ -1,4 +1,5 @@
 import React from 'react';
+import posthog from 'posthog-js';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { Badge } from '../components/ui/Badge';
 import { Icon } from '../components/ui/Icon';
@@ -13,7 +14,9 @@ export const Preferiti = ({ onNavigate }) => {
   const preferitiList = list.filter(item => preferiti.includes(item.id));
 
   const handleToggleFavorite = async (itemId) => {
+    const isFav = preferiti.includes(itemId);
     await toggle(itemId);
+    posthog.capture(isFav ? 'preferito_removed' : 'preferito_added', { prontuario_id: itemId });
   };
 
   return (

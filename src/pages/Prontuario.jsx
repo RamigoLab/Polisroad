@@ -157,7 +157,15 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
 
   // ── LISTA PRINCIPALE ──────────────────────────────────────────────────────
   const renderGroupRow = (group) => (
-    <div key={group.articolo_numero} onClick={() => setSelectedGroup(group)} style={{ ...S.cardClickable, display: 'flex', alignItems: 'center', gap: '12px' }}>
+    <div
+      key={group.articolo_numero}
+      onClick={() => setSelectedGroup(group)}
+      style={{ ...S.cardClickable, display: 'flex', alignItems: 'center', gap: '12px' }}
+      role="button"
+      aria-label={`${group.label} - ${group.titolo || ''} - ${group.count} voci`}
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && setSelectedGroup(group)}
+    >
       <div style={{ minWidth: '56px', height: '56px', borderRadius: '12px', backgroundColor: C.accentLight, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
         <span style={{ fontSize: '0.6rem', color: C.accent, fontWeight: '700', textTransform: 'uppercase' }}>Art.</span>
         <span style={{ fontSize: '1rem', color: C.accent, fontWeight: '800', lineHeight: 1 }}>{group.articolo_numero}</span>

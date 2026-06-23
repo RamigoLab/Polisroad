@@ -4,6 +4,7 @@ import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { Badge } from './ui/Badge';
 import { Icon } from './ui/Icon';
+import { useSyncQueue } from '../hooks/useSyncQueue';
 
 /**
  * Vista dettaglio di una singola voce del Prontuario.
@@ -27,10 +28,19 @@ export const ProntuarioDetail = ({
 }) => {
   const [editNote, setEditNote] = useState(false);
   const [tempNote, setTempNote] = useState(nota || '');
+  const { addToQueue } = useSyncQueue();
 
   const handleSave = async () => {
     await onSaveNota(tempNote);
     setEditNote(false);
+  };
+
+  const handleContestazione = () => {
+    if (!navigator.onLine) {
+      addToQueue('SAVE_CONTESTAZIONE', { prontuarioId: item.id, xp: 20 });
+    } else {
+      onContestazione();
+    }
   };
 
   return (
@@ -157,7 +167,7 @@ export const ProntuarioDetail = ({
       {/* 7. REGISTRA CONTESTAZIONE */}
       <div style={{ marginTop: '24px', textAlign: 'center' }}>
         <button
-          onClick={onContestazione}
+          onClick={handleContestazione}
           style={{ ...S.btnPrimary, backgroundColor: C.danger, padding: '12px 24px', fontSize: '1.1rem', borderRadius: '12px', boxShadow: `0 4px 12px ${C.danger}40` }}
         >
           <Icon name="pen-line" size={16} /> Registra Contestazione

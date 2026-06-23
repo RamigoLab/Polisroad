@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { isSupabaseConfigured } from '../config/supabase';
 import { useAuth } from './useAuth';
 import { BADGES } from '../config/badges';
+import posthog from 'posthog-js';
 import {
   getGamificationStats,
   updateGamificationStats,
@@ -115,6 +116,9 @@ export const useGamification = () => {
       const newBadges = Array.from(unlockedSet);
       updateCache({ unlocked_badges: newBadges });
       await updateGamificationStats(userId, { unlocked_badges: newBadges });
+      newlyUnlocked.forEach(badgeId => {
+        posthog.capture('badge_unlocked', { badge_id: badgeId });
+      });
     }
     return newlyUnlocked;
   }, [userId, stats, updateCache]);

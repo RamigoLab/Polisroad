@@ -1,0 +1,63 @@
+import { C } from '../theme';
+
+export const normativa = {
+  normativaDetailHeader: {
+    backgroundColor: C.card,
+    padding: '16px',
+    borderBottom: `1px solid ${C.border}`,
+    position: 'sticky',
+    top: 0,
+    zIndex: 10,
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+  },
+  normativaDetailBadges: { display: 'flex', gap: '8px', marginBottom: '4px' },
+  normativaDetailBody: {
+    padding: '20px',
+    backgroundColor: C.card,
+    flex: 1,
+  },
+  normativaDetailText: {
+    fontSize: '1rem',
+    lineHeight: 1.6,
+    color: C.text,
+    whiteSpace: 'pre-wrap',
+    textAlign: 'justify',
+  },
+  normativaItemRow: {
+    backgroundColor: C.card,
+    padding: '16px',
+    borderRadius: '12px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+    cursor: 'pointer',
+    display: 'flex',
+    gap: '16px',
+    alignItems: 'center',
+  },
+  normativaItemNum: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'center',
+    minWidth: '70px',
+    borderRight: `1px solid ${C.border}`,
+    paddingRight: '16px',
+  },
+  normativaItemNumPrefix: { fontSize: '0.7rem', color: C.textLight, fontWeight: 'bold' },
+  normativaItemNumValue: { fontSize: '1.2rem', color: C.primary, fontWeight: 'bold' },
+  normativaItemComma: { fontSize: '0.7rem', color: C.accent, fontWeight: '500' },
+  normativaItemTitle: {
+    fontSize: '0.95rem',
+    color: C.text,
+    lineHeight: 1.3,
+    marginBottom: '4px',
+  },
+  normativaItemPreview: {
+    fontSize: '0.8rem',
+    color: C.textLight,
+    whiteSpace: 'nowrap',
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    maxWidth: '200px',
+  },
+};

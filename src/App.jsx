@@ -37,6 +37,8 @@ const AdminNormativa = lazy(() => import('./pages/admin/AdminNormativa').then(m 
 const AdminSegnalazioni = lazy(() => import('./pages/admin/AdminSegnalazioni').then(m => ({ default: m.AdminSegnalazioni })));
 const AdminUtenti = lazy(() => import('./pages/admin/AdminUtenti').then(m => ({ default: m.AdminUtenti })));
 
+import posthog from 'posthog-js';
+
 // Inner component that can safely use useToast (inside ToastProvider)
 function AppInner() {
   const { session, loading: authLoading, passwordRecovery } = useAuth();
@@ -95,6 +97,8 @@ function AppInner() {
     } else {
       removeItem('polisroad_navigation_params');
     }
+    // Traccia la navigazione in PostHog
+    posthog.capture('page_view', { page, has_params: !!params });
   };
 
   const [showSplash, setShowSplash] = useState(() => {

@@ -1,5 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from './useAuth';
+import { useSyncQueue } from './useSyncQueue';
 import { USE_SUPABASE } from '../config/constants';
 import { getPreferiti, addPreferito, removePreferito } from '../services/prontuarioService';
 import { logger } from '../utils/logger';
@@ -11,6 +12,7 @@ export const usePreferiti = () => {
   const { session } = useAuth();
   const userId = session?.user?.id;
   const queryClient = useQueryClient();
+  const { addToQueue } = useSyncQueue();
 
   // ─── MOCK (no Supabase) ───────────────────────────────────────────────────
   if (!USE_SUPABASE) {
@@ -36,6 +38,10 @@ export const usePreferiti = () => {
   const mutation = useMutation({
     mutationFn: async (id) => {
       const isFav = preferiti.includes(id);
+      if (!navigator.onLine) {
+        addToQueue('TOGGLE_PREFERITO', { prontuarioId: id, action: isFav ? 'remove' : 'add' });
+        return { queued: true };
+      }
       if (isFav) {
         await removePreferito(userId, id);
       } else {

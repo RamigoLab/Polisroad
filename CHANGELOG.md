@@ -1,67 +1,130 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.8.0] - 23 Giugno 2026
+
+### 🏗️ Service Layer completo — Task 1.1 / 1.2 / 1.3
+
+**Completamento del service layer**: tutti i fetch Supabase sono ora nei services. Il frontend è completamente indipendente dal backend.
+
+**Nuovi services:**
+- `src/services/normativaService.js` — `getNormativa`, `addNormativa`, `updateNormativa`, `deleteNormativa`
+- `src/services/newsService.js` — `getNews`, `addNews`, `updateNews`, `deleteNews`
+- `src/services/prontuarioService.js` esteso — aggiunti `getProntuario`, `addProntuarioItem`, `updateProntuarioItem`, `deleteProntuarioItem`
+
+**`DataContext` semplificato (Task 1.3):**
+- Rimossa tutta la logica di fetch manuale (loop paginazione, try/catch, useState/useEffect)
+- Il context ora usa `useQuery` per prontuario, normativa e news tramite i rispettivi services
+- `refresh()` invalida tutte e tre le cache React Query invece di rifetchare manualmente
+- Esporta `QUERY_KEYS` centralizzate per hook e pagine che necessitano di invalidare la cache
+- Rimossi: `setProntuario`, `setNormativa`, `setNews` — non più necessari (gestiti da React Query)
+
+**Hook refactored (Task 1.2):**
+- `useNormativa` — usa `useData()` per i dati + `useMutation` per add/update/remove; zero chiamate `supabase.from()` dirette; aggiornamenti ottimistici con rollback automatico
+- `useNews` — stessa architettura di `useNormativa`; logica business filtro 30 giorni spostata in `newsService.js`
+- `useProntuario` — stessa architettura; gestione mock `USE_SUPABASE` mantenuta per fallback dev
+
+**Risultato architettura:** zero chiamate `supabase.from()` negli hook o nei componenti. Tutto passa dai services.
+
+---
+
 ## [1.7.0] - 22 Giugno 2026
 
 ### 🏗️ TASK 2 — Service Layer (`src/services/`)
 
 Creato layer di servizio che centralizza tutte le chiamate Supabase. Gli hook non parlano più direttamente col DB.
 
-**`src/services/prontuarioService.js`** (nuovo)
-- `getPreferiti(userId)` — lista id preferiti
-- `addPreferito(userId, prontuarioId)` / `removePreferito(...)` — toggle favoriti
-- `getNote(userId)` — mappa `{prontuarioId: testo}` di tutte le note
-- `upsertNota(userId, prontuarioId, testo)` / `deleteNota(...)` — salvataggio note
+**`src/services/prontuarioService.js`** — `getPreferiti`, `addPreferito`, `removePreferito`, `getNote`, `upsertNota`, `deleteNota`
+**`src/services/gamificationService.js`** — `getGamificationStats`, `updateGamificationStats`, `insertXpHistory`
+**`src/services/authService.js`** — `fetchProfile`, `upsertProfile`, `fetchUserCount`, `signIn`, `signUp`, `resetPassword`, `updatePassword`, `signOut`
 
-**`src/services/gamificationService.js`** (nuovo)
-- `getGamificationStats(userId)` — fetch con auto-create se riga mancante
-- `updateGamificationStats(userId, updates)` — update atomico
-- `insertXpHistory(userId, action, xpEarned)` — log XP
-
-**`src/services/authService.js`** (nuovo)
-- `fetchProfile`, `upsertProfile`, `fetchUserCount`
-- `signIn`, `signUp`, `resetPassword`, `updatePassword`, `signOut`
-
-**Hook refactored**: `usePreferiti`, `useNote`, `useGamification`, `useAuth` — ora importano dai service. Nessuna chiamata `supabase.from(...)` diretta negli hook.
+Hook refactored: `usePreferiti`, `useNote`, `useGamification`, `useAuth` — zero chiamate `supabase.from()` dirette.
 
 ---
 
-### ⚡ TASK 3 — TanStack Query (caching e zero fetch duplicati)
+### ⚡ TASK 3 — TanStack Query + Persister IndexedDB
 
-Installato `@tanstack/react-query` v5. Configurato `QueryClientProvider` in `main.jsx`:
-- `staleTime: 5 min` — dati considerati freschi per 5 minuti
-- `gcTime: 30 min` — cache mantenuta in memoria 30 minuti
-- `retry: 2` — 2 retry automatici su errore di rete
-- `refetchOnWindowFocus: false` — no re-fetch al cambio tab
+**`@tanstack/react-query` v5** — caching in memoria con `staleTime: 5 min`, `gcTime: 24 ore`, retry automatico, no refetch su cambio tab.
 
-**`usePreferiti`** — riscrittura completa con `useQuery` + `useMutation`:
-- Aggiornamento ottimistico immediato: il toggle è istantaneo visivamente, si rollbacka se il server risponde con errore
-- Cache condivisa per chiave `['preferiti', userId]` — navigazioni successive non generano nuovi fetch
+**`@tanstack/react-query-persist-client` + `idb-keyval`** — cache persistita su IndexedDB. La cache sopravvive al refresh e alla chiusura del browser. `maxAge: 24 ore`. Buster controllabile via `VITE_CACHE_BUSTER`.
 
-**`useNote`** — riscrittura completa con `useQuery` + `useMutation`:
-- Stesso pattern ottimistico: la nota appare salvata subito, si rollbacka su errore
-- Compatibilità con `useSyncQueue` mantenuta per la modalità offline
-
-**`useGamification`** — riscrittura con `useQuery`:
-- Statistiche caricate una volta e cachate; `updateCache()` helper aggiorna la cache locale ottimisticamente ad ogni addXP/updateStreak senza refetch
-- `checkNewBadges` e `setFeaturedBadge` scrivono su cache + server in parallelo
+`usePreferiti` e `useNote` — aggiornamenti ottimistici con rollback automatico su errore.
+`useGamification` — `updateCache()` aggiorna localmente senza refetch ad ogni addXP.
 
 ---
 
-### 🔴 TASK 1 — Fix immediati
+### 📡 TASK 4 — Offline Queue estesa
 
-**1A — Badge gamification solo in Home** (`AppHeader.jsx`, `PageWrapper.jsx`, `Home.jsx`)
-- Rimossa la logica `!leftAction` che mostrava il badge su tutte le pagine top-level
-- Introdotta prop esplicita `showBadge` (default `false`) su `PageWrapper` e `AppHeader`
-- Solo `Home.jsx` passa `showBadge={true}` — tutte le altre pagine non mostrano il badge
+**`useSyncQueue.js`** — aggiunto supporto per:
+- `TOGGLE_PREFERITO` `{ prontuarioId, action: 'add'|'remove' }` — accodato quando offline durante toggle favoriti
+- `SAVE_CONTESTAZIONE` `{ prontuarioId, xp }` — accodato quando offline durante registrazione contestazione
+- Max 3 tentativi per azione; dopo 3 fallimenti l'azione viene scartata con log
+- Toast informativi per ogni fase: offline warning, sync in corso, successo, elementi rimasti
 
-**1B — Tasto "Chiudi" area amministrativa** (`layout.js`, `AdminLayout.jsx`)
-- Precedente stile: `color: #fff` su `backgroundColor: accentLight` (azzurro chiaro) → contrasto invisibile
-- Nuovo stile: testo bianco su `rgba(255,255,255,0.15)` con bordo `rgba(255,255,255,0.5)` — leggibile sull'header scuro
-- Firma funzione semplificata: `adminCloseBtn()` senza argomenti (il parametro `accentLight` era inutilizzato nel nuovo stile)
+**`usePreferiti.js`** — chiama `addToQueue('TOGGLE_PREFERITO', ...)` se `!navigator.onLine`
+**`ProntuarioDetail.jsx`** — `handleContestazione` usa `addToQueue('SAVE_CONTESTAZIONE', ...)` se offline
 
-**1C — Migrazione SQL `note_comuni`** (`supabase/migrations/20260622_add_note_comuni_prontuario.sql`)
-- Aggiunge colonna `note_comuni TEXT` alla tabella `prontuario` con `IF NOT EXISTS`
-- Necessaria per chi aveva il DB prima della 1.6.9
+---
+
+### ♿ TASK 5 — Accessibilità base
+
+**`BottomNav.jsx`** — `role="navigation"`, `aria-label="Navigazione principale"`, `aria-current="page"` sulla tab attiva, `tabIndex={0}`, navigazione da tastiera con `Enter`
+
+**`SearchBar.jsx`** — `role="search"`, label visually-hidden per screen reader, `type="search"` (attiva clear nativo su mobile), `aria-label`, `autoComplete="off"`
+
+**`ToastManager.jsx`** — bottone chiudi con `aria-label="Chiudi notifica"`
+
+**`Prontuario.jsx`** — gruppi articolo con `role="button"`, `aria-label` descrittivo, `tabIndex={0}`, navigazione da tastiera
+
+---
+
+### 📊 TASK 6 — PostHog tracking significativo
+
+Da 4 a 9 eventi tracciati:
+- `page_view` `{ page, has_params }` — ad ogni navigazione in `App.jsx`
+- `normativa_article_opened` `{ articolo_num, titolo }` — in `Normativa.jsx`
+- `preferito_added` / `preferito_removed` `{ prontuario_id }` — in `Preferiti.jsx`
+- `calcolatore_used` `{ prontuario_id }` — in `Calcolatore.jsx`
+- `badge_unlocked` `{ badge_id }` — in `useGamification.js`
+
+---
+
+### 🗂️ TASK 7 — Split `pages.js`
+
+`pages.js` (757 righe) splittato in 8 file per sezione in `src/styles/pages/`:
+`home.js`, `prontuario.js`, `normativa.js`, `ricerca.js`, `calcolatore.js`, `news.js`, `profilo.js`, `operatore.js`, `admin.js`
+
+`pages.js` diventa re-export aggregato — API identica (`PS.*`), nessuna modifica ai consumer.
+
+---
+
+### 🧪 TASK 8 — Test coverage
+
+Nuovi file di test:
+- `usePreferiti.test.js` — cache, isPreferito, toggle ottimistico, fallback offline
+- `useGamification.test.js` — stats, addXP valido/invalido, badge, featuredBadge
+- `ProntuarioDetail.test.jsx` — render, note_comuni, contestazione online/offline, nota edit/save/annulla
+- `useSyncQueue.test.js` — aggiornato con TOGGLE_PREFERITO e SAVE_CONTESTAZIONE
+
+---
+
+### ☁️ Vercel Edge Caching (`vercel.json`)
+
+- `/assets/*` → `Cache-Control: public, max-age=31536000, immutable` (JS/CSS con hash Vite)
+- `/icons/*` → `max-age=86400, stale-while-revalidate=604800`
+- `/manifest.webmanifest` → `max-age=86400` + `Content-Type` corretto
+- `/sw.js` → `no-cache` (service worker deve sempre essere aggiornato)
+- `/index.html` → `no-cache` (entry point sempre fresco)
+- Aggiunto `rewrites` per SPA routing (tutti i path → `index.html`)
+
+---
+
+### 🔴 Fix immediati (da 1.7.0-pre)
+
+**Badge gamification solo in Home** — prop esplicita `showBadge` su `PageWrapper`/`AppHeader`; solo `Home.jsx` passa `showBadge={true}`
+
+**Tasto "Chiudi" area admin** — era invisibile (bianco su azzurro chiaro); ora bianco su sfondo semitrasparente con bordo
+
+**Migrazione SQL `note_comuni`** — `supabase/migrations/20260622_add_note_comuni_prontuario.sql`
 
 
 

@@ -1,6 +1,9 @@
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient } from '@tanstack/react-query';
+import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
+import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
+import { get, set, del } from 'idb-keyval';
 import './index.css';
 import App from './App';
 import { AuthProvider } from './hooks/useAuth';
@@ -31,17 +34,36 @@ if (posthogKey) {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,       // 5 minuti: dati considerati freschi
-      gcTime: 1000 * 60 * 30,          // 30 minuti: cache mantenuta in memoria
-      retry: 2,                         // 2 retry automatici su errore
-      refetchOnWindowFocus: false,      // no re-fetch al cambio tab (dati normativi stabili)
+      staleTime: 1000 * 60 * 5,      // 5 min: dati freschi, nessun refetch
+      gcTime: 1000 * 60 * 60 * 24,   // 24 ore: cache in memoria (persister la salva su disco)
+      retry: 2,
+      refetchOnWindowFocus: false,
     },
   },
 });
 
+// Persister IndexedDB: la cache sopravvive al refresh e alla chiusura del browser.
+// Chiave 'polisroad-query-cache' su IndexedDB.
+// maxAge 24 ore: dopo scade e si ricarica dal server.
+const idbPersister = createAsyncStoragePersister({
+  storage: {
+    getItem: (key) => get(key),
+    setItem: (key, value) => set(key, value),
+    removeItem: (key) => del(key),
+  },
+  key: 'polisroad-query-cache',
+});
+
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <QueryClientProvider client={queryClient}>
+    <PersistQueryClientProvider
+      client={queryClient}
+      persistOptions={{
+        persister: idbPersister,
+        maxAge: 1000 * 60 * 60 * 24,  // 24 ore
+        buster: import.meta.env.VITE_CACHE_BUSTER || '1',
+      }}
+    >
       <AuthProvider>
         <DataProvider>
           <ToastProvider>
@@ -51,6 +73,6 @@ createRoot(document.getElementById('root')).render(
           </ToastProvider>
         </DataProvider>
       </AuthProvider>
-    </QueryClientProvider>
+    </PersistQueryClientProvider>
   </StrictMode>,
 );

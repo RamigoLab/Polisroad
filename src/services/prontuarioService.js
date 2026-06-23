@@ -1,9 +1,53 @@
 /**
  * prontuarioService.js
- * Centralizza tutte le chiamate Supabase per preferiti e note personali.
+ * Centralizza tutte le chiamate Supabase per prontuario, preferiti e note personali.
  * Gli hook consumano queste funzioni invece di chiamare Supabase direttamente.
  */
 import { supabase } from '../config/supabase';
+import { mockProntuario } from '../data/prontuario';
+import { USE_SUPABASE } from '../config/constants';
+
+// ─── PRONTUARIO (lettura dati) ────────────────────────────────────────────────
+
+async function fetchAllRows(table, orderCol) {
+  let allData = [];
+  let from = 0;
+  const step = 1000;
+  while (true) {
+    const { data, error } = await supabase
+      .from(table)
+      .select('*')
+      .order(orderCol)
+      .range(from, from + step - 1);
+    if (error) throw error;
+    if (!data || data.length === 0) break;
+    allData = [...allData, ...data];
+    if (data.length < step) break;
+    from += step;
+  }
+  return allData;
+}
+
+export async function getProntuario() {
+  if (!USE_SUPABASE) return mockProntuario;
+  return fetchAllRows('prontuario', 'articolo_numero');
+}
+
+export async function addProntuarioItem(item) {
+  const { data, error } = await supabase.from('prontuario').insert([item]).select();
+  if (error) throw error;
+  return data[0];
+}
+
+export async function updateProntuarioItem(id, changes) {
+  const { error } = await supabase.from('prontuario').update(changes).eq('id', id);
+  if (error) throw error;
+}
+
+export async function deleteProntuarioItem(id) {
+  const { error } = await supabase.from('prontuario').delete().eq('id', id);
+  if (error) throw error;
+}
 
 // ─── PREFERITI ────────────────────────────────────────────────────────────────
 

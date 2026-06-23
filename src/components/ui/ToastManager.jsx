@@ -119,6 +119,7 @@ export const ToastProvider = ({ children }) => {
             </div>
             <button
               onClick={() => removeToast(toast.id)}
+              aria-label="Chiudi notifica"
               style={{
                 background: 'none',
                 border: 'none',

@@ -44,11 +44,20 @@ export const BottomNav = ({ currentPage, onNavigate }) => {
         <span style={{ fontWeight: 'bold' }}>{isOnline ? 'Online' : 'Offline'} | v{APP_VERSION}</span>
       </div>
 
-      <nav style={LS.navScroll}>
+      <nav style={LS.navScroll} role="navigation" aria-label="Navigazione principale">
         {NAV_ITEMS_PRIMARY.map((tab) => {
           const isActive = currentPage === tab.id;
           return (
-            <div key={tab.id} onClick={() => onNavigate(tab.id)} style={LS.navTab(isActive)}>
+            <div
+              key={tab.id}
+              onClick={() => onNavigate(tab.id)}
+              style={LS.navTab(isActive)}
+              role="button"
+              aria-label={tab.label}
+              aria-current={isActive ? 'page' : undefined}
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && onNavigate(tab.id)}
+            >
               <span style={LS.navTabIndicator(isActive)}>
                 <Icon name={tab.icon} size={20} color={isActive ? C.primary : C.textLight} />
               </span>

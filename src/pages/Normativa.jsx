@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import posthog from 'posthog-js';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { SearchBar } from '../components/ui/SearchBar';
 import { Badge } from '../components/ui/Badge';
@@ -182,6 +183,10 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   const renderArticleRow = (art) => (
     <div key={art.id} onClick={async () => {
       await addXP(5, 'article');
+      posthog.capture('normativa_article_opened', {
+        articolo_num: art.articolo_num,
+        titolo: art.titolo_articolo,
+      });
       setSelectedArticolo(art);
     }} style={{...PS.normativaItemRow, marginBottom: '12px'}}>
       <div style={PS.normativaItemNum}>

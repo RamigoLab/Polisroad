@@ -14,6 +14,7 @@ Versione corrente: **1.7.0**
 - **lucide-react** — icone SVG coerenti
 - **PostHog EU Cloud** — analytics (attivo di default, disattivabile dal Profilo)
 - **@tanstack/react-query v5** — caching query, aggiornamenti ottimistici, zero fetch duplicati
+- **@tanstack/react-query-persist-client + idb-keyval** — cache persistita su IndexedDB (sopravvive al refresh)
 
 ---
 
@@ -160,14 +161,31 @@ scripts/              # script Node.js per import/generazione dati
 
 ## Note versione 1.7.0 (22 Giugno 2026)
 
-### Service layer + TanStack Query
-- Creato `src/services/` con `prontuarioService.js`, `gamificationService.js`, `authService.js` — tutte le chiamate Supabase centralizzate, hook disaccoppiati dal DB.
-- Installato `@tanstack/react-query` v5: `usePreferiti`, `useNote`, `useGamification` ora usano `useQuery`/`useMutation` con cache 5 min, aggiornamenti ottimistici e rollback automatico su errore.
+### Service layer + TanStack Query + Persister
+- `src/services/` con `prontuarioService.js`, `gamificationService.js`, `authService.js` — tutte le chiamate Supabase centralizzate.
+- `@tanstack/react-query` v5 con persister IndexedDB: cache sopravvive al refresh, `staleTime 5 min`, aggiornamenti ottimistici con rollback automatico.
 
-### Fix immediati
-- Badge gamification visibile **solo in Home** (prop esplicita `showBadge`).
-- Tasto "Chiudi" area admin ora visibile (contrasto bianco su sfondo scuro).
-- Migrazione SQL `note_comuni` per DB pre-1.6.9.
+### Offline queue estesa
+- `useSyncQueue` ora gestisce `TOGGLE_PREFERITO` e `SAVE_CONTESTAZIONE` oltre a `SAVE_NOTE`.
+
+### Accessibilità
+- `BottomNav`: `role="navigation"`, `aria-current`, navigazione da tastiera.
+- `SearchBar`: `role="search"`, label per screen reader, `type="search"`.
+- Toast e gruppi Prontuario con `aria-label`.
+
+### PostHog — 9 eventi
+`page_view`, `normativa_article_opened`, `preferito_added/removed`, `calcolatore_used`, `badge_unlocked` + i 4 esistenti.
+
+### Split `pages.js` → 8 file per sezione
+API identica (`PS.*`), file più piccoli e manutenibili.
+
+### Vercel edge caching
+Assets con hash → `immutable 1 anno`; `sw.js` e `index.html` → `no-cache`; SPA routing via `rewrites`.
+
+### Fix
+- Badge gamification visibile **solo in Home**.
+- Tasto "Chiudi" area admin ora leggibile.
+- Migrazione SQL `note_comuni`.
 
 ---
 

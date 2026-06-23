@@ -1,133 +1,95 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { supabase, isSupabaseConfigured } from '../config/supabase';
-import { mockProntuario } from '../data/prontuario';
-import { mockNormativa } from '../data/normativa';
-import { mockNews } from '../data/news';
-
+/**
+ * DataContext.jsx
+ * Fornisce solo configurazione/stato globale dell'app.
+ * I fetch dei dati (prontuario, normativa, news) sono delegati
+ * ai rispettivi hook via React Query.
+ */
+import React, { createContext, useContext } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { isSupabaseConfigured } from '../config/supabase';
+import { getProntuario } from '../services/prontuarioService';
+import { getNormativa } from '../services/normativaService';
+import { getNews } from '../services/newsService';
 import { logger } from '../utils/logger';
+
 const DataContext = createContext();
 
+// Chiavi di cache centralizzate — importabili dagli hook per invalidare la cache
+export const QUERY_KEYS = {
+  prontuario: ['prontuario'],
+  normativa: ['normativa'],
+  news: ['news'],
+};
+
 export const DataProvider = ({ children }) => {
-  const [prontuario, setProntuario] = useState([]);
-  const [normativa, setNormativa] = useState([]);
-  const [news, setNews] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
 
-  const fetchAllData = async () => {
-    setLoading(true);
-    setError(null);
+  // ─── PRONTUARIO ──────────────────────────────────────────────────────────
+  const {
+    data: prontuario = [],
+    isLoading: prontuarioLoading,
+    error: prontuarioError,
+  } = useQuery({
+    queryKey: QUERY_KEYS.prontuario,
+    queryFn: getProntuario,
+    staleTime: 1000 * 60 * 30,   // 30 min: dati stabili
+    gcTime: 1000 * 60 * 60 * 24, // 24 ore in cache
+    retry: 2,
+    onError: (e) => logger.error('Prontuario fetch error:', e),
+  });
 
-    if (!isSupabaseConfigured || !supabase) {
-      setProntuario(mockProntuario);
-      setNormativa(mockNormativa);
-      setNews(mockNews);
-      setLoading(false);
-      return;
+  // ─── NORMATIVA ───────────────────────────────────────────────────────────
+  const {
+    data: normativa = [],
+    isLoading: normativaLoading,
+    error: normativaError,
+  } = useQuery({
+    queryKey: QUERY_KEYS.normativa,
+    queryFn: getNormativa,
+    staleTime: 1000 * 60 * 30,
+    gcTime: 1000 * 60 * 60 * 24,
+    retry: 2,
+    onError: (e) => logger.error('Normativa fetch error:', e),
+  });
+
+  // ─── NEWS ─────────────────────────────────────────────────────────────────
+  const {
+    data: news = [],
+    isLoading: newsLoading,
+    error: newsError,
+  } = useQuery({
+    queryKey: QUERY_KEYS.news,
+    queryFn: getNews,
+    staleTime: 1000 * 60 * 5,    // 5 min: news più dinamiche
+    gcTime: 1000 * 60 * 60 * 12,
+    retry: 2,
+    onError: (e) => logger.error('News fetch error:', e),
+  });
+
+  const loading = prontuarioLoading || normativaLoading || newsLoading;
+
+  // Genera un messaggio di errore user-friendly dal primo errore disponibile
+  const rawError = prontuarioError || normativaError || newsError;
+  let error = null;
+  if (rawError) {
+    const msg = rawError.message || '';
+    if (msg.includes('fetch') || msg.includes('Network')) {
+      error = 'Errore di rete: controlla la tua connessione internet o la VPN.';
+    } else if (rawError.code === '42P01') {
+      error = 'Database non pronto: manca una tabella in Supabase.';
+    } else if (rawError.code === '42501' || msg.includes('policy') || msg.includes('Row Level Security')) {
+      error = 'Accesso negato: Le Policies RLS su Supabase stanno bloccando la lettura.';
+    } else {
+      error = 'Impossibile caricare i dati aggiornati. Riprova più tardi.';
     }
+  }
 
-    // Helper per aggirare il limite dei 1000 risultati di Supabase
-    const fetchAllRows = async (table, orderCol) => {
-      let allData = [];
-      let from = 0;
-      const step = 1000;
-      while (true) {
-        const { data, error } = await supabase
-          .from(table)
-          .select('*')
-          .order(orderCol)
-          .range(from, from + step - 1);
-        
-        if (error) return { data: null, error };
-        if (!data || data.length === 0) break;
-        
-        allData = [...allData, ...data];
-        if (data.length < step) break; // Fine dei risultati
-        
-        from += step;
-      }
-      return { data: allData, error: null };
-    };
-
-    try {
-      // Fetch news (non paginata, limite 100 risultati)
-      const { data: newsData, error: newsError } = await supabase
-        .from('news')
-        .select('*')
-        .order('created_at', { ascending: false })
-        .limit(100);
-
-      if (newsError) {
-        logger.error('Data Fetch Errors:', { news: newsError });
-
-        const anyError = newsError;
-        let userMsg = "Si è verificato un errore durante il caricamento dei dati.";
-
-        if (anyError.message?.includes('fetch') || anyError.message?.includes('Network')) {
-          userMsg = "Errore di rete: controlla la tua connessione internet o la VPN.";
-        } else if (anyError.code === '42P01') {
-          userMsg = "Database non pronto: manca una tabella in Supabase.";
-        } else if (anyError.code === '42501' || anyError.message?.includes('policy') || anyError.message?.includes('Row Level Security')) {
-          userMsg = "Accesso negato: Le Policies RLS su Supabase stanno bloccando la lettura (0 risultati).";
-        } else {
-          userMsg = "Impossibile caricare i dati aggiornati. Riprova più tardi.";
-        }
-
-        setError(userMsg);
-        setNews(mockNews);
-      } else {
-        // Fetch normativa con paginazione
-        const { data: normativaData, error: normativaError } = await fetchAllRows('codice_strada', 'ordine');
-        if (normativaError) {
-          logger.error('Normativa fetch error:', normativaError);
-          setError('Errore nel caricamento della normativa.');
-          setNormativa(mockNormativa);
-        } else {
-          setNormativa(normativaData);
-        }
-
-        // Fetch prontuario con paginazione
-        const { data: prontuarioData, error: prontuarioError } = await fetchAllRows('prontuario', 'articolo_numero');
-        if (prontuarioError) {
-          logger.error('Prontuario fetch error:', prontuarioError);
-          setError('Errore nel caricamento del prontuario.');
-          setProntuario(mockProntuario);
-        } else {
-          setProntuario(prontuarioData);
-        }
-
-        const fetchedNews = newsData || mockNews;
-        const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
-        const now = Date.now();
-
-        const validNews = fetchedNews.filter(item => {
-          if (item.pubblicato) {
-            const createdAt = new Date(item.data_creazione || item.created_at).getTime();
-            if (Number.isFinite(createdAt) && (now - createdAt) > THIRTY_DAYS_MS) {
-              return false;
-            }
-          }
-          return true;
-        });
-
-        setNews(validNews);
-      }
-
-    } catch (err) {
-      logger.error('General Data Fetch Error:', err);
-      setError(`Errore generale di connessione: ${err.message || 'Verifica la connessione a Supabase'}`);
-      // Fallback ai mock
-      setProntuario(mockProntuario);
-      setNormativa(mockNormativa);
-      setNews(mockNews);
-    } finally {
-      setLoading(false);
-    }
+  // Refresh globale: invalida tutte le cache e ricarica
+  const refresh = () => {
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.prontuario });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.normativa });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.news });
   };
-
-  useEffect(() => {
-    fetchAllData();
-  }, []);
 
   const value = {
     prontuario,
@@ -135,11 +97,7 @@ export const DataProvider = ({ children }) => {
     news,
     loading,
     error,
-    refresh: fetchAllData,
-    // Helper per aggiornamenti locali (ottimistici) dopo mutazioni
-    setProntuario,
-    setNormativa,
-    setNews
+    refresh,
   };
 
   return (
