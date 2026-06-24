@@ -1,6 +1,8 @@
 import React from 'react';
 import posthog from 'posthog-js';
 import { PageWrapper } from '../components/layout/PageWrapper';
+import { EmptyState } from '../components/ui/EmptyState';
+import { SkeletonList } from '../components/ui/Skeleton';
 import { Badge } from '../components/ui/Badge';
 import { Icon } from '../components/ui/Icon';
 import { C } from '../styles/theme';
@@ -22,21 +24,14 @@ export const Preferiti = ({ onNavigate }) => {
   return (
     <PageWrapper title="Preferiti" subtitle="Le voci salvate" meta={`${preferiti.length} preferiti`} onNavigate={onNavigate}>
       {loading ? (
-        <div style={S.emptyState}>Caricamento in corso...</div>
+        <SkeletonList count={3} />
       ) : preferitiList.length === 0 ? (
-        <div style={S.emptyStateBox}>
-          <span style={S.emptyStateIcon}>⭐</span>
-          <p>Nessun preferito salvato.</p>
-          <p style={{ fontSize: '0.85rem', marginTop: '8px' }}>
-            Vai al Prontuario e clicca sulla stella per aggiungere le voci che usi di più.
-          </p>
-          <button
-            onClick={() => onNavigate('prontuario')}
-            style={{ ...S.btnPrimarySmall, marginTop: '16px' }}
-          >
-            Vai al Prontuario
-          </button>
-        </div>
+        <EmptyState
+          icon="star"
+          title="Nessun preferito ancora"
+          subtitle="Vai al Prontuario e tocca la stella su un articolo per aggiungerlo qui."
+          action={{ label: 'Vai al Prontuario', onClick: () => onNavigate('prontuario') }}
+        />
       ) : (
         <div style={S.list}>
           {preferitiList.map(item => (

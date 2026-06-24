@@ -1,5 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
+import { SkeletonList } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 import { SearchBar } from '../components/ui/SearchBar';
 import { ProntuarioItem } from '../components/ProntuarioItem';
 import { ProntuarioDetail } from '../components/ProntuarioDetail';
@@ -127,6 +129,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
           nota={note[selectedItem.id] || ''}
           onSaveNota={handleSaveNota}
           onContestazione={handleContestazione}
+          onNavigate={onNavigate}
         />
       </PageWrapper>
     );
@@ -182,12 +185,12 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
 
   let content;
   if (loading) {
-    content = <div style={S.emptyState}>Caricamento in corso...</div>;
+    content = <SkeletonList count={5} />;
   } else if (searchResults) {
     const { exactGroups, partial, text } = searchResults;
     const hasResults = exactGroups.length > 0 || partial.length > 0 || text.length > 0;
     if (!hasResults) {
-      content = <div style={S.emptyState}>Nessun risultato trovato.</div>;
+      content = <EmptyState compact icon="clipboard-list" title="Nessun risultato" subtitle="Prova con un termine diverso o il numero dell'articolo." />;
     } else {
       content = (
         <div style={S.list}>

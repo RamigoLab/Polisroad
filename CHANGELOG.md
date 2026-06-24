@@ -1,5 +1,95 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.8.4] - 23 Giugno 2026
+
+### 🟢 Quick Wins — UX & Affidabilità
+
+**QW-1 — Banner Offline (`OfflineBanner.jsx`)**
+- Nuovo componente fisso in cima all'app quando il dispositivo è offline
+- Messaggio "Sei offline — stai usando i dati in cache"
+- Banner verde "Connessione ripristinata" per 3s al ritorno online
+- `role="status"` + `aria-live="polite"` per screen reader
+
+**QW-2 — Feedback aptico (`src/utils/haptics.js`)**
+- Nuova utility con 4 pattern: `hapticLight`, `hapticMedium`, `hapticSuccess`, `hapticError`
+- Vibrazione leggera (40ms) sul toggle preferiti
+- Vibrazione media (80ms) al salvataggio memo personale
+- Pattern di successo (50-30-80ms) alla registrazione contestazione
+- Degrada silenziosamente dove la Vibration API non è supportata
+
+**QW-3 — Skeleton Loaders (`Skeleton.jsx`)**
+- Nuovo componente con animazione shimmer CSS (`pr-shimmer`)
+- `SkeletonCard`, `SkeletonList`, `SkeletonNewsCard` — forma degli elementi reali
+- Integrati in Prontuario, Normativa, News al posto degli spinner testuali
+- CSS iniettato una sola volta nel `<head>` (no dipendenze)
+
+**QW-4 — Empty State illustrati (`EmptyState.jsx`)**
+- Nuovo componente con icona grande, titolo, sottotitolo e CTA opzionale
+- Prop `compact` per contesti secondari (risultati di ricerca parziali)
+- Sostituisce tutti i "Nessun risultato" testuali in: Preferiti, News, Ricerca, Prontuario, Normativa
+
+**QW-5 — Autocomplete SearchBar**
+- `SearchBar.jsx` riscritto con dropdown suggerimenti inline
+- Mostra ricerche recenti filtrate per prefisso mentre si digita
+- Pulsante ✕ per cancellare il testo con un tap
+- `aria-autocomplete`, `aria-expanded`, `role="listbox/option"` per accessibilità
+- Connesso alla pagina Ricerca via `useSearchHistory`
+
+**QW-6 — Changelog in-app (`src/config/changelog.js`)**
+- Nuovo file con le ultime novità in linguaggio semplice per l'operatore
+- Sezione "Novità" aggiunta nel Profilo con badge versione + etichetta NUOVO
+- Cronologia ultime 3 release visibile senza uscire dall'app
+
+---
+
+## [1.8.3] - 23 Giugno 2026
+
+### ⚙️ Task 6.2 — Ottimizzazione bundle + analisi
+
+**Analisi bundle:**
+- Installato `rollup-plugin-visualizer` come devDependency
+- Nuovo script `npm run build:analyze` → genera `dist/stats.html` con mappa interattiva (treemap, gzip + brotli size)
+- Il visualizer è attivo **solo** in modalità `analyze` — la build normale non viene toccata
+
+**Chunking manuale (`manualChunks` in `vite.config.js`):**
+- `react-core` — react + react-dom (cache stabile, cambia raramente)
+- `query` — @tanstack/react-query + persist-client
+- `supabase` — @supabase/supabase-js
+- `fuse` — fuse.js
+- `posthog` — posthog-js
+- `idb` — idb-keyval
+
+Vantaggi: il browser può ricaricare solo il chunk modificato invece dell'intero bundle. Supabase e Fuse.js in chunk separati migliorano il caching a lungo termine.
+
+---
+
+## [1.8.2] - 23 Giugno 2026
+
+### 🔗 Task 5.2 — Link intelligenti Prontuario ↔ Normativa
+
+- **`ProntuarioDetail`**: aggiunto bottone "Leggi Art. X nel Codice della Strada" quando `onNavigate` è disponibile
+- Il numero articolo viene estratto automaticamente dal campo `rif_normativo` (es. "Art. 186 c. 2" → 186)
+- Cliccando il bottone si naviga direttamente all'articolo corrispondente in Normativa
+- **`Normativa.jsx`**: gestisce il nuovo parametro `navigationParams.searchArticolo` — naviga all'articolo trovato oppure attiva la ricerca come fallback
+- `onNavigate` passato come prop opzionale a `ProntuarioDetail` in `Prontuario.jsx`
+- Il bottone appare solo se l'articolo è estraibile e `onNavigate` è fornito (compatibile con Operatore dove il link non è rilevante)
+
+---
+
+## [1.8.1] - 23 Giugno 2026
+
+### 🔍 Task 5.1 — Fuzzy Search con Fuse.js
+
+- Installato `fuse.js` come dipendenza
+- `useSearch` completamente riscritto con Fuse.js (threshold `0.35`, `ignoreLocation: true`)
+- **Prontuario**: chiavi pesate `titolo` (0.4) · `descrizione` (0.3) · `rif_normativo` (0.2) · `articolo_numero` (0.1)
+- **Normativa**: chiavi pesate `testo` (0.4) · `titolo_articolo` (0.3) · `titolo` (0.2) · `articolo` (0.1)
+- Istanze `Fuse` memorizzate con `useMemo` — si ricalcolano solo se cambia la lista dati
+- Logica di priorità mantenuta: corrispondenza esatta su numero articolo → fuzzy raggruppato per articolo
+- Tolleranza a errori di battitura: es. "alcool" trova "alcol", "veicilo" trova "veicolo"
+
+---
+
 ## [1.8.0] - 23 Giugno 2026
 
 ### 🏗️ Service Layer completo — Task 1.1 / 1.2 / 1.3

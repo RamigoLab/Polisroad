@@ -15,6 +15,7 @@ import { BADGES } from '../config/badges';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } from '../config/constants';
+import { APP_CHANGELOG } from '../config/changelog';
 import { sanitizers, validators } from '../utils/validation';
 import { supabase } from '../config/supabase';
 
@@ -615,6 +616,35 @@ export const Profilo = ({ onNavigate }) => {
           </div>
         </div>
       )}
+
+      {/* Novità dell'app */}
+      <div style={{ marginBottom: '24px', padding: '16px', backgroundColor: C.card, borderRadius: '12px', border: `1px solid ${C.border}` }}>
+        <h4 style={{ fontSize: '0.9rem', color: C.primary, marginBottom: '14px', fontWeight: '700', display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <Icon name="rocket" size={16} /> Novità
+        </h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+          {APP_CHANGELOG.map((release) => (
+            <div key={release.version}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' }}>
+                <span style={{ fontSize: '0.8rem', fontWeight: '700', color: C.white, backgroundColor: release.isNew ? C.accent : C.textLight, padding: '2px 8px', borderRadius: '20px' }}>
+                  v{release.version}
+                </span>
+                {release.isNew && (
+                  <span style={{ fontSize: '0.7rem', fontWeight: '700', color: C.accent, backgroundColor: `${C.accent}18`, padding: '2px 8px', borderRadius: '20px' }}>
+                    NUOVO
+                  </span>
+                )}
+                <span style={{ fontSize: '0.75rem', color: C.textLight }}>{release.date}</span>
+              </div>
+              <ul style={{ margin: 0, paddingLeft: '16px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+                {release.items.map((item, i) => (
+                  <li key={i} style={{ fontSize: '0.85rem', color: C.text, lineHeight: 1.5 }}>{item}</li>
+                ))}
+              </ul>
+            </div>
+          ))}
+        </div>
+      </div>
 
       {/* Informazioni di Sistema */}
       <div style={PS.profileSysBox}>

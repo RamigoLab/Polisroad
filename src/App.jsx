@@ -11,6 +11,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { PageLoader } from './components/ui/PageLoader';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { PwaUpdater } from './components/PwaUpdater';
+import { OfflineBanner } from './components/ui/OfflineBanner';
 import { useToast } from './components/ui/ToastManager';
 import { getItem, setItem, removeItem } from './utils/storage';
 
@@ -177,6 +178,7 @@ function AppInner() {
 
   return (
     <ErrorBoundary>
+      <OfflineBanner />
       <PwaUpdater />
       <Suspense fallback={<PageLoader />}>
         <div className="app-viewport-container">

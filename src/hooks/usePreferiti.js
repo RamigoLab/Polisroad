@@ -4,6 +4,7 @@ import { useSyncQueue } from './useSyncQueue';
 import { USE_SUPABASE } from '../config/constants';
 import { getPreferiti, addPreferito, removePreferito } from '../services/prontuarioService';
 import { logger } from '../utils/logger';
+import { hapticLight } from '../utils/haptics';
 
 // Chiave di cache: include userId così utenti diversi non condividono la cache
 const queryKey = (userId) => ['preferiti', userId];
@@ -19,6 +20,7 @@ export const usePreferiti = () => {
     const saved = localStorage.getItem('cds_preferiti');
     const preferiti = saved ? JSON.parse(saved) : [];
     const toggle = (id) => {
+      hapticLight();
       const isFav = preferiti.includes(id);
       const next = isFav ? preferiti.filter(x => x !== id) : [...preferiti, id];
       localStorage.setItem('cds_preferiti', JSON.stringify(next));

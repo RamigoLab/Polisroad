@@ -5,6 +5,7 @@ import { PS } from '../styles/pages';
 import { Badge } from './ui/Badge';
 import { Icon } from './ui/Icon';
 import { useSyncQueue } from '../hooks/useSyncQueue';
+import { hapticMedium, hapticSuccess } from '../utils/haptics';
 
 /**
  * Vista dettaglio di una singola voce del Prontuario.
@@ -19,12 +20,23 @@ import { useSyncQueue } from '../hooks/useSyncQueue';
  *  6. Memo personale
  *  7. Registra Contestazione
  */
+/**
+ * Estrae il numero articolo da stringhe tipo "Art. 186 c. 2" o "Art. 186".
+ * Restituisce una stringa numerica o null.
+ */
+function extractArticoloNum(rifNormativo) {
+  if (!rifNormativo) return null;
+  const match = rifNormativo.match(/Art(?:icolo)?\.?\s*(\d+)/i);
+  return match ? match[1] : null;
+}
+
 export const ProntuarioDetail = ({
   item,
   isFavorite,
   nota,
   onSaveNota,
   onContestazione,
+  onNavigate,
 }) => {
   const [editNote, setEditNote] = useState(false);
   const [tempNote, setTempNote] = useState(nota || '');
@@ -32,16 +44,20 @@ export const ProntuarioDetail = ({
 
   const handleSave = async () => {
     await onSaveNota(tempNote);
+    hapticMedium();
     setEditNote(false);
   };
 
   const handleContestazione = () => {
+    hapticSuccess();
     if (!navigator.onLine) {
       addToQueue('SAVE_CONTESTAZIONE', { prontuarioId: item.id, xp: 20 });
     } else {
       onContestazione();
     }
   };
+
+  const articoloNum = extractArticoloNum(item.rif_normativo || item.articolo_numero);
 
   return (
     <div style={PS.prontuarioDetailBody}>
@@ -54,6 +70,28 @@ export const ProntuarioDetail = ({
         <p style={{ fontWeight: '700', fontSize: '1rem', color: C.text, lineHeight: 1.4, margin: 0 }}>
           {item.titolo || item.articolo_nome || 'Voce Prontuario'}
         </p>
+        {onNavigate && articoloNum && (
+          <button
+            onClick={() => onNavigate('normativa', { searchArticolo: articoloNum })}
+            style={{
+              marginTop: '10px',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              fontSize: '0.8rem',
+              fontWeight: '600',
+              color: C.accent,
+              background: C.accentLight,
+              border: 'none',
+              borderRadius: '8px',
+              padding: '6px 12px',
+              cursor: 'pointer',
+            }}
+          >
+            <Icon name="book-open" size={14} />
+            Leggi Art. {articoloNum} nel Codice della Strada
+          </button>
+        )}
       </div>
 
       {/* 2. NOTE COMUNI (stesse per tutte le casistiche dell'articolo) */}

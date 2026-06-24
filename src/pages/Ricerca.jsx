@@ -11,6 +11,7 @@ import { useNormativa } from '../hooks/useNormativa';
 import { useSearch } from '../hooks/useSearch';
 import { useSearchHistory } from '../hooks/useSearchHistory';
 import { useGamificationContext } from '../context/GamificationContext';
+import { EmptyState } from '../components/ui/EmptyState';
 import posthog from 'posthog-js';
 
 const getSnippet = (text, terms) => {
@@ -56,6 +57,13 @@ export const Ricerca = ({ onNavigate }) => {
       return () => clearTimeout(timer);
     }
   }, [search, addSearch, addXP]);
+
+  // Suggerimenti autocomplete: ricerche recenti che iniziano col testo digitato
+  const autoSuggestions = React.useMemo(() => {
+    const q = search.trim().toLowerCase();
+    if (!q || q.length < 1) return history.slice(0, 5);
+    return history.filter(h => h.toLowerCase().startsWith(q)).slice(0, 5);
+  }, [search, history]);
 
   const hasSearch = search.trim().length > 0;
   const searchTerms = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -196,6 +204,8 @@ export const Ricerca = ({ onNavigate }) => {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Cerca in tutto PolisRoad..."
+          suggestions={autoSuggestions}
+          onSuggestionClick={(term) => setSearch(term)}
         />
         {search.length > 0 && search.length <= 2 && (
           <p style={{ fontSize: '0.8rem', color: C.textLight, textAlign: 'center', marginTop: '8px' }}>
@@ -243,10 +253,11 @@ export const Ricerca = ({ onNavigate }) => {
 
       {/* Empty state */}
       {!hasSearch && history.length === 0 && (
-        <div style={{ textAlign: 'center', padding: '40px 20px', color: C.textLight }}>
-          <div style={{ marginBottom: '12px' }}><Icon name="search" size={40} /></div>
-          <p style={{ fontSize: '0.9rem' }}>Scrivi sopra per cercare simultaneamente nel Prontuario e nella Normativa.</p>
-        </div>
+        <EmptyState
+          icon="search"
+          title="Cerca in PolisRoad"
+          subtitle="Digita almeno 3 caratteri per cercare simultaneamente nel Prontuario e nella Normativa."
+        />
       )}
 
       {/* Risultati */}
@@ -259,7 +270,7 @@ export const Ricerca = ({ onNavigate }) => {
               Voci Prontuario ({pronTot})
             </h3>
             {pronTot === 0 ? (
-              <p style={{ fontSize: '0.9rem', color: C.textLight }}>Nessun risultato nel prontuario.</p>
+              <EmptyState compact icon="clipboard-list" title="Nessun risultato nel Prontuario" subtitle="Prova con un termine diverso o il numero dell'articolo." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {/* Esatti prima */}
@@ -290,7 +301,7 @@ export const Ricerca = ({ onNavigate }) => {
               Articoli Normativa ({normTot})
             </h3>
             {normTot === 0 ? (
-              <p style={{ fontSize: '0.9rem', color: C.textLight }}>Nessun risultato nella normativa.</p>
+              <EmptyState compact icon="book-open" title="Nessun risultato nella Normativa" subtitle="Prova con un termine diverso o il numero dell'articolo." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                 {/* Esatti prima */}

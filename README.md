@@ -2,7 +2,7 @@
 
 Progressive Web App React/Vite per la consultazione rapida del Codice della Strada, prontuario infrazioni, calcolo sanzioni, preferiti, news, profilo operatore e funzioni amministrative.
 
-Versione corrente: **1.7.0**
+Versione corrente: **1.8.4**
 
 ---
 
@@ -114,7 +114,7 @@ src/
 ├── pages/            # schermate app
 │   └── admin/        # AdminDashboard, AdminNews, AdminNormativa, AdminProntuario…
 ├── styles/           # theme.js, styles.js, layout.js, pages.js, ui.js
-├── services/         # service layer Supabase (prontuarioService, gamificationService, authService)
+├── services/         # service layer Supabase (normativaService, newsService, prontuarioService, gamificationService, authService)
 └── config/           # constants.js, badges.js, navigation.js, supabase.js
 supabase/
 ├── functions/        # Edge Functions (fetch-rss, delete-user)
@@ -156,6 +156,24 @@ scripts/              # script Node.js per import/generazione dati
 - **Offline Mode** — funzionamento completo senza connessione, con sync queue per le azioni in attesa
 - **Dark Mode** — tema chiaro/scuro con persistenza e sincronizzazione `theme-color` PWA
 - **Guide Pratiche** — sezione in espansione (WIP)
+
+---
+
+## Note versione 1.8.0 (23 Giugno 2026)
+
+### Service layer completo — architettura frontend/backend separata
+- **Nuovi services:** `normativaService.js` (getNormativa + CRUD), `newsService.js` (getNews + CRUD con filtro 30 giorni)
+- **`prontuarioService.js` esteso** con getProntuario, addProntuarioItem, updateProntuarioItem, deleteProntuarioItem
+- Zero chiamate `supabase.from()` negli hook o nei componenti — tutto passa dai services
+
+### DataContext semplificato
+- Rimossa tutta la logica fetch manuale (useState/useEffect/paginazione)
+- Usa `useQuery` per prontuario, normativa e news tramite i rispettivi services
+- `QUERY_KEYS` centralizzate e esportate per hook e pagine
+- `refresh()` invalida le cache React Query invece di rifetchare manualmente
+
+### Hook refactored
+- `useNormativa`, `useNews`, `useProntuario` — dati da `useData()` (cache RQ), mutazioni con `useMutation`, aggiornamenti ottimistici con rollback automatico
 
 ---
 

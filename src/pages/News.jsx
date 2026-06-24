@@ -1,5 +1,7 @@
 import React from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
+import { EmptyState } from '../components/ui/EmptyState';
+import { SkeletonNewsCard } from '../components/ui/Skeleton';
 import { Badge } from '../components/ui/Badge';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
@@ -57,9 +59,11 @@ export const News = ({ onNavigate }) => {
       </div>
 
       {loading ? (
-        <div style={S.emptyState}>Caricamento in corso...</div>
+        <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
+          {[1,2,3].map(i => <SkeletonNewsCard key={i} />)}
+        </div>
       ) : filteredNews.length === 0 ? (
-        <div style={S.emptyState}>Nessuna notizia disponibile per questa categoria.</div>
+        <EmptyState icon="newspaper" title="Nessuna notizia" subtitle="Non ci sono notizie disponibili per questa categoria al momento." />
       ) : (
         <div style={{ ...S.list, gap: '16px' }}>
           {filteredNews.map(item => {

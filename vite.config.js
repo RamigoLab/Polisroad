@@ -1,8 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import { visualizer } from 'rollup-plugin-visualizer'
 
-export default defineConfig({
+export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
     VitePWA({
@@ -15,7 +16,7 @@ export default defineConfig({
       manifest: {
         name: 'PolisRoad',
         short_name: 'PolisRoad',
-        description: 'Codice della Strada per Forze dell\'Ordine',
+        description: "Codice della Strada per Forze dell'Ordine",
         theme_color: '#1a3a5c',
         background_color: '#f5f7fa',
         display: 'standalone',
@@ -33,6 +34,32 @@ export default defineConfig({
           }
         ]
       }
-    })
-  ],
-})
+    }),
+    // Bundle analyzer — attivo solo con: npm run build:analyze
+    // Genera dist/stats.html con grafico interattivo delle dimensioni
+    mode === 'analyze' && visualizer({
+      filename: 'dist/stats.html',
+      open: true,
+      gzipSize: true,
+      brotliSize: true,
+      template: 'treemap', // 'treemap' | 'sunburst' | 'network'
+    }),
+  ].filter(Boolean),
+
+  build: {
+    rollupOptions: {
+      output: {
+        // Chunking manuale: separa le librerie grosse in chunk dedicati
+        // per massimizzare il caching del browser
+        manualChunks: {
+          'react-core':  ['react', 'react-dom'],
+          'query':       ['@tanstack/react-query', '@tanstack/react-query-persist-client'],
+          'supabase':    ['@supabase/supabase-js'],
+          'fuse':        ['fuse.js'],
+          'posthog':     ['posthog-js'],
+          'idb':         ['idb-keyval'],
+        }
+      }
+    }
+  }
+}))

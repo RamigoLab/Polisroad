@@ -1,36 +1,99 @@
 import { useState, useMemo } from 'react';
+import Fuse from 'fuse.js';
 import { useDebounce } from './useDebounce';
-import { parseArticoloNum, sortItems, groupByArticolo } from '../utils/prontuarioUtils';
+import { parseArticoloNum } from '../utils/prontuarioUtils';
 
 /**
- * Custom hook che centralizza la logica di ricerca per Prontuario e Normativa.
- * Restituisce risultati RAGGRUPPATI per articolo e PRIORITIZZATI:
- *   1. Corrispondenza esatta sull'articolo (es. "186" → Art. 186 con tutte le casistiche/commi)
- *   2. Occorrenze testuali dentro altri articoli
+ * useSearch — ricerca fuzzy su Prontuario e Normativa tramite Fuse.js.
  *
- * @param {Array} prontuarioList   Lista voci prontuario.
- * @param {Array} normativaList    Lista commi normativa.
- * @param {number} minChars        Minimo caratteri per attivare la ricerca (default 3).
+ * Logica di priorità:
+ *  1. Corrispondenza esatta sull'articolo (es. "186" → tutte le voci/commi di Art. 186)
+ *  2. Risultati fuzzy raggruppati per articolo, ordinati per rilevanza
+ *
+ * Fuse.js garantisce tolleranza a errori di battitura (threshold 0.35)
+ * su tutti i campi testuali principali.
  */
+
+// ─── Opzioni Fuse per il PRONTUARIO ──────────────────────────────────────────
+const FUSE_PRONTUARIO_OPTIONS = {
+  threshold: 0.35,         // tolleranza errori (0 = esatto, 1 = tutto)
+  minMatchCharLength: 3,
+  includeScore: true,
+  ignoreLocation: true,    // cerca in tutto il testo, non solo all'inizio
+  keys: [
+    { name: 'titolo',          weight: 0.4 },
+    { name: 'descrizione',     weight: 0.3 },
+    { name: 'rif_normativo',   weight: 0.2 },
+    { name: 'articolo_numero', weight: 0.1 },
+  ],
+};
+
+// ─── Opzioni Fuse per la NORMATIVA ────────────────────────────────────────────
+const FUSE_NORMATIVA_OPTIONS = {
+  threshold: 0.35,
+  minMatchCharLength: 3,
+  includeScore: true,
+  ignoreLocation: true,
+  keys: [
+    { name: 'testo',            weight: 0.4 },
+    { name: 'titolo_articolo',  weight: 0.3 },
+    { name: 'titolo',           weight: 0.2 },
+    { name: 'articolo',         weight: 0.1 },
+  ],
+};
+
 export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3) => {
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
 
   const isSearching = debouncedSearch.length > 0 && debouncedSearch.length < minChars;
 
+  // Istanze Fuse memorizzate — si ricalcolano solo se cambia la lista
+  const fuseProntuario = useMemo(
+    () => new Fuse(prontuarioList, FUSE_PRONTUARIO_OPTIONS),
+    [prontuarioList]
+  );
+
+  const fuseNormativa = useMemo(
+    () => new Fuse(normativaList, FUSE_NORMATIVA_OPTIONS),
+    [normativaList]
+  );
+
   // ─── PRONTUARIO ──────────────────────────────────────────────────────────
-  // Raggruppa voci per articolo_numero e separa in exact (art. corrispondente)
-  // e other (voci che contengono il termine nel testo ma non sono l'articolo cercato)
   const risultatiProntuario = useMemo(() => {
     if (debouncedSearch.length < minChars) return { exact: [], other: [] };
 
-    const s = debouncedSearch.trim().toLowerCase();
+    const s = debouncedSearch.trim();
     const isNumeric = /^\d+$/.test(s);
-    const terms = s.split(/\s+/).filter(Boolean);
 
-    // Raggruppa tutte le voci per articolo_numero
+    // Corrispondenza esatta per numero articolo
+    if (isNumeric) {
+      const groupMap = new Map();
+      prontuarioList.forEach(item => {
+        const key = (item.articolo_numero || 'N.D.').trim();
+        if (!groupMap.has(key)) {
+          groupMap.set(key, {
+            articolo_numero: key,
+            label: `Art. ${key}`,
+            titolo: item.articolo_nome || item.titolo || '',
+            voci: [],
+          });
+        }
+        groupMap.get(key).voci.push(item);
+      });
+
+      const exactGroup = groupMap.get(s);
+      if (exactGroup) {
+        return { exact: [exactGroup], other: [] };
+      }
+    }
+
+    // Ricerca fuzzy
+    const fuseResults = fuseProntuario.search(s);
+
+    // Raggruppa per articolo_numero preservando ordine di rilevanza
     const groupMap = new Map();
-    prontuarioList.forEach(item => {
+    fuseResults.forEach(({ item }) => {
       const key = (item.articolo_numero || 'N.D.').trim();
       if (!groupMap.has(key)) {
         groupMap.set(key, {
@@ -43,49 +106,49 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
       groupMap.get(key).voci.push(item);
     });
 
-    const exact = [];   // gruppi il cui articolo_numero corrisponde esattamente
-    const other = [];   // gruppi che matchano nel testo
-
-    groupMap.forEach(group => {
-      const artNum = group.articolo_numero.toLowerCase();
-
-      if (isNumeric && artNum === s) {
-        // Corrispondenza esatta: include tutte le voci del gruppo
-        exact.push(group);
-        return;
-      }
-
-      // Cerca il termine nel testo delle voci del gruppo
-      const matchingVoci = group.voci.filter(item => {
-        const text = `${item.titolo || ''} ${item.descrizione || ''} ${item.rif_normativo || ''}`.toLowerCase();
-        return terms.every(term => text.includes(term));
-      });
-
-      if (matchingVoci.length > 0) {
-        other.push({ ...group, voci: matchingVoci });
-      }
-    });
-
-    // Ordina per numero articolo usando l'utility condivisa
-    const sortGroups = arr => arr.sort((a, b) =>
+    const other = Array.from(groupMap.values()).sort((a, b) =>
       parseArticoloNum(a.articolo_numero) - parseArticoloNum(b.articolo_numero)
     );
 
-    return { exact: sortGroups(exact), other: sortGroups(other) };
-  }, [debouncedSearch, prontuarioList, minChars]);
+    return { exact: [], other };
+  }, [debouncedSearch, prontuarioList, fuseProntuario, minChars]);
 
   // ─── NORMATIVA ───────────────────────────────────────────────────────────
-  // Raggruppa commi per articolo_num e separa in exact e other
   const risultatiNormativa = useMemo(() => {
     if (debouncedSearch.length < minChars) return { exact: [], other: [] };
 
-    const s = debouncedSearch.trim().toLowerCase();
+    const s = debouncedSearch.trim();
     const isNumeric = /^\d+$/.test(s);
-    const terms = s.split(/\s+/).filter(Boolean);
 
-    // Raggruppa commi per articolo
+    // Corrispondenza esatta per numero articolo
+    if (isNumeric) {
+      const groupMap = new Map();
+      normativaList.forEach(item => {
+        const key = item.articolo_num;
+        if (key == null) return;
+        if (!groupMap.has(key)) {
+          groupMap.set(key, {
+            articolo_num: key,
+            articolo: item.articolo,
+            titolo_articolo: item.titolo_articolo || item.titolo || '',
+            commi: [],
+          });
+        }
+        groupMap.get(key).commi.push(item);
+      });
+
+      const exactGroup = groupMap.get(Number(s)) || groupMap.get(s);
+      if (exactGroup) {
+        exactGroup.commi.sort((a, b) => (a.comma_num || 0) - (b.comma_num || 0));
+        return { exact: [exactGroup], other: [] };
+      }
+    }
+
+    // Ricerca fuzzy
+    const fuseResults = fuseNormativa.search(s);
+
     const groupMap = new Map();
-    normativaList.forEach(item => {
+    fuseResults.forEach(({ item }) => {
       const key = item.articolo_num;
       if (key == null) return;
       if (!groupMap.has(key)) {
@@ -99,37 +162,16 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
       groupMap.get(key).commi.push(item);
     });
 
-    // Ordina i commi dentro ogni gruppo
     groupMap.forEach(group => {
       group.commi.sort((a, b) => (a.comma_num || 0) - (b.comma_num || 0));
     });
 
-    const exact = [];
-    const other = [];
+    const other = Array.from(groupMap.values()).sort(
+      (a, b) => (a.articolo_num || 0) - (b.articolo_num || 0)
+    );
 
-    groupMap.forEach(group => {
-      const artNum = group.articolo_num?.toString() || '';
-
-      if (isNumeric && artNum === s) {
-        // Corrispondenza esatta: mostra tutti i commi
-        exact.push(group);
-        return;
-      }
-
-      // Cerca il termine nel testo dei commi o nel titolo
-      const matchingCommi = group.commi.filter(item => {
-        const text = `${item.titolo_articolo || ''} ${item.titolo || ''} ${item.testo || ''} ${item.articolo || ''}`.toLowerCase();
-        return terms.every(term => text.includes(term));
-      });
-
-      if (matchingCommi.length > 0) {
-        other.push({ ...group, commi: matchingCommi });
-      }
-    });
-
-    const sortGroups = arr => arr.sort((a, b) => (a.articolo_num || 0) - (b.articolo_num || 0));
-    return { exact: sortGroups(exact), other: sortGroups(other) };
-  }, [debouncedSearch, normativaList, minChars]);
+    return { exact: [], other };
+  }, [debouncedSearch, normativaList, fuseNormativa, minChars]);
 
   const total =
     risultatiProntuario.exact.length + risultatiProntuario.other.length +

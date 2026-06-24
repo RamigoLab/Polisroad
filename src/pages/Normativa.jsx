@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import posthog from 'posthog-js';
 import { PageWrapper } from '../components/layout/PageWrapper';
+import { SkeletonList } from '../components/ui/Skeleton';
+import { EmptyState } from '../components/ui/EmptyState';
 import { SearchBar } from '../components/ui/SearchBar';
 import { Badge } from '../components/ui/Badge';
 import { C } from '../styles/theme';
@@ -111,12 +113,32 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   }, [list]);
 
   useEffect(() => {
-    if (navigationParams?.selectedId && hierarchy.articoliMap.length > 0) {
+    if (!navigationParams || hierarchy.articoliMap.length === 0) return;
+
+    // Navigazione diretta a un comma specifico (dal motore di ricerca)
+    if (navigationParams.selectedId) {
       const art = hierarchy.articoliMap.find(a => a.commi.some(c => c.id === navigationParams.selectedId));
       if (art) {
         setSelectedArticolo(art);
         onNavigate('normativa', null);
       }
+      return;
+    }
+
+    // Navigazione per numero articolo (link intelligente da Prontuario)
+    if (navigationParams.searchArticolo) {
+      const artNum = String(navigationParams.searchArticolo).trim();
+      const art = hierarchy.articoliMap.find(a =>
+        String(a.numero || '').trim() === artNum ||
+        String(a.articolo_num || '').trim() === artNum
+      );
+      if (art) {
+        setSelectedArticolo(art);
+      } else {
+        // Fallback: attiva la barra di ricerca con il numero articolo
+        setSearch(artNum);
+      }
+      onNavigate('normativa', null);
     }
   }, [navigationParams, hierarchy, onNavigate]);
 
@@ -277,7 +299,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
 
   let viewContent;
   if (loading) {
-    viewContent = <div style={S.emptyState}>Caricamento in corso...</div>;
+    viewContent = <SkeletonList count={6} />;
   } else if (filteredArticoli) {
     const { exact, partial, text } = filteredArticoli;
     const hasResults = exact.length > 0 || partial.length > 0 || text.length > 0;
@@ -290,7 +312,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
 
     viewContent = (
       <div style={S.list}>
-        {!hasResults && <div style={S.emptyState}>Nessun risultato trovato.</div>}
+        {!hasResults && <EmptyState compact icon="book-open" title="Nessun risultato" subtitle="Prova con un termine diverso o il numero dell'articolo." />}
         {exact.length > 0 && (
           <>
             {sectionLabel(`Art. ${debouncedSearch.trim()} — corrispondenza esatta`)}
