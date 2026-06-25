@@ -17,8 +17,12 @@ const isDemoMode = import.meta.env.VITE_DEMO_MODE === 'true' && !import.meta.env
 const DEMO_USER = {
   id: import.meta.env.VITE_DEMO_USER_ID || 'demo-1',
   email: import.meta.env.VITE_DEMO_USER_EMAIL || 'admin@polisroad.it',
-  nome: 'Demo', cognome: 'User', grado: 'Operatore', forza: 'Test',
-  telefono: '', ruolo: import.meta.env.VITE_DEMO_USER_ROLE || 'operatore',
+  nome: 'Demo',
+  cognome: 'User',
+  grado: 'Operatore',
+  forza: 'Test',
+  telefono: '',
+  ruolo: import.meta.env.VITE_DEMO_USER_ROLE || 'operatore',
 };
 
 const AuthContext = createContext();
@@ -28,7 +32,11 @@ export const AuthProvider = ({ children }) => {
   const [profile, setProfile] = useState(null);
   const [userCount, setUserCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const [profileLoading, setProfileLoading] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
+
+  // 👉 FIX: approvazione derivata correttamente
+  const isApproved = !!profile?.approvato;
 
   const loadUserCount = async () => {
     if (!isSupabaseConfigured || !supabase) {
@@ -45,37 +53,58 @@ export const AuthProvider = ({ children }) => {
 
   const loadProfile = async (userId) => {
     try {
-      setLoading(true);
+      setProfileLoading(true);
       const data = await fetchProfile(userId);
-      setProfile(data);
+      setProfile(data || null);
     } catch (err) {
       logger.error('Error fetching profile:', err.message);
+      setProfile(null);
     } finally {
+      setProfileLoading(false);
       setLoading(false);
     }
   };
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
-      if (!isDemoMode) { setLoading(false); return; }
+      if (!isDemoMode) {
+        setLoading(false);
+        return;
+      }
+
       const localSession = localStorage.getItem('polisroad_demo_session');
-      if (localSession) { setSession({ user: DEMO_USER }); setProfile(DEMO_USER); }
+      if (localSession) {
+        setSession({ user: DEMO_USER });
+        setProfile(DEMO_USER);
+      }
+
       setLoading(false);
       return;
     }
 
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      if (session) loadProfile(session.user.id);
-      else setLoading(false);
+
+      if (session?.user?.id) {
+        loadProfile(session.user.id);
+      } else {
+        setLoading(false);
+      }
     });
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      setPasswordRecovery(event === 'PASSWORD_RECOVERY');
-      setSession(session);
-      if (session) loadProfile(session.user.id);
-      else { setProfile(null); setLoading(false); }
-    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        setPasswordRecovery(event === 'PASSWORD_RECOVERY');
+        setSession(session);
+
+        if (session?.user?.id) {
+          loadProfile(session.user.id);
+        } else {
+          setProfile(null);
+          setLoading(false);
+        }
+      }
+    );
 
     loadUserCount();
     return () => subscription.unsubscribe();
@@ -83,13 +112,19 @@ export const AuthProvider = ({ children }) => {
 
   const signIn = async (email, password) => {
     if (!isSupabaseConfigured || !supabase) {
-      if (isDemoMode && email === import.meta.env.VITE_DEMO_USER_EMAIL && password === import.meta.env.VITE_DEMO_USER_PASSWORD) {
+      if (
+        isDemoMode &&
+        email === import.meta.env.VITE_DEMO_USER_EMAIL &&
+        password === import.meta.env.VITE_DEMO_USER_PASSWORD
+      ) {
         localStorage.setItem('polisroad_demo_session', 'true');
-        setSession({ user: DEMO_USER }); setProfile(DEMO_USER);
+        setSession({ user: DEMO_USER });
+        setProfile(DEMO_USER);
         return { error: null };
       }
       return { error: { message: 'Supabase non configurato.' } };
     }
+
     try {
       await signInService(email, password);
       return { error: null };
@@ -99,7 +134,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signUp = async (email, password, userData) => {
-    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Registrazione non disponibile.' } };
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: { message: 'Registrazione non disponibile.' } };
+    }
+
     try {
       const data = await signUpService(email, password, userData);
       return { data, error: null };
@@ -109,7 +147,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const resetPassword = async (email) => {
-    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Recupero password non disponibile.' } };
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: { message: 'Recupero password non disponibile.' } };
+    }
+
     try {
       await resetPasswordService(email, window.location.origin);
       return { error: null };
@@ -119,7 +160,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updatePassword = async (password) => {
-    if (!isSupabaseConfigured || !supabase) return { error: { message: 'Aggiornamento password non disponibile.' } };
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: { message: 'Aggiornamento password non disponibile.' } };
+    }
+
     try {
       await updatePasswordService(password);
       setPasswordRecovery(false);
@@ -132,9 +176,11 @@ export const AuthProvider = ({ children }) => {
   const signOut = async () => {
     if (!isSupabaseConfigured || !supabase) {
       localStorage.removeItem('polisroad_demo_session');
-      setSession(null); setProfile(null);
+      setSession(null);
+      setProfile(null);
       return { error: null };
     }
+
     try {
       await signOutService();
       return { error: null };
@@ -144,15 +190,15 @@ export const AuthProvider = ({ children }) => {
   };
 
   const updateProfile = async (updates) => {
-    if (!isSupabaseConfigured || !supabase) {
-      setProfile({ ...profile, ...updates });
-      return { error: null };
-    }
     const currentId = profile?.id || session?.user?.id;
-    if (!currentId) return { error: { message: 'Utente non loggato' } };
+
+    if (!currentId) {
+      return { error: { message: 'Utente non loggato' } };
+    }
+
     try {
       await upsertProfile(currentId, updates);
-      setProfile({ ...profile, ...updates, id: currentId });
+      setProfile(prev => ({ ...prev, ...updates, id: currentId }));
       return { error: null };
     } catch (err) {
       return { error: err };
@@ -160,12 +206,28 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{
-      session, profile, userCount, loading, passwordRecovery,
-      signIn, signUp, signOut, resetPassword, updatePassword, updateProfile,
-      clearPasswordRecovery: () => setPasswordRecovery(false),
-      refreshUserCount: loadUserCount,
-    }}>
+    <AuthContext.Provider
+      value={{
+        session,
+        profile,
+        userCount,
+        loading,
+        profileLoading,
+        passwordRecovery,
+
+        // 🔥 FIX IMPORTANTE
+        isApproved,
+
+        signIn,
+        signUp,
+        signOut,
+        resetPassword,
+        updatePassword,
+        updateProfile,
+        clearPasswordRecovery: () => setPasswordRecovery(false),
+        refreshUserCount: loadUserCount,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
