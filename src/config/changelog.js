@@ -12,8 +12,9 @@ import { APP_VERSION } from './constants';
 const CHANGELOG_DATA = [
   {
     version: '1.8.6',
-    date: '23 Giugno 2026',
+    date: '26 Giugno 2026',
     items: [
+      'Accesso immediato per amministratori: risolto blocco improprio alla schermata di attesa approvazione',
       'Notifiche push: ricevi aggiornamenti normativi direttamente sul dispositivo (attivabili dal Profilo)',
       'Approvazione account: i nuovi iscritti attendono verifica admin prima di accedere',
       'Error monitoring attivo in produzione per rilevare problemi in tempo reale',

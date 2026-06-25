@@ -36,7 +36,10 @@ export const AuthProvider = ({ children }) => {
   const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   // 👉 FIX: approvazione derivata correttamente
-  const isApproved = !!profile?.approvato;
+  // - gli admin sono sempre approvati (ruolo === 'admin')
+  // - altrimenti si legge il campo approvato dal profilo DB
+  const isAdmin = profile?.ruolo === 'admin';
+  const isApproved = isAdmin || !!profile?.approvato;
 
   const loadUserCount = async () => {
     if (!isSupabaseConfigured || !supabase) {
@@ -217,6 +220,7 @@ export const AuthProvider = ({ children }) => {
 
         // 🔥 FIX IMPORTANTE
         isApproved,
+        isAdmin,
 
         signIn,
         signUp,

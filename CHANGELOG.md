@@ -1,6 +1,19 @@
 # 📝 CHANGELOG - PolisRoad
 
-## [1.8.6] - 23 Giugno 2026
+## [1.8.6] - 26 Giugno 2026
+
+### 🔐 Fix critico — Accesso admin bloccato dalla schermata di approvazione
+- **Bug:** `fetchProfile` in `authService.js` non includeva il campo `approvato` nella SELECT → `profile.approvato` era sempre `undefined` → `isApproved` sempre `false` → tutti gli utenti (incluso l'admin) venivano bloccati dalla schermata "Account in attesa di approvazione"
+- **Fix `authService.js`:** aggiunto `approvato` alla select di `fetchProfile`; `signUp` ora scrive esplicitamente `approvato: false` sul nuovo profilo
+- **Fix `useAuth.jsx`:** `isApproved` ora è `true` se `ruolo === 'admin'` (doppia sicurezza) oppure se `profile.approvato === true`; esposto anche `isAdmin` nel context
+- **Fix Vercel build:** rimosso import residuo che causava errore su `SyncIndicator.jsx` e altri componenti UI (il campo era già corretto, il build ora passa senza errori)
+
+**⚠️ Azione richiesta su Supabase (se non già eseguita):**
+Se il campo `approvato` non esiste ancora nella tabella `profiles`, eseguire in Supabase SQL Editor:
+```sql
+ALTER TABLE profiles ADD COLUMN IF NOT EXISTS approvato boolean DEFAULT false;
+UPDATE profiles SET approvato = true WHERE ruolo = 'admin';
+```
 
 ### 🧪 Test unitari — useNormativa, useNews, useProntuario
 - `src/hooks/__tests__/useNormativa.test.js` *(nuovo)* — 6 test: lista dalla cache, add/update/remove con successo, gestione errore, rollback ottimistico su update fallito

@@ -7,7 +7,7 @@ import { supabase } from '../config/supabase';
 export async function fetchProfile(userId) {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, email, nome, cognome, grado, forza, telefono, ruolo')
+    .select('id, email, nome, cognome, grado, forza, telefono, ruolo, approvato')
     .eq('id', userId)
     .single();
   if (error) throw error;
@@ -41,7 +41,7 @@ export async function signUp(email, password, userData) {
   if (data?.user) {
     const { error: profileError } = await supabase
       .from('profiles')
-      .upsert([{ id: data.user.id, email, ...userData, ruolo: 'operatore' }]);
+      .upsert([{ id: data.user.id, email, ...userData, ruolo: 'operatore', approvato: false }]);
     if (profileError) throw profileError;
   }
   return data;
