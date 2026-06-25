@@ -424,6 +424,8 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
       subtitle={selectedCategory === 'cds' ? "Codice della Strada" : "Testi di Legge"} 
       onNavigate={onNavigate}
       headerLeftAction={backAction}
+      onRefresh={refresh}
+      enablePullToRefresh
     >
       <div style={{ marginBottom: '16px' }}>
         <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cerca n° articolo o parola..." />

@@ -47,7 +47,7 @@ export const AdminUtenti = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, nome, cognome, grado, forza, telefono, ruolo')
+        .select('id, email, nome, cognome, grado, forza, telefono, ruolo, approvato')
         .order('cognome', { ascending: true });
 
       if (error) throw error;
@@ -128,6 +128,22 @@ export const AdminUtenti = () => {
       (user.forza || '').toLowerCase().includes(searchLower)
     );
   });
+
+
+  const toggleApprovazione = async (userId, currentValue) => {
+    try {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ approvato: !currentValue })
+        .eq('id', userId);
+      if (error) throw error;
+      setUsers(users.map(u => u.id === userId ? { ...u, approvato: !currentValue } : u));
+      showToast(!currentValue ? 'Account approvato.' : 'Account sospeso.', !currentValue ? 'success' : 'warning');
+    } catch (err) {
+      logger.error('Errore approvazione:', err);
+      showToast('Impossibile aggiornare lo stato.', 'error');
+    }
+  };
 
   return (
     <div>

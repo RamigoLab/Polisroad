@@ -28,7 +28,7 @@ export const News = ({ onNavigate }) => {
   ];
 
   return (
-    <PageWrapper title="News Normative & CdS" subtitle="Aggiornamenti e comunicazioni" onNavigate={onNavigate}>
+    <PageWrapper title="News Normative & CdS" subtitle="Aggiornamenti e comunicazioni" onNavigate={onNavigate} onRefresh={refresh} enablePullToRefresh>
       <div style={{ marginBottom: '20px' }}>
         {/* Category Filter Pills */}
         <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '4px' }}>

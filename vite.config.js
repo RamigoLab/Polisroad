@@ -6,6 +6,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 export default defineConfig(({ mode }) => ({
   plugins: [
     react(),
+
     VitePWA({
       registerType: 'prompt',
       injectRegister: 'auto',
@@ -35,31 +36,59 @@ export default defineConfig(({ mode }) => ({
         ]
       }
     }),
-    // Bundle analyzer — attivo solo con: npm run build:analyze
-    // Genera dist/stats.html con grafico interattivo delle dimensioni
+
+    // Analyzer attivo solo con: npm run build -- --mode analyze
     mode === 'analyze' && visualizer({
       filename: 'dist/stats.html',
       open: true,
       gzipSize: true,
       brotliSize: true,
-      template: 'treemap', // 'treemap' | 'sunburst' | 'network'
+      template: 'treemap',
     }),
+
   ].filter(Boolean),
 
   build: {
+    sourcemap: false,
+    chunkSizeWarningLimit: 1000,
+
     rollupOptions: {
       output: {
-        // Chunking manuale: separa le librerie grosse in chunk dedicati
-        // per massimizzare il caching del browser
-        manualChunks: {
-          'react-core':  ['react', 'react-dom'],
-          'query':       ['@tanstack/react-query', '@tanstack/react-query-persist-client'],
-          'supabase':    ['@supabase/supabase-js'],
-          'fuse':        ['fuse.js'],
-          'posthog':     ['posthog-js'],
-          'idb':         ['idb-keyval'],
+        manualChunks(id) {
+          if (!id.includes('node_modules')) return
+
+          if (id.includes('react')) {
+            return 'react-core'
+          }
+
+          if (id.includes('@tanstack/react-query')) {
+            return 'query'
+          }
+
+          if (id.includes('@supabase')) {
+            return 'supabase'
+          }
+
+          if (id.includes('fuse.js')) {
+            return 'fuse'
+          }
+
+          if (id.includes('posthog-js')) {
+            return 'posthog'
+          }
+
+          if (id.includes('idb-keyval')) {
+            return 'idb'
+          }
+
+          return 'vendor'
         }
       }
     }
+  },
+
+  optimizeDeps: {
+    include: ['react', 'react-dom']
   }
+
 }))

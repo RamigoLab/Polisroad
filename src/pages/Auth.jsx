@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
+import { PasswordInput, isPasswordValid } from '../components/ui/PasswordInput';
 import { useToast } from '../components/ui/ToastManager';
 import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { useAuth } from '../hooks/useAuth';
 import { loginRateLimiter } from '../utils/rateLimiter';
+import { mapAuthError } from '../utils/authErrorMapper';
 import { sanitizers, validators } from '../utils/validation';
 
 const authPageStyle = {
@@ -90,7 +92,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
       const { error } = await signIn(normalizedEmail, password);
       loginRateLimiter.recordAttempt(normalizedEmail, !error);
       if (error) {
-        showToast(error.message, 'error');
+        showToast(mapAuthError(error, 'login'), 'error');
       }
     } else {
       const passwordError = validators.password(password);
@@ -114,9 +116,9 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
         forza: sanitizers.text(forza)
       });
       if (error) {
-        showToast(error.message, 'error');
+        showToast(mapAuthError(error, 'register'), 'error');
       }
-      else { showToast('Registrazione completata!', 'success'); setIsLogin(true); }
+      else { showToast('Registrazione completata! Controlla la tua email per confermare l\'account.', 'success'); setIsLogin(true); }
     }
     setLoading(false);
   };
@@ -134,7 +136,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
     const { error } = await resetPassword(normalizedEmail);
     setLoading(false);
     if (error) {
-      showToast(error.message, 'error');
+      showToast(mapAuthError(error, 'reset'), 'error');
     } else {
       showToast('Controlla la tua email per completare il recupero password.', 'success');
     }
@@ -156,7 +158,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
     const { error } = await updatePassword(password);
     setLoading(false);
     if (error) {
-      showToast(error.message, 'error');
+      showToast(mapAuthError(error, 'update'), 'error');
     }
     else {
       setPassword('');
@@ -180,8 +182,8 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
 
           {passwordUpdateMode ? (
             <form onSubmit={handlePasswordUpdate} style={{ display: 'flex', flexDirection: 'column' }}>
-              <TextInput label="Nuova password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-              <TextInput label="Conferma password" type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
+              <PasswordInput label="Nuova password" value={password} onChange={(e) => setPassword(e.target.value)} showRequirements />
+              <PasswordInput label="Conferma password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
               <button
                 type="submit"
                 disabled={loading}
@@ -223,7 +225,11 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
               )}
 
               <TextInput label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
-              <TextInput label="Password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
+              {isLogin ? (
+                <PasswordInput label="Password" value={password} onChange={(e) => setPassword(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
+              ) : (
+                <PasswordInput label="Password" value={password} onChange={(e) => setPassword(e.target.value)} showRequirements onKeyDown={e => { if (e.key === 'Enter') handleSubmit(e); }} />
+              )}
 
               {!isLogin && (
                 <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', margin: '12px 0' }}>
@@ -257,11 +263,11 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
 
               <button
                 type="submit"
-                disabled={loading || (!isLogin && !privacyAccepted)}
+                disabled={loading || (!isLogin && (!privacyAccepted || !isPasswordValid(password)))}
                 style={{
                   ...S.btnPrimary,
                   marginTop: '8px',
-                  opacity: loading ? 0.7 : (isLogin || privacyAccepted) ? 1 : 0.5
+                  opacity: loading ? 0.7 : (isLogin || (privacyAccepted && isPasswordValid(password))) ? 1 : 0.5
                 }}
               >
                 {loading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Registrati')}

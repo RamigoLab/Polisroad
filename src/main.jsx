@@ -10,7 +10,30 @@ import { AuthProvider } from './hooks/useAuth';
 import { DataProvider } from './context/DataContext';
 import { ToastProvider } from './components/ui/ToastManager';
 import { GamificationProvider } from './context/GamificationContext';
+import * as Sentry from '@sentry/react';
+
 import posthog from 'posthog-js';
+
+
+// Inizializza Sentry per error monitoring in produzione.
+// Attivo solo se VITE_SENTRY_DSN è configurato — in dev non fa niente.
+const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
+if (sentryDsn && import.meta.env.PROD) {
+  Sentry.init({
+    dsn: sentryDsn,
+    environment: 'production',
+    // Campionamento: 10% delle sessioni per tracciamento performance
+    tracesSampleRate: 0.1,
+    // Non inviare dati personali
+    beforeSend(event) {
+      // Rimuovi dati utente identificabili
+      if (event.user) {
+        event.user = { id: event.user.id };
+      }
+      return event;
+    },
+  });
+}
 
 // Applica il tema salvato prima del render per evitare flash bianchi
 const savedTheme = localStorage.getItem('polisroad_theme') || 'light';

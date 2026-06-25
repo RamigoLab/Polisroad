@@ -211,7 +211,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   }
 
   return (
-    <PageWrapper title="Prontuario" subtitle="Archivio operativo" onNavigate={onNavigate}>
+    <PageWrapper title="Prontuario" subtitle="Archivio operativo" onNavigate={onNavigate} onRefresh={refresh} enablePullToRefresh>
       <div style={{ marginBottom: '16px' }}>
         <SearchBar value={search} onChange={e => setSearch(e.target.value)} placeholder="Cerca articolo, titolo o codice..." />
       </div>

@@ -1,24 +1,54 @@
 /**
  * changelog.js — Novità visibili all'utente finale nell'app.
- * Non espone dettagli tecnici: linguaggio semplice, focalizzato su cosa cambia per l'operatore.
+ *
+ * COME AGGIORNARE:
+ * Ad ogni release aggiungere un oggetto in cima all'array APP_CHANGELOG.
+ * Il flag `isNew` viene calcolato automaticamente confrontando con APP_VERSION:
+ * la voce con version === APP_VERSION viene marcata come nuova automaticamente.
+ * Non serve mai modificare `isNew` a mano.
  */
-export const APP_CHANGELOG = [
+import { APP_VERSION } from './constants';
+
+const CHANGELOG_DATA = [
+  {
+    version: '1.8.6',
+    date: '23 Giugno 2026',
+    items: [
+      'Notifiche push: ricevi aggiornamenti normativi direttamente sul dispositivo (attivabili dal Profilo)',
+      'Approvazione account: i nuovi iscritti attendono verifica admin prima di accedere',
+      'Error monitoring attivo in produzione per rilevare problemi in tempo reale',
+    ],
+  },
+  {
+    version: '1.8.5',
+    date: '23 Giugno 2026',
+    items: [
+      'Swipe verso destra per tornare alla schermata precedente (gesto nativo mobile)',
+      'Tira verso il basso per aggiornare i dati in Prontuario, Normativa e News',
+      'Tutorial di benvenuto al primo accesso: 4 schermate sulle funzionalità principali',
+      'Se una sezione ha un errore, le altre rimangono funzionanti',
+      'Indicatore operazioni in coda quando sei offline',
+      'Messaggi di errore registrazione e login ora in italiano',
+      'Campo password con pulsante mostra/nascondi e checklist requisiti',
+    ],
+  },
   {
     version: '1.8.4',
     date: '23 Giugno 2026',
-    isNew: true,
     items: [
-      'Ricerca intelligente: ora tollera errori di battitura (es. "alcool" trova "alcol")',
+      'Ricerca intelligente: tollera errori di battitura (es. "alcool" trova "alcol")',
       'Dalle schede Prontuario puoi aprire direttamente l\'articolo del Codice della Strada',
       'Banner offline: l\'app ti avvisa quando stai usando i dati in cache',
       'Nuovi indicatori di caricamento più fluidi nelle sezioni principali',
       'Suggerimenti automatici nella barra di ricerca basati sulla tua cronologia',
+      'Messaggi di errore nella registrazione e nel login ora in italiano',
+      'Campo password con pulsante mostra/nascondi e checklist requisiti in tempo reale',
+      'Calcolatore sanzioni avanzato: recidiva, riduzione 5 giorni, maggiorazione notturna, copia riepilogo',
     ],
   },
   {
     version: '1.7.0',
     date: '22 Giugno 2026',
-    isNew: false,
     items: [
       'Ricerca avanzata in Prontuario, Normativa e Operatore',
       'Modalità offline migliorata: contestazioni e preferiti salvati e sincronizzati',
@@ -30,7 +60,6 @@ export const APP_CHANGELOG = [
   {
     version: '1.6.4',
     date: '14 Giugno 2026',
-    isNew: false,
     items: [
       'Ricerca simultanea in tutto PolisRoad',
       'Fix modalità Operatore: espansione articoli ora funziona correttamente',
@@ -38,3 +67,9 @@ export const APP_CHANGELOG = [
     ],
   },
 ];
+
+// isNew calcolato automaticamente: true solo se version === APP_VERSION corrente
+export const APP_CHANGELOG = CHANGELOG_DATA.map(entry => ({
+  ...entry,
+  isNew: entry.version === APP_VERSION,
+}));

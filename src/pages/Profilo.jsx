@@ -14,6 +14,7 @@ import { BadgeShowcase } from '../components/gamification/BadgeShowcase';
 import { BADGES } from '../config/badges';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
+import { usePushNotifications } from '../hooks/usePushNotifications';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } from '../config/constants';
 import { APP_CHANGELOG } from '../config/changelog';
 import { sanitizers, validators } from '../utils/validation';
@@ -55,6 +56,7 @@ export const Profilo = ({ onNavigate }) => {
   const { showToast } = useToast();
 
   const { isDarkMode, toggleTheme } = useTheme();
+  const { isSupported: pushSupported, isSubscribed: pushSubscribed, permission: pushPermission, loading: pushLoading, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
 
   // Stato consenso analytics PostHog
   const [analyticsEnabled, setAnalyticsEnabled] = useState(() => !posthog.has_opted_out_capturing());
@@ -452,6 +454,49 @@ export const Profilo = ({ onNavigate }) => {
           </button>
         </div>
       </div>
+
+
+      {/* Notifiche Push */}
+      {pushSupported && (
+        <div style={PS.profileSysBox}>
+          <h4 style={PS.profileSysTitle}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Icon name="bell" size={16} /> Notifiche Push
+            </span>
+          </h4>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ flex: 1, paddingRight: '12px' }}>
+              <span style={{ color: C.text, fontWeight: '500' }}>Notifiche in-app</span>
+              <p style={{ fontSize: '0.75rem', color: C.textLight, margin: '2px 0 0' }}>
+                Ricevi aggiornamenti normativi e promemoria direttamente sul dispositivo.
+              </p>
+              {pushPermission === 'denied' && (
+                <p style={{ fontSize: '0.72rem', color: C.danger, marginTop: '4px' }}>
+                  Permesso bloccato. Riattiva dalle impostazioni del browser.
+                </p>
+              )}
+            </div>
+            <button
+              onClick={pushSubscribed ? pushUnsubscribe : pushSubscribe}
+              disabled={pushLoading || pushPermission === 'denied'}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: pushSubscribed ? C.success : C.textLight,
+                color: '#fff', borderRadius: '20px',
+                fontWeight: 'bold', border: 'none',
+                cursor: pushLoading || pushPermission === 'denied' ? 'not-allowed' : 'pointer',
+                opacity: pushLoading ? 0.6 : 1, flexShrink: 0,
+              }}
+            >
+              {pushLoading
+                ? '...'
+                : pushSubscribed
+                ? <><Icon name="check" size={14} /> Attive</>
+                : <><Icon name="bell" size={14} /> Attiva</>}
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Modulo Segnala un Problema */}
       <div style={PS.profileSysBox}>

@@ -7,6 +7,7 @@
 import React, { useState, useEffect } from 'react';
 import { Icon } from './Icon';
 import { C } from '../../styles/theme';
+import { C } from '../../styles/theme';
 
 export const OfflineBanner = () => {
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
@@ -58,7 +59,7 @@ export const OfflineBanner = () => {
         gap: '8px',
         fontSize: '0.85rem',
         fontWeight: '600',
-        backgroundColor: isBackOnline ? 'var(--color-success)' : '#1a1a2e',
+        backgroundColor: isBackOnline ? C.success : C.primary,
         color: '#fff',
         boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
         transition: 'background-color 0.3s ease',

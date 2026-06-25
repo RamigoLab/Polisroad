@@ -1,44 +1,137 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.8.6] - 23 Giugno 2026
+
+### 🧪 Test unitari — useNormativa, useNews, useProntuario
+- `src/hooks/__tests__/useNormativa.test.js` *(nuovo)* — 6 test: lista dalla cache, add/update/remove con successo, gestione errore, rollback ottimistico su update fallito
+- `src/hooks/__tests__/useNews.test.js` *(nuovo)* — 6 test: lista, add/update/remove, modalità mock USE_SUPABASE=false, rollback su remove fallito
+- `src/hooks/__tests__/useProntuario.test.js` *(nuovo)* — 7 test: lista, add/update/remove, mock mode, rollback update e remove
+
+### 🌙 Dark mode — fix colori hardcoded nei nuovi componenti
+- `OfflineBanner.jsx` — background offline ora usa `C.primary`, background "di nuovo online" usa `C.success` (variabili CSS)
+- `SyncIndicator.jsx` — background usa `C.surfaceContainer`, testo e icona usano `C.warning`
+- `SectionErrorBoundary`, `PasswordInput`, `Onboarding` — già usavano `C.*`, nessuna modifica necessaria
+
+### 📊 Error monitoring — Sentry
+- Installato `@sentry/react`
+- Inizializzato in `main.jsx` solo in produzione (`import.meta.env.PROD`) e solo se `VITE_SENTRY_DSN` è configurato
+- `beforeSend` anonimizza i dati utente (mantiene solo l'ID)
+- `tracesSampleRate: 0.1` per non impattare le performance
+- `App.jsx` wrappato con `Sentry.ErrorBoundary` come safety net globale
+- `VITE_SENTRY_DSN` aggiunto a `.env.example` con istruzioni
+
+### 🔐 Approvazione account admin
+- Nuova migration `20260623_add_approvato_profiles.sql`:
+  - Campo `approvato boolean DEFAULT false` su `profiles`
+  - Admin approvati automaticamente con UPDATE
+  - Policy RLS aggiornata: ogni utente può leggere il proprio profilo anche se non approvato
+- `useAuth.jsx` — espone `isApproved` (true se `approvato=true`, admin, o Supabase non configurato)
+- `App.jsx` — schermata "Account in attesa di approvazione" se `session && !isApproved`; include email registrata e bottone Esci
+- `AdminUtenti.jsx` — aggiunto fetch del campo `approvato`, funzione `toggleApprovazione()`, badge "✓ Approvato" / "⏳ In attesa" cliccabile su ogni riga utente
+
+### 🔔 Notifiche Push PWA
+- `src/hooks/usePushNotifications.js` *(nuovo)* — gestisce subscribe/unsubscribe con Web Push API; salva subscription in Supabase; gestisce permessi e stati di errore
+- `supabase/migrations/20260623_create_push_subscriptions.sql` *(nuova)* — tabella `push_subscriptions` con RLS (utente vede solo le proprie, admin vede tutte per broadcast)
+- `supabase/functions/send-push/index.ts` *(nuova Edge Function)* — invio notifiche broadcast o per userIds specifici; JWT VAPID firmato con Web Crypto API; rimuove subscription scadute (410/404)
+- `Profilo.jsx` — sezione "Notifiche Push" con toggle attiva/disattiva; visibile solo se il browser supporta la Push API; gestisce stato permesso negato
+- `VITE_VAPID_PUBLIC_KEY` aggiunto a `.env.example`; istruzioni generazione chiavi con `npx web-push generate-vapid-keys`
+
+**Setup richiesto per le notifiche push:**
+1. `npx web-push generate-vapid-keys` → copia le chiavi
+2. Aggiungi `VITE_VAPID_PUBLIC_KEY` alle env vars Vercel
+3. Aggiungi `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` ai Secrets Supabase Edge Functions
+4. Esegui le due nuove migration in Supabase SQL Editor
+5. Deploy Edge Function: `supabase functions deploy send-push`
+
+---
+
+## [1.8.5] - 23 Giugno 2026
+
+### 🟡 Medium Impact — UX Mobile & Affidabilità
+
+**MI-1 — Swipe back gesture (`useSwipeBack.js`)**
+- Nuovo hook `src/hooks/useSwipeBack.js` con `TouchEvent` nativi, zero dipendenze
+- Swipe orizzontale ≥60px con <40px verticale → torna alla schermata precedente
+- Integrato in `PageWrapper.jsx` come comportamento di default (prop `enableSwipeBack`, default true)
+- Callback `onBack` personalizzabile; fallback automatico a `window.history.back()`
+
+**MI-4 — Pull-to-refresh (`usePullToRefresh.js`)**
+- Nuovo hook `src/hooks/usePullToRefresh.js` con `TouchEvent` nativi, zero dipendenze
+- Gesto "tira verso il basso" attivo solo quando lo scroll è già a 0
+- Indicatore visivo animato durante il trascinamento ("Rilascia per aggiornare") e il refresh ("Aggiornamento...")
+- Integrato in `PageWrapper.jsx` (prop `onRefresh` + `enablePullToRefresh`)
+- Attivato su: Prontuario, Normativa, News — invalida la cache React Query della sezione
+- Animazione `@keyframes spin` aggiunta a `index.css`
+
+**MI-2 — Error Boundary granulare (`SectionErrorBoundary.jsx`)**
+- Nuovo componente `src/components/SectionErrorBoundary.jsx`
+- Se una sezione crasha, le altre rimangono pienamente funzionanti
+- UI di fallback con icona danger, messaggio leggibile e bottone "Riprova"
+- Bottone "Riprova" invalida la cache React Query della sezione specifica
+- Dettaglio errore visibile solo in modalità DEV
+- Applicato in App.jsx a: Prontuario, Normativa, News, Preferiti
+
+**MI-3 — Onboarding primo avvio (`Onboarding.jsx`)**
+- Nuovo componente `src/components/Onboarding.jsx`
+- 4 schermate animate con swipe orizzontale tra slide:
+  1. Benvenuto in PolisRoad
+  2. Prontuario & Normativa — ricerca, preferiti
+  3. Modalità Operatore — uso sul campo
+  4. Punti & Traguardi — gamification
+- Mostrato una sola volta al primo accesso (flag `polisroad_onboarding_done` in localStorage)
+- Bottone "Salta" sempre visibile; indicatori step cliccabili
+- Integrato in `App.jsx` subito dopo il login, prima dell'app principale
+
+**AI-3 — Calcolatore sanzioni avanzato**
+- `src/utils/calcolatoreUtils.js` — logica business separata e testabile
+- **Recidiva (art. 195 c. 2 CdS)** — toggle che raddoppia tutti gli importi
+- **Riduzione 30% (art. 202 c. 1 CdS)** — toggle pagamento entro 5 giorni (attivo di default)
+- **Maggiorazione notturna +1/3 (art. 208 c. 1 CdS)** — toggle orario 22:00–07:00
+- **Combinazioni automatiche** — notturna scontata, massimi notturni
+- **Decurtazione punti patente** — card dedicata
+- **Copia riepilogo** — testo strutturato con tutti gli importi e riferimenti normativi, copiabile in un tap
+- **Bottone Reset** — azzera tutti i campi e le opzioni
+- UI completamente riscritta: toggle switch animati, card risultati con badge normativi, banner recidiva
+
+---
+
 ## [1.8.4] - 23 Giugno 2026
 
-### 🟢 Quick Wins — UX & Affidabilità
+### 🔐 REG-1 — Errori auth tradotti in italiano (`authErrorMapper.js`)
+- Nuovo mapper centralizzato `src/utils/authErrorMapper.js`
+- Tutti i messaggi Supabase Auth (rate limit, email già registrata, credenziali errate, token scaduto, errori rete, account disabilitato) ora mostrati in italiano chiaro e contestuale
+- Il messaggio di rate-limit con countdown ("For security purposes, you can only request this after X seconds") viene convertito in "Devi attendere ancora X secondi/minuti prima di riprovare"
+- Applicato in login, registrazione, recupero password e aggiornamento password
+- Messaggio di registrazione completata migliorato: ora indica di controllare l'email per la conferma
 
-**QW-1 — Banner Offline (`OfflineBanner.jsx`)**
-- Nuovo componente fisso in cima all'app quando il dispositivo è offline
-- Messaggio "Sei offline — stai usando i dati in cache"
-- Banner verde "Connessione ripristinata" per 3s al ritorno online
-- `role="status"` + `aria-live="polite"` per screen reader
+### 🔐 REG-2 — Campo password con mostra/nascondi e requisiti live (`PasswordInput.jsx`)
+- Nuovo componente `src/components/ui/PasswordInput.jsx` riutilizzabile
+- Pulsante occhio (mostra/nascondi) a destra del campo, con aria-label accessibile
+- Checklist requisiti in tempo reale (attivata con prop `showRequirements`):
+  - Almeno 8 caratteri
+  - Almeno 1 lettera maiuscola
+  - Almeno 1 numero
+  - Almeno 1 carattere speciale
+- I requisiti diventano verdi man mano che vengono soddisfatti
+- Bottone "Registrati" disabilitato finché tutti i requisiti non sono verdi E la privacy è accettata
+- Integrato nel form di registrazione, login e aggiornamento password
+- Helper `isPasswordValid(value)` esportato per uso in altri form
 
-**QW-2 — Feedback aptico (`src/utils/haptics.js`)**
-- Nuova utility con 4 pattern: `hapticLight`, `hapticMedium`, `hapticSuccess`, `hapticError`
-- Vibrazione leggera (40ms) sul toggle preferiti
-- Vibrazione media (80ms) al salvataggio memo personale
-- Pattern di successo (50-30-80ms) alla registrazione contestazione
-- Degrada silenziosamente dove la Vibration API non è supportata
+### 📋 Changelog in-app — aggiornamento automatico `isNew`
+- `src/config/changelog.js` riscritto: il flag `isNew` viene ora calcolato automaticamente confrontando `version` con `APP_VERSION` importata da `constants.js`
+- Non serve più aggiornare `isNew` a mano ad ogni release: basta aggiungere la voce in cima all'array e aggiornare `APP_VERSION`
+- Aggiornati i contenuti della voce 1.8.4 con i fix REG-1 e REG-2
 
-**QW-3 — Skeleton Loaders (`Skeleton.jsx`)**
-- Nuovo componente con animazione shimmer CSS (`pr-shimmer`)
-- `SkeletonCard`, `SkeletonList`, `SkeletonNewsCard` — forma degli elementi reali
-- Integrati in Prontuario, Normativa, News al posto degli spinner testuali
-- CSS iniettato una sola volta nel `<head>` (no dipendenze)
+### 🔄 MI-5 — Indicatore sync queue (`SyncIndicator.jsx`)
+- Nuovo componente `src/components/ui/SyncIndicator.jsx`
+- Banner giallo sottile sotto l'OfflineBanner che mostra quante operazioni sono in attesa di sync
+- Visibile solo quando offline E ci sono operazioni in coda (`polisroad_sync_queue`)
+- Si aggiorna ogni 5s e al cambio stato rete
+- Scompare automaticamente quando la coda si svuota o la connessione torna
+- Integrato in `App.jsx`
 
-**QW-4 — Empty State illustrati (`EmptyState.jsx`)**
-- Nuovo componente con icona grande, titolo, sottotitolo e CTA opzionale
-- Prop `compact` per contesti secondari (risultati di ricerca parziali)
-- Sostituisce tutti i "Nessun risultato" testuali in: Preferiti, News, Ricerca, Prontuario, Normativa
-
-**QW-5 — Autocomplete SearchBar**
-- `SearchBar.jsx` riscritto con dropdown suggerimenti inline
-- Mostra ricerche recenti filtrate per prefisso mentre si digita
-- Pulsante ✕ per cancellare il testo con un tap
-- `aria-autocomplete`, `aria-expanded`, `role="listbox/option"` per accessibilità
-- Connesso alla pagina Ricerca via `useSearchHistory`
-
-**QW-6 — Changelog in-app (`src/config/changelog.js`)**
-- Nuovo file con le ultime novità in linguaggio semplice per l'operatore
-- Sezione "Novità" aggiunta nel Profilo con badge versione + etichetta NUOVO
-- Cronologia ultime 3 release visibile senza uscire dall'app
+### 🔧 Icone aggiuntive in `Icon.jsx`
+- Aggiunte: `eye`, `eye-off`, `circle`, `wifi`, `wifi-off`, `refresh-cw`
 
 ---
 

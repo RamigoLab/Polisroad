@@ -1,7 +1,8 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from './hooks/useAuth';
-import { useData } from './context/DataContext';
+import { useData, QUERY_KEYS } from './context/DataContext';
 import { useInitializeGamification } from './hooks/useInitializeGamification';
+import { useQueryClient } from '@tanstack/react-query';
 import { Auth } from './pages/Auth';
 import { BottomNav } from './components/layout/BottomNav';
 import { Sidebar } from './components/layout/Sidebar';
@@ -10,8 +11,12 @@ import { AdminLayout } from './pages/admin/AdminLayout';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { PageLoader } from './components/ui/PageLoader';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import * as Sentry from '@sentry/react';
+import { SectionErrorBoundary } from './components/SectionErrorBoundary';
 import { PwaUpdater } from './components/PwaUpdater';
 import { OfflineBanner } from './components/ui/OfflineBanner';
+import { SyncIndicator } from './components/ui/SyncIndicator';
+import { Onboarding, isOnboardingDone } from './components/Onboarding';
 import { useToast } from './components/ui/ToastManager';
 import { getItem, setItem, removeItem } from './utils/storage';
 
@@ -42,7 +47,8 @@ import posthog from 'posthog-js';
 
 // Inner component that can safely use useToast (inside ToastProvider)
 function AppInner() {
-  const { session, loading: authLoading, passwordRecovery } = useAuth();
+  const { session, loading: authLoading, passwordRecovery, isApproved, profile, signOut } = useAuth();
+  const queryClient = useQueryClient();
   const { loading: dataLoading, error: dataError } = useData();
   const { showToast } = useToast();
 
@@ -102,6 +108,8 @@ function AppInner() {
     posthog.capture('page_view', { page, has_params: !!params });
   };
 
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
   const [showSplash, setShowSplash] = useState(() => {
     const savedPage = getItem('polisroad_current_page');
     if (savedPage && savedPage !== 'home') return false;
@@ -124,16 +132,51 @@ function AppInner() {
   if (!session) return <Auth onNavigate={navigate} />;
   if (passwordRecovery) return <Auth passwordUpdateMode onNavigate={navigate} />;
 
+  // Account in attesa di approvazione admin
+  if (session && !isApproved) {
+    return (
+      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', backgroundColor: 'var(--bg-global)' }}>
+        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⏳</div>
+        <h2 style={{ color: 'var(--color-primary)', marginBottom: '12px', fontSize: '1.3rem' }}>Account in attesa di approvazione</h2>
+        <p style={{ color: 'var(--color-text-light)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '320px', marginBottom: '24px' }}>
+          La tua registrazione è stata ricevuta. Un amministratore verificherà le tue credenziali e attiverà l'account a breve.
+        </p>
+        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>Registrato come: <strong>{session.user?.email}</strong></p>
+        <button onClick={signOut} style={{ marginTop: '24px', padding: '12px 24px', backgroundColor: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Esci</button>
+      </div>
+    );
+  }
+
+  if (showOnboarding || (!isOnboardingDone() && session)) {
+    return <Onboarding onDone={() => setShowOnboarding(false)} />;
+  }
+
   const renderPage = () => {
     const props = { onNavigate: navigate, navigationParams };
     switch (currentPage) {
       case 'home': return <Home {...props} />;
-      case 'prontuario': return <Prontuario {...props} />;
-      case 'normativa': return <Normativa {...props} />;
-      case 'preferiti': return <Preferiti {...props} />;
+      case 'prontuario': return (
+        <SectionErrorBoundary section="Il Prontuario" onRetry={() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.prontuario })}>
+          <Prontuario {...props} />
+        </SectionErrorBoundary>
+      );
+      case 'normativa': return (
+        <SectionErrorBoundary section="La Normativa" onRetry={() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.normativa })}>
+          <Normativa {...props} />
+        </SectionErrorBoundary>
+      );
+      case 'preferiti': return (
+        <SectionErrorBoundary section="I Preferiti">
+          <Preferiti {...props} />
+        </SectionErrorBoundary>
+      );
       case 'ricerca': return <Ricerca {...props} />;
       case 'calcolatore': return <Calcolatore {...props} />;
-      case 'news': return <News {...props} />;
+      case 'news': return (
+        <SectionErrorBoundary section="Le Notizie" onRetry={() => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.news })}>
+          <News {...props} />
+        </SectionErrorBoundary>
+      );
       case 'links': return <Links {...props} />;
       case 'profilo': return <Profilo {...props} />;
       case 'operatore': return <Operatore {...props} />;
@@ -177,8 +220,10 @@ function AppInner() {
   const showNav = !currentPage.startsWith('admin_') && currentPage !== 'operatore';
 
   return (
+    <Sentry.ErrorBoundary fallback={<ErrorBoundary />} showDialog={false}>
     <ErrorBoundary>
       <OfflineBanner />
+      <SyncIndicator />
       <PwaUpdater />
       <Suspense fallback={<PageLoader />}>
         <div className="app-viewport-container">
@@ -190,6 +235,7 @@ function AppInner() {
         </div>
       </Suspense>
     </ErrorBoundary>
+    </Sentry.ErrorBoundary>
   );
 }
 

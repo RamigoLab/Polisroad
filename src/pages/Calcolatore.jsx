@@ -3,19 +3,83 @@ import posthog from 'posthog-js';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
 import { SelectInput } from '../components/ui/SelectInput';
+import { Icon } from '../components/ui/Icon';
 import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useProntuario } from '../hooks/useProntuario';
 import { useGamificationContext } from '../context/GamificationContext';
+import { calcolaSanzione, generaTestoCalcolo } from '../utils/calcolatoreUtils';
 
+// ─── Componente card risultato ────────────────────────────────────────────────
+const RisultatoCard = ({ style, label, valore, sub, note }) => (
+  <div style={{ ...style, padding: '14px 16px', borderRadius: '12px' }}>
+    <div style={PS.calcResultLabel}>{label}</div>
+    <div style={{ fontSize: '1.65rem', fontWeight: '800', marginTop: '2px' }}>
+      € {typeof valore === 'number' ? valore.toFixed(2) : valore}
+    </div>
+    {sub && <div style={{ ...PS.calcResultSub, marginTop: '6px' }}>{sub}</div>}
+    {note && (
+      <div style={{ fontSize: '0.72rem', color: C.textLight, marginTop: '4px', fontStyle: 'italic' }}>
+        {note}
+      </div>
+    )}
+  </div>
+);
+
+// ─── Toggle switch ────────────────────────────────────────────────────────────
+const Toggle = ({ label, sublabel, checked, onChange, icon }) => (
+  <div
+    onClick={() => onChange(!checked)}
+    style={{
+      display: 'flex', alignItems: 'center', gap: '12px',
+      padding: '12px 14px', borderRadius: '12px', cursor: 'pointer',
+      backgroundColor: checked ? `${C.accent}12` : C.surfaceContainer,
+      border: `1.5px solid ${checked ? C.accent : C.border}`,
+      transition: 'all 0.2s',
+    }}
+  >
+    <div style={{
+      width: 40, height: 22, borderRadius: '11px',
+      backgroundColor: checked ? C.accent : C.border,
+      position: 'relative', transition: 'background-color 0.2s', flexShrink: 0,
+    }}>
+      <div style={{
+        position: 'absolute', top: 3, left: checked ? 21 : 3,
+        width: 16, height: 16, borderRadius: '50%',
+        backgroundColor: '#fff', transition: 'left 0.2s',
+        boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+      }} />
+    </div>
+    <div style={{ flex: 1 }}>
+      <div style={{ fontSize: '0.88rem', fontWeight: '600', color: C.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
+        {icon && <Icon name={icon} size={14} color={checked ? C.accent : C.textLight} />}
+        {label}
+      </div>
+      {sublabel && <div style={{ fontSize: '0.75rem', color: C.textLight, marginTop: '2px' }}>{sublabel}</div>}
+    </div>
+  </div>
+);
+
+// ─── Pagina principale ────────────────────────────────────────────────────────
 export const Calcolatore = ({ onNavigate }) => {
   const { list } = useProntuario();
   const { addXP } = useGamificationContext();
-  const [selectedId, setSelectedId] = useState('');
-  const [min, setMin] = useState('');
-  const [max, setMax] = useState('');
-  const [punti, setPunti] = useState('');
+
+  // Dati inseriti
+  const [selectedId, setSelectedId]   = useState('');
+  const [pmr, setPmr]                 = useState('');
+  const [edittaleMax, setEdittaleMax] = useState('');
+  const [punti, setPunti]             = useState('');
+  const [nomeViolazione, setNomeViolazione] = useState('');
+
+  // Opzioni calcolo
+  const [recidiva, setRecidiva]               = useState(false);
+  const [notturna, setNotturna]               = useState(false);
+  const [riduzioneFiveDay, setRiduzione]      = useState(true);
+
+  // UI
+  const [copied, setCopied] = useState(false);
 
   const handleSelect = async (e) => {
     const id = e.target.value;
@@ -24,19 +88,34 @@ export const Calcolatore = ({ onNavigate }) => {
     if (item) {
       await addXP(20, 'calculator');
       posthog.capture('calcolatore_used', { prontuario_id: id });
-      setMin(item.pmr ? item.pmr.toString() : '');
-      setMax('');
+      setPmr(item.pmr ? item.pmr.toString() : '');
+      setEdittaleMax(item.edittale_max ? item.edittale_max.toString() : '');
       setPunti(item.punti_patente ? item.punti_patente.toString() : '');
+      setNomeViolazione(`${item.rif_normativo} – ${item.titolo}`);
     }
   };
 
-  const calcDiurna = min ? parseFloat(min) : 0;
-  const calcScontata = min ? (parseFloat(min) * 0.7).toFixed(2) : 0;
-  const calcNotturna = min ? (parseFloat(min) * 1.3333).toFixed(2) : 0;
-  const calcNotturnaScontata = min ? (parseFloat(calcNotturna) * 0.7).toFixed(2) : 0;
+  const handleReset = () => {
+    setSelectedId(''); setPmr(''); setEdittaleMax('');
+    setPunti(''); setNomeViolazione('');
+    setRecidiva(false); setNotturna(false); setRiduzione(true);
+    setCopied(false);
+  };
+
+  const risultato = calcolaSanzione({ pmr, edittaleMax, recidiva, notturna, riduzioneFiveDay });
+
+  const handleCopy = () => {
+    const testo = generaTestoCalcolo({ risultato, punti, nomeViolazione });
+    navigator.clipboard.writeText(testo).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    });
+  };
 
   return (
     <PageWrapper title="Calcolatore Sanzioni" subtitle="Importi, sconti e maggiorazioni" onNavigate={onNavigate}>
+
+      {/* ── SELEZIONE VIOLAZIONE ── */}
       <div style={{ ...S.formCard, marginBottom: '16px' }}>
         <SelectInput
           label="Pre-compila da violazione (Opzionale)"
@@ -44,60 +123,169 @@ export const Calcolatore = ({ onNavigate }) => {
           onChange={handleSelect}
           options={list
             .filter(item => item.titolo && item.rif_normativo)
-            .map(item => ({ value: item.id, label: `${item.rif_normativo} – ${item.titolo.substring(0, 35)}` }))}
+            .map(item => ({ value: item.id, label: `${item.rif_normativo} – ${item.titolo.substring(0, 40)}` }))}
         />
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
-          <TextInput 
-            label="PMR / Sanzione Base (€)" 
-            type="number" 
-            value={min} 
-            onChange={e => {
-              const val = e.target.value;
-              if (val === '' || parseFloat(val) >= 0) setMin(val);
-            }} 
-          />
-          <TextInput 
-            label="Edittale Massimo (€) – opzionale" 
-            type="number" 
-            value={max} 
-            onChange={e => {
-              const val = e.target.value;
-              if (val === '' || parseFloat(val) >= 0) setMax(val);
-            }} 
-          />
-        </div>
-        <TextInput 
-          label="Punti Patente" 
-          type="number" 
-          value={punti} 
-          onChange={e => {
-            const val = e.target.value;
-            if (val === '' || parseInt(val, 10) >= 0) setPunti(val);
-          }} 
+        <TextInput
+          label="PMR / Sanzione Base (€)"
+          type="number"
+          value={pmr}
+          onChange={e => { if (e.target.value === '' || parseFloat(e.target.value) >= 0) setPmr(e.target.value); }}
+          placeholder="es. 87.00"
+        />
+        <TextInput
+          label="Edittale Massimo (€) — opzionale"
+          type="number"
+          value={edittaleMax}
+          onChange={e => { if (e.target.value === '' || parseFloat(e.target.value) >= 0) setEdittaleMax(e.target.value); }}
+          placeholder="es. 345.00"
+        />
+        <TextInput
+          label="Punti Patente"
+          type="number"
+          value={punti}
+          onChange={e => { if (e.target.value === '' || parseInt(e.target.value, 10) >= 0) setPunti(e.target.value); }}
+          placeholder="es. 10"
         />
       </div>
 
-      {min ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-          <div style={PS.calcResultPrimary}>
-            <div style={PS.calcResultLabel}>PMR – Pagamento in Misura Ridotta</div>
-            <div style={{ ...PS.calcResultValueLg, color: C.primary }}>€ {calcDiurna}</div>
-          </div>
+      {/* ── OPZIONI CALCOLO ── */}
+      <div style={{ ...S.formCard, marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <p style={{ fontSize: '0.8rem', fontWeight: '700', color: C.textLight, textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>
+          Opzioni calcolo
+        </p>
+        <Toggle
+          label="Riduzione 30% (≤ 5 giorni)"
+          sublabel="Art. 202 c. 1 CdS — pagamento entro 5 giorni dalla contestazione"
+          checked={riduzioneFiveDay}
+          onChange={setRiduzione}
+          icon="percent"
+        />
+        <Toggle
+          label="Violazione notturna"
+          sublabel="Art. 208 c. 1 CdS — maggiorazione +1/3 tra le 22:00 e le 07:00"
+          checked={notturna}
+          onChange={setNotturna}
+          icon="moon"
+        />
+        <Toggle
+          label="Recidiva (biennio)"
+          sublabel="Art. 195 c. 2 CdS — stessa violazione già commessa negli ultimi 2 anni"
+          checked={recidiva}
+          onChange={setRecidiva}
+          icon="repeat"
+        />
+      </div>
 
-          <div style={PS.calcResultSuccess}>
-            <div style={PS.calcResultLabel}>Scontata del 30% (Entro 5gg)</div>
-            <div style={{ ...PS.calcResultValueLg, color: C.success }}>€ {calcScontata}</div>
-          </div>
+      {/* ── RISULTATI ── */}
+      {risultato ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '16px' }}>
 
-          <div style={PS.calcResultDanger}>
-            <div style={PS.calcResultLabel}>Sanzione Notturna (+33.3%)</div>
-            <div style={{ ...PS.calcResultValueMd, color: C.danger }}>€ {calcNotturna}</div>
-            <div style={PS.calcResultSub}>Scontata 30%: <strong>€ {calcNotturnaScontata}</strong></div>
+          {recidiva && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '10px 14px', borderRadius: '10px',
+              backgroundColor: `${C.warning}18`, border: `1px solid ${C.warning}`,
+            }}>
+              <Icon name="triangle-alert" size={16} color={C.warning} />
+              <span style={{ fontSize: '0.82rem', color: C.warning, fontWeight: '600' }}>
+                Recidiva attiva — importi raddoppiati (art. 195 c. 2)
+              </span>
+            </div>
+          )}
+
+          {/* PMR base */}
+          <RisultatoCard
+            style={{ ...PS.calcResultPrimary, color: C.primary }}
+            label="PMR — Pagamento in Misura Ridotta"
+            valore={risultato.base}
+            sub={risultato.max ? `Edittale massimo: € ${risultato.max.toFixed(2)}` : null}
+          />
+
+          {/* Sconto 5 giorni */}
+          {riduzioneFiveDay && (
+            <RisultatoCard
+              style={PS.calcResultSuccess}
+              label="Scontata 30% — Pagamento entro 5 giorni"
+              valore={risultato.baseScontata}
+              note="Art. 202 c. 1 CdS"
+            />
+          )}
+
+          {/* Notturna */}
+          {notturna && (
+            <>
+              <RisultatoCard
+                style={PS.calcResultDanger}
+                label="Sanzione Notturna — Maggiorazione +1/3"
+                valore={risultato.baseNotte}
+                sub={risultato.maxNotte ? `Edittale massimo notturno: € ${risultato.maxNotte.toFixed(2)}` : null}
+                note="Art. 208 c. 1 CdS — orario 22:00–07:00"
+              />
+              {riduzioneFiveDay && (
+                <RisultatoCard
+                  style={{ ...PS.calcResultDanger, borderLeftColor: C.textLight }}
+                  label="Notturna scontata 30% (≤ 5 giorni)"
+                  valore={risultato.baseNotteScontata}
+                  note="Art. 202 c. 1 + Art. 208 c. 1 CdS"
+                />
+              )}
+            </>
+          )}
+
+          {/* Punti patente */}
+          {punti > 0 && (
+            <div style={{
+              ...PS.calcResultPrimary,
+              padding: '12px 16px',
+              display: 'flex', alignItems: 'center', gap: '10px',
+            }}>
+              <Icon name="credit-card" size={20} color={C.primary} />
+              <div>
+                <div style={PS.calcResultLabel}>Decurtazione Punti Patente</div>
+                <div style={{ fontSize: '1.4rem', fontWeight: '800', color: C.primary }}>
+                  {punti} punt{parseInt(punti) === 1 ? 'o' : 'i'}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Bottoni azione */}
+          <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
+            <button
+              onClick={handleCopy}
+              style={{
+                flex: 1, padding: '13px', borderRadius: '12px',
+                backgroundColor: copied ? C.success : C.accent,
+                color: '#fff', fontWeight: '700', fontSize: '0.9rem',
+                border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                transition: 'background-color 0.2s',
+              }}
+            >
+              <Icon name={copied ? 'circle-check' : 'copy'} size={16} color="#fff" />
+              {copied ? 'Copiato!' : 'Copia riepilogo'}
+            </button>
+            <button
+              onClick={handleReset}
+              style={{
+                padding: '13px 16px', borderRadius: '12px',
+                backgroundColor: C.surfaceContainer, color: C.textLight,
+                fontWeight: '600', fontSize: '0.9rem',
+                border: `1px solid ${C.border}`, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '6px',
+              }}
+            >
+              <Icon name="rotate-cw" size={15} color={C.textLight} />
+              Reset
+            </button>
           </div>
         </div>
       ) : (
         <div style={{ textAlign: 'center', padding: '32px 16px', color: C.textLight }}>
-          <p style={{ fontSize: '0.95rem' }}>Inserisci un importo PMR per calcolare le sanzioni.</p>
+          <Icon name="calculator" size={40} color={C.border} />
+          <p style={{ fontSize: '0.95rem', marginTop: '12px' }}>
+            Inserisci un importo PMR per calcolare le sanzioni.
+          </p>
         </div>
       )}
     </PageWrapper>
