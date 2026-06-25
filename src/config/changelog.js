@@ -15,6 +15,9 @@ const CHANGELOG_DATA = [
     date: '26 Giugno 2026',
     items: [
       'Accesso immediato per amministratori: risolto blocco improprio alla schermata di attesa approvazione',
+      'Schermata di accesso: campi email e password ora visivamente uniformi',
+      'Privacy Policy e Termini di Servizio leggibili direttamente dalla schermata di login',
+      'Wizard di benvenuto: risolto il pulsante "Inizia a usare PolisRoad" che non rispondeva',
       'Notifiche push: ricevi aggiornamenti normativi direttamente sul dispositivo (attivabili dal Profilo)',
       'Approvazione account: i nuovi iscritti attendono verifica admin prima di accedere',
       'Error monitoring attivo in produzione per rilevare problemi in tempo reale',

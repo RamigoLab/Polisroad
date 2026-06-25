@@ -19,12 +19,15 @@ export const UIS = {
     fontWeight: '600',
   },
   input: {
-    padding: '12px',
+    padding: '12px 14px',
     borderRadius: '8px',
     border: `1px solid ${C.border}`,
     fontSize: '1rem',
     backgroundColor: C.card,
+    color: C.text,
     fontFamily: 'inherit',
+    width: '100%',
+    boxSizing: 'border-box',
     transition: 'border-color 0.2s',
   },
   textarea: {

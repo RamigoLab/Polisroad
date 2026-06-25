@@ -2,6 +2,13 @@
 
 ## [1.8.6] - 26 Giugno 2026
 
+### 🔐 Fix UX — Schermata di accesso (Auth)
+- **Input uniformi:** `UIS.input` ora include `color: C.text`, `width: 100%`, `box-sizing: border-box` e `padding: 12px 14px` — email e password hanno ora la stessa altezza e aspetto visivo
+- **Privacy Policy e Termini di Servizio accessibili dal login:** i link nel form ora aprono un bottom-sheet modal sovrapposto alla schermata di login (senza navigare fuori); `PrivacyContent` e `TerminiContent` estratti come componenti puri riusabili nelle rispettive pagine e nel modal
+- **Fix onboarding — "Inizia a usare PolisRoad →" non rispondeva:** il pulsante sull'ultima slide chiamava `markOnboardingDone()` + `onDone()` ma il re-render rileggeva `localStorage` nello stesso ciclo e manteneva la condizione `!isOnboardingDone()` vera; fix: `App.jsx` ora usa lo stato React `onboardingDone` (inizializzato da `localStorage`) invece di rileggere `localStorage` ad ogni render — il completamento aggiorna lo stato e React uscita immediatamente dall'onboarding
+
+---
+
 ### 🔐 Fix critico — Deadlock RLS: admin bloccato dalla schermata di approvazione
 - **Causa radice — Deadlock RLS:** la policy SELECT su `profiles` (migration 20260623) verificava il ruolo admin con una subquery ricorsiva su `profiles` stessa, triggerando di nuovo la stessa RLS policy; il loop causava un risultato vuoto, `profile` rimaneva `null`, `isApproved` era sempre `false` e tutti venivano bloccati incluso l'admin
 - **Fix `supabase/migrations/20260626_fix_profiles_rls_deadlock.sql`** *(nuovo)*: ricrea `is_admin()` come `SECURITY DEFINER` (bypassa RLS, nessun loop); ricrea la policy SELECT con `is_admin()` al posto della subquery ricorsiva

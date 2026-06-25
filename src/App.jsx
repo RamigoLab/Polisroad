@@ -108,7 +108,8 @@ function AppInner() {
     posthog.capture('page_view', { page, has_params: !!params });
   };
 
-  const [showOnboarding, setShowOnboarding] = useState(false);
+  // Onboarding: stato inizializzato da localStorage, aggiornato a true quando completato
+  const [onboardingDone, setOnboardingDone] = useState(() => isOnboardingDone());
 
   const [showSplash, setShowSplash] = useState(() => {
     const savedPage = getItem('polisroad_current_page');
@@ -165,8 +166,8 @@ function AppInner() {
     );
   }
 
-  if (showOnboarding || (!isOnboardingDone() && session)) {
-    return <Onboarding onDone={() => setShowOnboarding(false)} />;
+  if (!onboardingDone && session) {
+    return <Onboarding onDone={() => setOnboardingDone(true)} />;
   }
 
   const renderPage = () => {

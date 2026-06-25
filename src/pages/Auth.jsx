@@ -9,6 +9,52 @@ import { useAuth } from '../hooks/useAuth';
 import { loginRateLimiter } from '../utils/rateLimiter';
 import { mapAuthError } from '../utils/authErrorMapper';
 import { sanitizers, validators } from '../utils/validation';
+import { PrivacyContent } from './Privacy';
+import { TerminiContent } from './TerminiServizio';
+
+// ─── Modal per Privacy / Termini visibile anche senza sessione ───────────────
+const DocModal = ({ title, children, onClose }) => (
+  <div
+    onClick={onClose}
+    style={{
+      position: 'fixed', inset: 0, zIndex: 9000,
+      backgroundColor: 'rgba(0,0,0,0.6)',
+      display: 'flex', alignItems: 'flex-end',
+    }}
+  >
+    <div
+      onClick={e => e.stopPropagation()}
+      style={{
+        width: '100%', maxHeight: '82vh',
+        backgroundColor: 'var(--bg-global, #fff)',
+        borderRadius: '20px 20px 0 0',
+        display: 'flex', flexDirection: 'column',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Header */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        padding: '16px 20px',
+        borderBottom: '1px solid var(--color-border)',
+        flexShrink: 0,
+      }}>
+        <span style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--color-text)' }}>{title}</span>
+        <button
+          onClick={onClose}
+          style={{
+            background: 'none', border: 'none', fontSize: '1.4rem',
+            cursor: 'pointer', color: 'var(--color-text-light)', lineHeight: 1,
+          }}
+        >✕</button>
+      </div>
+      {/* Contenuto scrollabile */}
+      <div style={{ overflowY: 'auto', padding: '20px', flex: 1 }}>
+        {children}
+      </div>
+    </div>
+  </div>
+);
 
 const authPageStyle = {
   justifyContent: 'center',
@@ -66,6 +112,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
   const [grado, setGrado] = useState('');
   const [forza, setForza] = useState('');
   const [loading, setLoading] = useState(false);
+  const [modal, setModal] = useState(null); // null | 'privacy' | 'termini'
   const { showToast } = useToast();
 
   const handleSubmit = async (e) => {
@@ -169,6 +216,17 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
 
   return (
     <PageWrapper style={authPageStyle}>
+      {/* Modal Privacy / Termini — accessibile anche senza sessione */}
+      {modal === 'privacy' && (
+        <DocModal title="Privacy Policy" onClose={() => setModal(null)}>
+          <PrivacyContent />
+        </DocModal>
+      )}
+      {modal === 'termini' && (
+        <DocModal title="Termini di Servizio" onClose={() => setModal(null)}>
+          <TerminiContent />
+        </DocModal>
+      )}
       <div className="auth-viewport-wrapper">
         <div style={authHeaderStyle}>
           <h1 style={authTitleStyle}>PolisRoad</h1>
@@ -244,7 +302,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
                     Ho letto e accetto la{' '}
                     <button
                       type="button"
-                      onClick={() => onNavigate('privacy')}
+                      onClick={() => setModal('privacy')}
                       style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', padding: 0, fontSize: 'inherit', cursor: 'pointer' }}
                     >
                       Privacy Policy
@@ -252,7 +310,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
                     {' '}e i{' '}
                     <button
                       type="button"
-                      onClick={() => onNavigate('termini')}
+                      onClick={() => setModal('termini')}
                       style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', padding: 0, fontSize: 'inherit', cursor: 'pointer' }}
                     >
                       Termini di Servizio
@@ -277,11 +335,11 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
                 <div style={{ textAlign: 'center', marginTop: '20px' }}>
                   <span style={{ fontSize: '0.75rem', color: C.textLight }}>
                     Utilizzando l'app accetti la{' '}
-                    <button type="button" onClick={() => onNavigate('privacy')} style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', fontSize: 'inherit', cursor: 'pointer', padding: 0 }}>
+                    <button type="button" onClick={() => setModal('privacy')} style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', fontSize: 'inherit', cursor: 'pointer', padding: 0 }}>
                       Privacy Policy
                     </button>
                     {' '}e i{' '}
-                    <button type="button" onClick={() => onNavigate('termini')} style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', fontSize: 'inherit', cursor: 'pointer', padding: 0 }}>
+                    <button type="button" onClick={() => setModal('termini')} style={{ color: C.accent, textDecoration: 'underline', background: 'none', border: 'none', fontSize: 'inherit', cursor: 'pointer', padding: 0 }}>
                       Termini di Servizio
                     </button>
                   </span>
