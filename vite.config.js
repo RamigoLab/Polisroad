@@ -13,21 +13,7 @@ export default defineConfig({
       workbox: {
         cleanupOutdatedCaches: true,
         clientsClaim: true,
-        skipWaiting: true,
-
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
-            handler: 'NetworkFirst',
-            options: {
-              cacheName: 'supabase-cache',
-              expiration: {
-                maxEntries: 50,
-                maxAgeSeconds: 60 * 60 * 24 // 1 giorno
-              }
-            }
-          }
-        ]
+        skipWaiting: true
       },
 
       manifest: {
@@ -58,45 +44,28 @@ export default defineConfig({
     target: 'esnext',
     sourcemap: false,
     minify: 'esbuild',
-    cssMinify: true,
-    chunkSizeWarningLimit: 700,
+    chunkSizeWarningLimit: 800,
 
     rollupOptions: {
       output: {
         manualChunks(id) {
-          // 🔥 PRIORITÀ: chunk intelligenti
-
-          // React core
+          // React separato (cache migliore)
           if (id.includes('react')) {
             return 'react'
           }
 
-          // Supabase
+          // Supabase separato
           if (id.includes('@supabase')) {
             return 'supabase'
           }
 
-          // librerie grandi comuni
+          // Tutte le altre dipendenze
           if (id.includes('node_modules')) {
             return 'vendor'
           }
         }
       }
     }
-  },
-
-  resolve: {
-    alias: {
-      '@': '/src'
-    }
-  },
-
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      '@supabase/supabase-js'
-    ]
   },
 
   server: {
