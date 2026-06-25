@@ -33,6 +33,7 @@ export const AuthProvider = ({ children }) => {
   const [userCount, setUserCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [profileLoading, setProfileLoading] = useState(false);
+  const [profileError, setProfileError] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
 
   // 👉 FIX: approvazione derivata correttamente
@@ -57,11 +58,13 @@ export const AuthProvider = ({ children }) => {
   const loadProfile = async (userId) => {
     try {
       setProfileLoading(true);
+      setProfileError(false);
       const data = await fetchProfile(userId);
       setProfile(data || null);
     } catch (err) {
       logger.error('Error fetching profile:', err.message);
       setProfile(null);
+      setProfileError(true);
     } finally {
       setProfileLoading(false);
       setLoading(false);
@@ -221,6 +224,7 @@ export const AuthProvider = ({ children }) => {
         // 🔥 FIX IMPORTANTE
         isApproved,
         isAdmin,
+        profileError,
 
         signIn,
         signUp,

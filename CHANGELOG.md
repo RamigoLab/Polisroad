@@ -2,17 +2,25 @@
 
 ## [1.8.6] - 26 Giugno 2026
 
-### 🔐 Fix critico — Accesso admin bloccato dalla schermata di approvazione
-- **Bug:** `fetchProfile` in `authService.js` non includeva il campo `approvato` nella SELECT → `profile.approvato` era sempre `undefined` → `isApproved` sempre `false` → tutti gli utenti (incluso l'admin) venivano bloccati dalla schermata "Account in attesa di approvazione"
-- **Fix `authService.js`:** aggiunto `approvato` alla select di `fetchProfile`; `signUp` ora scrive esplicitamente `approvato: false` sul nuovo profilo
-- **Fix `useAuth.jsx`:** `isApproved` ora è `true` se `ruolo === 'admin'` (doppia sicurezza) oppure se `profile.approvato === true`; esposto anche `isAdmin` nel context
-- **Fix Vercel build:** rimosso import residuo che causava errore su `SyncIndicator.jsx` e altri componenti UI (il campo era già corretto, il build ora passa senza errori)
+### 🔐 Fix critico — Deadlock RLS: admin bloccato dalla schermata di approvazione
+- **Causa radice — Deadlock RLS:** la policy SELECT su `profiles` (migration 20260623) verificava il ruolo admin con una subquery ricorsiva su `profiles` stessa, triggerando di nuovo la stessa RLS policy; il loop causava un risultato vuoto, `profile` rimaneva `null`, `isApproved` era sempre `false` e tutti venivano bloccati incluso l'admin
+- **Fix `supabase/migrations/20260626_fix_profiles_rls_deadlock.sql`** *(nuovo)*: ricrea `is_admin()` come `SECURITY DEFINER` (bypassa RLS, nessun loop); ricrea la policy SELECT con `is_admin()` al posto della subquery ricorsiva
+- **Fix `authService.js`:** aggiunto `approvato` alla SELECT di `fetchProfile`; `signUp` ora scrive `approvato: false` esplicitamente
+- **Fix `useAuth.jsx`:** `isApproved` e' `true` se `ruolo === 'admin'` o se `profile.approvato === true`; aggiunto `profileError`; esposto `isAdmin` nel context
+- **Fix `App.jsx`:** se il profilo non si carica per errore RLS/rete, mostra "Errore caricamento profilo" con pulsante Riprova
 
-**⚠️ Azione richiesta su Supabase (se non già eseguita):**
-Se il campo `approvato` non esiste ancora nella tabella `profiles`, eseguire in Supabase SQL Editor:
+**Azione richiesta su Supabase — eseguire in SQL Editor:**
 ```sql
-ALTER TABLE profiles ADD COLUMN IF NOT EXISTS approvato boolean DEFAULT false;
-UPDATE profiles SET approvato = true WHERE ruolo = 'admin';
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean LANGUAGE sql SECURITY DEFINER STABLE SET search_path = public
+AS $func$ SELECT EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND ruolo = 'admin'); $func$;
+
+DROP POLICY IF EXISTS "Lettura profili autenticati" ON public.profiles;
+CREATE POLICY "Lettura profili autenticati" ON public.profiles
+FOR SELECT TO authenticated
+USING (auth.uid() = id OR public.is_admin());
+
+UPDATE public.profiles SET approvato = true WHERE ruolo = 'admin';
 ```
 
 ### 🧪 Test unitari — useNormativa, useNews, useProntuario

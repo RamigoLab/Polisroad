@@ -47,7 +47,7 @@ import posthog from 'posthog-js';
 
 // Inner component that can safely use useToast (inside ToastProvider)
 function AppInner() {
-  const { session, loading: authLoading, passwordRecovery, isApproved, profile, signOut } = useAuth();
+  const { session, loading: authLoading, passwordRecovery, isApproved, profile, profileError, signOut } = useAuth();
   const queryClient = useQueryClient();
   const { loading: dataLoading, error: dataError } = useData();
   const { showToast } = useToast();
@@ -134,6 +134,24 @@ function AppInner() {
 
   // Account in attesa di approvazione admin
   if (session && !isApproved) {
+    // Se il profilo non è stato caricato per un errore RLS/rete, mostra un
+    // messaggio diverso invece di bloccare con la schermata di attesa
+    if (profileError || !profile) {
+      return (
+        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', backgroundColor: 'var(--bg-global)' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
+          <h2 style={{ color: 'var(--color-primary)', marginBottom: '12px', fontSize: '1.3rem' }}>Errore caricamento profilo</h2>
+          <p style={{ color: 'var(--color-text-light)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '340px', marginBottom: '24px' }}>
+            Impossibile caricare i dati del tuo account. Verifica la connessione e riprova, oppure contatta l'amministratore.
+          </p>
+          <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>Account: <strong>{session.user?.email}</strong></p>
+          <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
+            <button onClick={() => window.location.reload()} style={{ padding: '12px 24px', backgroundColor: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Riprova</button>
+            <button onClick={signOut} style={{ padding: '12px 24px', backgroundColor: 'transparent', color: 'var(--color-text-light)', border: '1px solid var(--color-border)', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Esci</button>
+          </div>
+        </div>
+      );
+    }
     return (
       <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', backgroundColor: 'var(--bg-global)' }}>
         <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⏳</div>
