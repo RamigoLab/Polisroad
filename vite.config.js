@@ -14,6 +14,20 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         clientsClaim: true,
         skipWaiting: true,
+
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.supabase\.co\/.*/i,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'supabase-cache',
+              expiration: {
+                maxEntries: 50,
+                maxAgeSeconds: 60 * 60 * 24 // 1 giorno
+              }
+            }
+          }
+        ]
       },
 
       manifest: {
@@ -41,32 +55,56 @@ export default defineConfig({
   ],
 
   build: {
+    target: 'esnext',
     sourcemap: false,
-    chunkSizeWarningLimit: 800,
+    minify: 'esbuild',
+    cssMinify: true,
+    chunkSizeWarningLimit: 700,
 
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('node_modules')) {
-            return 'vendor'
-          }
+          // 🔥 PRIORITÀ: chunk intelligenti
 
-          // opzionale: split React
+          // React core
           if (id.includes('react')) {
             return 'react'
           }
 
-          // opzionale: split Supabase
+          // Supabase
           if (id.includes('@supabase')) {
             return 'supabase'
+          }
+
+          // librerie grandi comuni
+          if (id.includes('node_modules')) {
+            return 'vendor'
           }
         }
       }
     }
   },
 
+  resolve: {
+    alias: {
+      '@': '/src'
+    }
+  },
+
+  optimizeDeps: {
+    include: [
+      'react',
+      'react-dom',
+      '@supabase/supabase-js'
+    ]
+  },
+
   server: {
     port: 5173,
     open: true
+  },
+
+  preview: {
+    port: 5173
   }
 })
