@@ -7,7 +7,6 @@
 import React, { useState, useEffect } from 'react';
 import { Icon } from './Icon';
 import { C } from '../../styles/theme';
-import { C } from '../../styles/theme';
 
 const QUEUE_KEY = 'polisroad_sync_queue';
 
