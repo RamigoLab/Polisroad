@@ -1,25 +1,27 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
-import { visualizer } from 'rollup-plugin-visualizer'
 
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [
     react(),
 
     VitePWA({
-      registerType: 'prompt',
+      registerType: 'autoUpdate',
       injectRegister: 'auto',
-      devOptions: {
-        enabled: process.env.VITE_PWA_DEV === 'true'
+
+      workbox: {
+        cleanupOutdatedCaches: true,
+        clientsClaim: true,
+        skipWaiting: true,
       },
-      includeAssets: ['icons/icon-192.png', 'icons/icon-512.png'],
+
       manifest: {
         name: 'PolisRoad',
         short_name: 'PolisRoad',
-        description: "Codice della Strada per Forze dell'Ordine",
-        theme_color: '#1a3a5c',
-        background_color: '#f5f7fa',
+        description: 'Applicazione operativa per rilievi e prontuario',
+        theme_color: '#0f172a',
+        background_color: '#0f172a',
         display: 'standalone',
         start_url: '/',
         icons: [
@@ -35,60 +37,36 @@ export default defineConfig(({ mode }) => ({
           }
         ]
       }
-    }),
-
-    // Analyzer attivo solo con: npm run build -- --mode analyze
-    mode === 'analyze' && visualizer({
-      filename: 'dist/stats.html',
-      open: true,
-      gzipSize: true,
-      brotliSize: true,
-      template: 'treemap',
-    }),
-
-  ].filter(Boolean),
+    })
+  ],
 
   build: {
     sourcemap: false,
-    chunkSizeWarningLimit: 1000,
+    chunkSizeWarningLimit: 800,
 
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (!id.includes('node_modules')) return
+          if (id.includes('node_modules')) {
+            return 'vendor'
+          }
 
+          // opzionale: split React
           if (id.includes('react')) {
-            return 'react-core'
+            return 'react'
           }
 
-          if (id.includes('@tanstack/react-query')) {
-            return 'query'
-          }
-
+          // opzionale: split Supabase
           if (id.includes('@supabase')) {
             return 'supabase'
           }
-
-          if (id.includes('fuse.js')) {
-            return 'fuse'
-          }
-
-          if (id.includes('posthog-js')) {
-            return 'posthog'
-          }
-
-          if (id.includes('idb-keyval')) {
-            return 'idb'
-          }
-
-          return 'vendor'
         }
       }
     }
   },
 
-  optimizeDeps: {
-    include: ['react', 'react-dom']
+  server: {
+    port: 5173,
+    open: true
   }
-
-}))
+})
