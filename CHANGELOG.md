@@ -1,6 +1,6 @@
 # 📝 CHANGELOG - PolisRoad
 
-## [1.8.8b] - 26 Giugno 2026
+## [1.8.8 ] - 26 Giugno 2026
 
 ### 🔔 Notifiche Push — implementazione completa
 
@@ -35,8 +35,6 @@
 **Fix — `src/pages/Profilo.jsx`:**
 - Sezione "Installa l'app" con pulsante nativo che appare solo quando il browser segnala installabilità.
 - Badge "App installata" quando già in modalità standalone.
-
-## [1.8.8] - 26 Giugno 2026
 
 ### 🐛 Fix — Account "in attesa" non si sblocca dopo approvazione admin
 - **Causa:** La schermata "Account in attesa di approvazione" era completamente statica: non interrogava Supabase dopo il caricamento iniziale. L'utente installato come PWA restava bloccato indefinitamente anche dopo che l'admin aveva approvato il suo account.
