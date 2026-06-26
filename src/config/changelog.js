@@ -11,6 +11,24 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '1.8.8b',
+    date: '26 Giugno 2026',
+    items: [
+      'Notifiche push ora funzionanti: il dispositivo le riceve e mostra anche a schermo spento',
+      'Toccando una notifica si apre l\'app direttamente nella sezione corretta',
+      'Installazione PWA ripristinata: il pulsante "Installa" riappare nel Profilo quando disponibile',
+      'Pannello admin: nuova sezione "Notifiche" per inviare messaggi push a tutti o a singoli utenti',
+    ],
+  },
+  {
+    version: '1.8.8',
+    date: '26 Giugno 2026',
+    items: [
+      'Account in attesa: l\'app si sblocca automaticamente non appena l\'amministratore approva l\'account, senza ricaricare',
+      'Nuovo pulsante "Verifica ora" nella schermata di attesa per un controllo manuale immediato',
+    ],
+  },
+  {
     version: '1.8.7',
     date: '26 Giugno 2026',
     items: [

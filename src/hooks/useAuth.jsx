@@ -234,6 +234,9 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         clearPasswordRecovery: () => setPasswordRecovery(false),
         refreshUserCount: loadUserCount,
+        // Usato dalla schermata "in attesa di approvazione" per rilevare
+        // quando l'admin approva l'account senza che l'utente ricarichi.
+        refreshProfile: () => session?.user?.id ? loadProfile(session.user.id) : Promise.resolve(),
       }}
     >
       {children}

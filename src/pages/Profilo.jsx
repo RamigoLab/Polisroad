@@ -15,6 +15,7 @@ import { BADGES } from '../config/badges';
 import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { usePushNotifications } from '../hooks/usePushNotifications';
+import { useInstallPrompt } from '../hooks/useInstallPrompt';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, SYSTEM_STATUS, APP_VERSION } from '../config/constants';
 import { APP_CHANGELOG } from '../config/changelog';
 import { sanitizers, validators } from '../utils/validation';
@@ -57,6 +58,7 @@ export const Profilo = ({ onNavigate }) => {
 
   const { isDarkMode, toggleTheme } = useTheme();
   const { isSupported: pushSupported, isSubscribed: pushSubscribed, permission: pushPermission, loading: pushLoading, subscribe: pushSubscribe, unsubscribe: pushUnsubscribe } = usePushNotifications();
+  const { isInstallable, isInstalled, promptInstall } = useInstallPrompt();
 
   // Stato consenso analytics PostHog
   const [analyticsEnabled, setAnalyticsEnabled] = useState(() => !posthog.has_opted_out_capturing());
@@ -456,6 +458,44 @@ export const Profilo = ({ onNavigate }) => {
       </div>
 
 
+      {/* Installazione PWA */}
+      {!isInstalled && isInstallable && (
+        <div style={PS.profileSysBox}>
+          <h4 style={PS.profileSysTitle}>
+            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+              <Icon name="download" size={16} /> Installa l'app
+            </span>
+          </h4>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ flex: 1, paddingRight: '12px' }}>
+              <span style={{ color: C.text, fontWeight: '500' }}>Aggiungi alla schermata Home</span>
+              <p style={{ fontSize: '0.75rem', color: C.textLight, margin: '2px 0 0' }}>
+                Accedi a PolisRoad come un'app nativa, anche offline.
+              </p>
+            </div>
+            <button
+              onClick={promptInstall}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: C.accent,
+                color: '#fff', borderRadius: '20px',
+                fontWeight: 'bold', border: 'none',
+                cursor: 'pointer', flexShrink: 0,
+              }}
+            >
+              <Icon name="download" size={14} /> Installa
+            </button>
+          </div>
+        </div>
+      )}
+      {isInstalled && (
+        <div style={{ ...PS.profileSysBox, borderLeft: `3px solid ${C.success}` }}>
+          <span style={{ fontSize: '0.85rem', color: C.success, fontWeight: '600', display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <Icon name="circle-check" size={15} /> App installata sul dispositivo
+          </span>
+        </div>
+      )}
+
       {/* Notifiche Push */}
       {pushSupported && (
         <div style={PS.profileSysBox}>
@@ -468,11 +508,11 @@ export const Profilo = ({ onNavigate }) => {
             <div style={{ flex: 1, paddingRight: '12px' }}>
               <span style={{ color: C.text, fontWeight: '500' }}>Notifiche in-app</span>
               <p style={{ fontSize: '0.75rem', color: C.textLight, margin: '2px 0 0' }}>
-                Ricevi aggiornamenti normativi e promemoria direttamente sul dispositivo.
+                Ricevi aggiornamenti normativi e comunicazioni dall'amministratore direttamente sul dispositivo, anche a schermo spento.
               </p>
               {pushPermission === 'denied' && (
                 <p style={{ fontSize: '0.72rem', color: C.danger, marginTop: '4px' }}>
-                  Permesso bloccato. Riattiva dalle impostazioni del browser.
+                  Permesso bloccato. Riattiva dalle impostazioni del browser/sistema.
                 </p>
               )}
             </div>

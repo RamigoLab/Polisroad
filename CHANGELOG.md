@@ -1,5 +1,49 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.8.8b] - 26 Giugno 2026
+
+### 🔔 Notifiche Push — implementazione completa
+
+**Problema:** Le notifiche push erano parzialmente implementate: la subscription veniva salvata correttamente, ma i messaggi inviati dall'Edge Function non venivano mai mostrati sul dispositivo perché:
+1. Il Service Worker (generato automaticamente da Workbox) non aveva nessun handler `push` → i messaggi arrivavano al browser e venivano scartati silenziosamente.
+2. L'Edge Function inviava il payload **in chiaro** (come stringa JSON grezza), violando il protocollo Web Push che richiede cifratura RFC 8291 (ECDH + AES-128-GCM). I push server moderni rifiutano o ignorano payload non cifrati.
+3. Nessuna UI admin per inviare notifiche senza chiamate manuali all'Edge Function.
+
+**Fix — `src/sw.js` (nuovo, strategia `injectManifest`):**
+- Handler `push`: riceve il messaggio, fa il parse del JSON, chiama `showNotification()`.
+- Handler `notificationclick`: chiude la notifica e porta l'utente all'URL specificato nel payload (apre l'app se non è aperta, la porta in primo piano se lo è già).
+- Handler `message { type: 'SKIP_WAITING' }`: compatibile con la modalità `prompt` del PwaUpdater.
+
+**Fix — `vite.config.js`:**
+- Strategia cambiata da `generateSW` (default) a `injectManifest` per usare il SW custom.
+- Manifest PWA corretto: aggiunte entry `purpose: 'maskable'` sulle icone (requisito Chrome per mostrare il prompt di installazione).
+
+**Fix — `supabase/functions/send-push/index.ts`:**
+- Payload ora cifrato correttamente secondo RFC 8291: ECDH efimero → HKDF (SHA-256) → AES-128-GCM.
+- Implementato in puro Deno/Web Crypto API (no dipendenze npm non disponibili in Edge Runtime).
+
+**Nuovo — `src/pages/admin/AdminNotifiche.jsx`:**
+- Tab "Notifiche" nel pannello admin.
+- Form per comporre titolo, testo, URL di destinazione e selezionare destinatari (tutti o singolo utente).
+- Contatore subscriber attivi con lista nomi/email.
+- Feedback immediato su invii riusciti/falliti e subscription scadute auto-rimosse.
+
+**Nuovo — `src/hooks/useInstallPrompt.js`:**
+- Cattura `beforeinstallprompt` e lo espone come `promptInstall()`.
+- Rileva se l'app è già installata (standalone mode).
+
+**Fix — `src/pages/Profilo.jsx`:**
+- Sezione "Installa l'app" con pulsante nativo che appare solo quando il browser segnala installabilità.
+- Badge "App installata" quando già in modalità standalone.
+
+## [1.8.8] - 26 Giugno 2026
+
+### 🐛 Fix — Account "in attesa" non si sblocca dopo approvazione admin
+- **Causa:** La schermata "Account in attesa di approvazione" era completamente statica: non interrogava Supabase dopo il caricamento iniziale. L'utente installato come PWA restava bloccato indefinitamente anche dopo che l'admin aveva approvato il suo account.
+- **Fix — `PendingApprovalScreen.jsx` (nuovo componente):** Polling automatico ogni 10 secondi su `refreshProfile()`. Quando `isApproved` diventa `true`, `App.jsx` smonta la schermata e accede all'app senza alcun intervento dell'utente.
+- **UX aggiunta:** pulsante "Verifica ora" per un controllo manuale immediato con feedback spinner; timestamp dell'ultimo controllo visibile sotto il messaggio.
+- **Fix — `useAuth.jsx`:** esposta `refreshProfile` nel valore del context per permettere ai componenti figli di ricaricare il profilo senza accesso diretto a `loadProfile`.
+
 ## [1.8.7] - 26 Giugno 2026
 
 ### 🐛 Fix — Errore al primo caricamento (login flash + schermata bianca)

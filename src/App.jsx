@@ -17,6 +17,7 @@ import { PwaUpdater } from './components/PwaUpdater';
 import { OfflineBanner } from './components/ui/OfflineBanner';
 import { SyncIndicator } from './components/ui/SyncIndicator';
 import { Onboarding, isOnboardingDone } from './components/Onboarding';
+import PendingApprovalScreen from './components/PendingApprovalScreen';
 import { useToast } from './components/ui/ToastManager';
 import { getItem, setItem, removeItem } from './utils/storage';
 
@@ -42,12 +43,13 @@ const AdminProntuario = lazy(() => import('./pages/admin/AdminProntuario').then(
 const AdminNormativa = lazy(() => import('./pages/admin/AdminNormativa').then(m => ({ default: m.AdminNormativa })));
 const AdminSegnalazioni = lazy(() => import('./pages/admin/AdminSegnalazioni').then(m => ({ default: m.AdminSegnalazioni })));
 const AdminUtenti = lazy(() => import('./pages/admin/AdminUtenti').then(m => ({ default: m.AdminUtenti })));
+const AdminNotifiche = lazy(() => import('./pages/admin/AdminNotifiche').then(m => ({ default: m.AdminNotifiche })));
 
 import posthog from 'posthog-js';
 
 // Inner component that can safely use useToast (inside ToastProvider)
 function AppInner() {
-  const { session, loading: authLoading, passwordRecovery, isApproved, profile, profileError, signOut } = useAuth();
+  const { session, loading: authLoading, passwordRecovery, isApproved, profile, profileError, signOut, refreshProfile } = useAuth();
   const queryClient = useQueryClient();
   const { loading: dataLoading, error: dataError } = useData();
   const { showToast } = useToast();
@@ -138,35 +140,13 @@ function AppInner() {
 
   // Account in attesa di approvazione admin
   if (session && !isApproved) {
-    // Se il profilo non è stato caricato per un errore RLS/rete, mostra un
-    // messaggio diverso invece di bloccare con la schermata di attesa
-    if (profileError || !profile) {
-      return (
-        <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', backgroundColor: 'var(--bg-global)' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚠️</div>
-          <h2 style={{ color: 'var(--color-primary)', marginBottom: '12px', fontSize: '1.3rem' }}>Errore caricamento profilo</h2>
-          <p style={{ color: 'var(--color-text-light)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '340px', marginBottom: '24px' }}>
-            Impossibile caricare i dati del tuo account. Verifica la connessione e riprova, oppure contatta l'amministratore.
-          </p>
-          <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>Account: <strong>{session.user?.email}</strong></p>
-          <div style={{ display: 'flex', gap: '12px', marginTop: '24px' }}>
-            <button onClick={() => window.location.reload()} style={{ padding: '12px 24px', backgroundColor: 'var(--color-primary)', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Riprova</button>
-            <button onClick={signOut} style={{ padding: '12px 24px', backgroundColor: 'transparent', color: 'var(--color-text-light)', border: '1px solid var(--color-border)', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Esci</button>
-          </div>
-        </div>
-      );
-    }
-    return (
-      <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '32px 24px', textAlign: 'center', backgroundColor: 'var(--bg-global)' }}>
-        <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⏳</div>
-        <h2 style={{ color: 'var(--color-primary)', marginBottom: '12px', fontSize: '1.3rem' }}>Account in attesa di approvazione</h2>
-        <p style={{ color: 'var(--color-text-light)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '320px', marginBottom: '24px' }}>
-          La tua registrazione è stata ricevuta. Un amministratore verificherà le tue credenziali e attiverà l'account a breve.
-        </p>
-        <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)' }}>Registrato come: <strong>{session.user?.email}</strong></p>
-        <button onClick={signOut} style={{ marginTop: '24px', padding: '12px 24px', backgroundColor: 'var(--color-accent)', color: '#fff', border: 'none', borderRadius: '10px', fontWeight: '600', cursor: 'pointer' }}>Esci</button>
-      </div>
-    );
+    return <PendingApprovalScreen
+      email={session.user?.email}
+      profileError={profileError}
+      profile={profile}
+      refreshProfile={refreshProfile}
+      signOut={signOut}
+    />;
   }
 
   if (!onboardingDone && session) {
@@ -233,6 +213,11 @@ function AppInner() {
       case 'admin_normativa': return (
         <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="normativa" {...props}><AdminNormativa /></AdminLayout>
+        </ProtectedRoute>
+      );
+      case 'admin_notifiche': return (
+        <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
+          <AdminLayout currentTab="notifiche" {...props}><AdminNotifiche /></AdminLayout>
         </ProtectedRoute>
       );
       default: return <Home {...props} />;

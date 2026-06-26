@@ -9,38 +9,61 @@ export default defineConfig({
     VitePWA({
       // 'prompt': il nuovo SW viene installato ma NON prende controllo finché
       // l'utente non clicca "Riavvia & Aggiorna" nel banner PwaUpdater.
-      // Con 'autoUpdate' il SW si aggiornava silenziosamente e needRefresh
-      // non veniva mai triggerato → il banner non appariva mai.
       registerType: 'prompt',
       injectRegister: 'auto',
 
-      workbox: {
-        cleanupOutdatedCaches: true,
-        // clientsClaim e skipWaiting rimossi: con registerType 'prompt'
-        // il controllo del take-over è in mano all'utente (updateServiceWorker(true))
+      // injectManifest: Workbox inietta il precache manifest nel nostro sw.js
+      // custom, dove gestiamo anche gli eventi push e notificationclick.
+      strategies: 'injectManifest',
+      srcDir: 'src',
+      filename: 'sw.js',
+
+      injectManifest: {
+        // Pattern dei file da precachare
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
       },
 
+      // Il manifest viene definito qui (autorità unica) — il file
+      // public/manifest.json viene ignorato in favore di questo.
+      // IMPORTANTE: serve `purpose: 'any maskable'` su almeno un'icona
+      // affinché Chrome mostri il prompt di installazione.
       manifest: {
         name: 'PolisRoad',
         short_name: 'PolisRoad',
-        description: 'Applicazione operativa per rilievi e prontuario',
-        theme_color: '#0f172a',
-        background_color: '#0f172a',
+        description: 'Codice della Strada per Forze dell\'Ordine',
+        theme_color: '#1a3a5c',
+        background_color: '#1a3a5c',
         display: 'standalone',
         start_url: '/',
+        scope: '/',
+        orientation: 'portrait',
         icons: [
           {
             src: '/icons/icon-192.png',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'maskable',
           },
           {
             src: '/icons/icon-512.png',
             sizes: '512x512',
-            type: 'image/png'
-          }
-        ]
-      }
+            type: 'image/png',
+            purpose: 'any',
+          },
+          {
+            src: '/icons/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable',
+          },
+        ],
+      },
     })
   ],
 
