@@ -12,6 +12,7 @@ export const AdminUtenti = () => {
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState('');
+  const [filterPending, setFilterPending] = useState(false);
   const [editingId, setEditingId] = useState(null);
   const [formData, setFormData] = useState({
     nome: '',
@@ -118,7 +119,10 @@ export const AdminUtenti = () => {
     }
   };
 
+  const pendingCount = users.filter(u => !u.approvato).length;
+
   const filteredUsers = users.filter(user => {
+    if (filterPending && user.approvato) return false;
     const searchLower = search.toLowerCase();
     return (
       (user.nome || '').toLowerCase().includes(searchLower) ||
@@ -175,6 +179,32 @@ export const AdminUtenti = () => {
             <Icon name="search" size={16} />
           </span>
         </div>
+      </div>
+
+      {/* Filtri rapidi */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '16px', flexWrap: 'wrap' }}>
+        <button
+          onClick={() => setFilterPending(false)}
+          style={{
+            padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '600',
+            cursor: 'pointer', border: 'none',
+            backgroundColor: !filterPending ? C.primary : C.card,
+            color: !filterPending ? '#fff' : C.textLight,
+          }}
+        >
+          Tutti ({users.length})
+        </button>
+        <button
+          onClick={() => setFilterPending(true)}
+          style={{
+            padding: '6px 14px', borderRadius: '20px', fontSize: '0.82rem', fontWeight: '600',
+            cursor: 'pointer', border: 'none',
+            backgroundColor: filterPending ? (C.warning || '#e67e22') : C.card,
+            color: filterPending ? '#fff' : C.textLight,
+          }}
+        >
+          ⏳ In attesa{pendingCount > 0 ? ` (${pendingCount})` : ''}
+        </button>
       </div>
 
       {loading && users.length === 0 ? (
@@ -271,10 +301,37 @@ export const AdminUtenti = () => {
                         {user.telefono && <span>Tel: {user.telefono}</span>}
                       </div>
                     </div>
-                    <div>
-                      <button onClick={() => handleEdit(user)} style={{ ...S.btnOutline, display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.85rem' }}>
-                        <Icon name="pen-line" size={13} /> Modifica
-                      </button>
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
+                      {/* Badge stato approvazione */}
+                      <span style={{
+                        display: 'inline-flex', alignItems: 'center', gap: '4px',
+                        backgroundColor: user.approvato ? `${C.success || '#27ae60'}18` : `${C.warning || '#e67e22'}18`,
+                        color: user.approvato ? (C.success || '#27ae60') : (C.warning || '#e67e22'),
+                        fontSize: '0.75rem', fontWeight: '700',
+                        padding: '3px 10px', borderRadius: '12px',
+                      }}>
+                        {user.approvato ? '✓ Approvato' : '⏳ In attesa'}
+                      </span>
+                      <div style={{ display: 'flex', gap: '8px' }}>
+                        {/* Toggle approvazione */}
+                        <button
+                          onClick={() => toggleApprovazione(user.id, user.approvato)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: '5px',
+                            padding: '6px 12px', fontSize: '0.82rem', fontWeight: '600',
+                            borderRadius: '8px', cursor: 'pointer', border: 'none',
+                            backgroundColor: user.approvato ? `${C.warning || '#e67e22'}18` : `${C.success || '#27ae60'}18`,
+                            color: user.approvato ? (C.warning || '#e67e22') : (C.success || '#27ae60'),
+                          }}
+                        >
+                          <Icon name={user.approvato ? 'ban' : 'check-circle'} size={13} />
+                          {user.approvato ? 'Sospendi' : 'Approva'}
+                        </button>
+                        {/* Modifica dati */}
+                        <button onClick={() => handleEdit(user)} style={{ ...S.btnOutline, display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.85rem' }}>
+                          <Icon name="pen-line" size={13} /> Modifica
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )}

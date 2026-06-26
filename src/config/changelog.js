@@ -14,6 +14,7 @@ const CHANGELOG_DATA = [
     version: '1.8.6',
     date: '26 Giugno 2026',
     items: [
+      'Pannello admin: approva o sospendi utenti con un tap, badge stato e filtro "In attesa"',
       'Risolto crash su Normativa, Prontuario, News, Preferiti e Ricerca (incompatibilità React Query v5)',
       'Accesso immediato per amministratori: risolto blocco improprio alla schermata di attesa approvazione',
       'Schermata di accesso: campi email e password ora visivamente uniformi',

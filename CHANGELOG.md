@@ -2,6 +2,11 @@
 
 ## [1.8.6] - 26 Giugno 2026
 
+### 👥 Admin — Gestione approvazione utenti
+- **Badge stato** su ogni utente in `AdminUtenti`: mostra "✓ Approvato" (verde) o "⏳ In attesa" (arancio)
+- **Pulsante Approva / Sospendi** direttamente nella card utente, senza aprire il modulo di modifica
+- **Filtro rapido** "In attesa (N)" per vedere immediatamente chi è in coda di approvazione
+
 ### 🐛 Fix critico — Crash di quasi tutte le pagine (React Query v5)
 - **Causa:** `onError` come opzione di `useQuery` è stato **rimosso in React Query v5** (è valido solo nelle `useMutation`); la sua presenza causava un'eccezione a runtime che faceva crashare il provider `DataContext`, rendendo `useData()` non funzionante in tutta l'app
 - **Pagine colpite:** Prontuario, Normativa, News, Preferiti, Ricerca, Home (tutte le sezioni che leggono dati da `DataContext` o dai hook collegati)
