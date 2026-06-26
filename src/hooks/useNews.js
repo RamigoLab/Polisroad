@@ -107,5 +107,6 @@ export const useNews = () => {
     }
   };
 
-  return { list, loading, add, update, remove };
+  const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.news });
+  return { list, loading, add, update, remove, refresh };
 };

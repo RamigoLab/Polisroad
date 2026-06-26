@@ -14,7 +14,7 @@ import { useGamificationContext } from '../context/GamificationContext';
 import { useDebounce } from '../hooks/useDebounce';
 
 export const Normativa = ({ onNavigate, navigationParams }) => {
-  const { list, loading } = useNormativa();
+  const { list, loading, refresh } = useNormativa();
   const { addXP } = useGamificationContext();
   const [search, setSearch] = useState('');
   

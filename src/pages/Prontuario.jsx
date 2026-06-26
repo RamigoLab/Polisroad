@@ -52,7 +52,7 @@ const SectionHeader = ({ label }) => (
 );
 
 export const Prontuario = ({ onNavigate, navigationParams }) => {
-  const { list, loading } = useProntuario();
+  const { list, loading, refresh } = useProntuario();
   const { preferiti, toggle } = usePreferiti();
   const { note, save } = useNote();
   const { showToast } = useToast();

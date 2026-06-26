@@ -10,7 +10,7 @@ import { useNews } from '../hooks/useNews';
 
 export const News = ({ onNavigate }) => {
   const [activeFilter, setActiveFilter] = React.useState('tutte');
-  const { list, loading } = useNews();
+  const { list, loading, refresh } = useNews();
 
   // Escludi categorie interne (banner/popup gestite in Home)
   const publishedNews = list.filter(n => n.pubblicato && n.categoria !== 'banner' && n.categoria !== 'popup');

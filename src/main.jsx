@@ -13,6 +13,7 @@ import { GamificationProvider } from './context/GamificationContext';
 import * as Sentry from '@sentry/react';
 
 import posthog from 'posthog-js';
+import { APP_VERSION } from './config/constants';
 
 
 // Inizializza Sentry per error monitoring in produzione.
@@ -84,7 +85,7 @@ createRoot(document.getElementById('root')).render(
       persistOptions={{
         persister: idbPersister,
         maxAge: 1000 * 60 * 60 * 24,  // 24 ore
-        buster: import.meta.env.VITE_CACHE_BUSTER || '1',
+        buster: import.meta.env.VITE_CACHE_BUSTER || APP_VERSION,
       }}
     >
       <AuthProvider>

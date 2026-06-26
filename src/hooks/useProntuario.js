@@ -105,5 +105,6 @@ export const useProntuario = () => {
     }
   };
 
-  return { list, loading, add, update, remove };
+  const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.prontuario });
+  return { list, loading, add, update, remove, refresh };
 };

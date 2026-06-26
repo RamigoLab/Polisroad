@@ -106,5 +106,6 @@ export const useNormativa = () => {
     }
   };
 
-  return { list, loading, add, update, remove };
+  const refresh = () => queryClient.invalidateQueries({ queryKey: QUERY_KEYS.normativa });
+  return { list, loading, add, update, remove, refresh };
 };

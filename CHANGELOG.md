@@ -7,6 +7,13 @@
 - **Pulsante Approva / Sospendi** direttamente nella card utente, senza aprire il modulo di modifica
 - **Filtro rapido** "In attesa (N)" per vedere immediatamente chi è in coda di approvazione
 
+### 🐛 Fix critico — Normativa, Prontuario e News non caricano (RLS + cache)
+- **Causa 1 — RLS mancante su `codice_strada`:** la tabella della normativa non aveva policy SELECT → con RLS attiva, nessun utente poteva leggere gli articoli → `getNormativa()` ritornava array vuoto o errore 42501
+- **Causa 2 — Deadlock RLS su policy admin di `prontuario`/`news`:** le policy INSERT/UPDATE/DELETE usavano `EXISTS (SELECT FROM profiles...)` ricorsivo (stesso bug già risolto per la tabella `profiles`)
+- **Fix `20260626_fix_data_tables_rls.sql`** *(nuovo)*: aggiunge policy SELECT pubblica su `codice_strada`; riscrive tutte le policy admin di `codice_strada`, `prontuario`, `news` usando `is_admin()` SECURITY DEFINER
+- **Causa 3 — `refresh` non definito nelle pagine:** `Normativa.jsx`, `Prontuario.jsx`, `News.jsx` passavano `onRefresh={refresh}` a `PageWrapper` ma `refresh` non era esportato dagli hook; aggiunto `refresh` a `useNormativa`, `useProntuario`, `useNews` e alle destructuring nelle pagine
+- **Cache buster:** `main.jsx` ora usa `APP_VERSION` come buster della cache IndexedDB persista, garantendo che versioni vecchie con dati corrotti vengano invalidate al deploy
+
 ### 🐛 Fix critico — Crash di quasi tutte le pagine (React Query v5)
 - **Causa:** `onError` come opzione di `useQuery` è stato **rimosso in React Query v5** (è valido solo nelle `useMutation`); la sua presenza causava un'eccezione a runtime che faceva crashare il provider `DataContext`, rendendo `useData()` non funzionante in tutta l'app
 - **Pagine colpite:** Prontuario, Normativa, News, Preferiti, Ricerca, Home (tutte le sezioni che leggono dati da `DataContext` o dai hook collegati)
