@@ -49,7 +49,7 @@ import posthog from 'posthog-js';
 
 // Inner component that can safely use useToast (inside ToastProvider)
 function AppInner() {
-  const { session, loading: authLoading, passwordRecovery, isApproved, profile, profileError, signOut, refreshProfile } = useAuth();
+  const { session, loading: authLoading, passwordRecovery, isApproved, profile, profileError, profileLoading, signOut, refreshProfile } = useAuth();
   const queryClient = useQueryClient();
   const { loading: dataLoading, error: dataError } = useData();
   const { showToast } = useToast();
@@ -138,11 +138,14 @@ function AppInner() {
   if (!session) return <Auth onNavigate={navigate} />;
   if (passwordRecovery) return <Auth passwordUpdateMode onNavigate={navigate} />;
 
-  // Account in attesa di approvazione admin
-  if (session && !isApproved) {
+  // Account in attesa di approvazione admin.
+  // Non mostrare la pending screen finché il profilo è ancora in caricamento
+  // (evita il flash di errore per utenti validi durante il caricamento iniziale).
+  if (session && !isApproved && !profileLoading) {
     return <PendingApprovalScreen
       email={session.user?.email}
       profileError={profileError}
+      profileLoading={profileLoading}
       profile={profile}
       refreshProfile={refreshProfile}
       signOut={signOut}

@@ -1,6 +1,28 @@
 # 📝 CHANGELOG - PolisRoad
 
-## [1.8.8 ] - 26 Giugno 2026
+## [1.8.9] - 26 Giugno 2026
+
+### 🐛 Fix — Race condition auth & flash errore profilo
+
+**Bug 1 — iOS: utente approvato non entra (race condition TOKEN_REFRESHED)**
+- **Causa:** `onAuthStateChange` in `useAuth.jsx` chiamava `loadProfile` ad ogni evento auth, incluso `TOKEN_REFRESHED` (refresh silenzioso del JWT). Questo causava ricaricamenti continui del profilo con potenziali stati inconsistenti: il profilo poteva tornare a `null` nel mezzo del ciclo, bloccando indefinitamente un utente già approvato sulla schermata di attesa.
+- **Fix — `useAuth.jsx`:** aggiunta guardia `if (event === 'TOKEN_REFRESHED') return;` prima della chiamata a `loadProfile`. Il profilo non viene ricaricato su refresh del token (i dati utente non cambiano con un TOKEN_REFRESHED).
+
+**Bug 2 — Flash "Errore caricamento profilo" per utenti validi**
+- **Causa:** `PendingApprovalScreen` mostrava la schermata di errore quando `!profile`, ma durante il caricamento iniziale `profile` è `null` anche per utenti validi con account approvato → flash di errore prima che il profilo fosse caricato.
+- **Fix — `PendingApprovalScreen.jsx`:** aggiunta prop `profileLoading`. Quando `profileLoading && !profile && !profileError`, mostra uno spinner neutro invece della schermata di errore.
+- **Fix — `App.jsx`:** estratta `profileLoading` dal context e passata a `PendingApprovalScreen`. La schermata di attesa approvazione è ora mostrata solo quando `!profileLoading` (profilo caricato), prevenendo il flash.
+
+**Bug 3 — Crash `TypeError` in `Home.jsx` con news senza categoria**
+- **Causa:** `n.categoria.toLowerCase()` crashava con `TypeError: Cannot read properties of null` quando una news aveva `categoria: null`.
+- **Fix — `Home.jsx`:** sostituito `n.categoria.toLowerCase()` con `n.categoria?.toLowerCase()` su tutte e tre le righe (banner, popup, notifica).
+
+**Versione package.json**
+- Corretta versione da `1.8.8b` (non conforme) a `1.8.9`.
+
+---
+
+## [1.8.8] - 26 Giugno 2026
 
 ### 🔔 Notifiche Push — implementazione completa
 

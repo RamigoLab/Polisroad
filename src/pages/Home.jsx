@@ -13,9 +13,9 @@ export const Home = ({ onNavigate }) => {
   const { profile } = useAuth();
   const { list: newsList } = useNews();
   const isAdmin = profile?.ruolo === 'admin';
-  const bannerNews = newsList.find(n => n.categoria.toLowerCase() === 'banner' && n.pubblicato);
-  const popupNewsList = newsList.filter(n => n.categoria.toLowerCase() === 'popup' && n.pubblicato);
-  const notificaNewsList = newsList.filter(n => n.categoria.toLowerCase() === 'notifica' && n.pubblicato);
+  const bannerNews = newsList.find(n => n.categoria?.toLowerCase() === 'banner' && n.pubblicato);
+  const popupNewsList = newsList.filter(n => n.categoria?.toLowerCase() === 'popup' && n.pubblicato);
+  const notificaNewsList = newsList.filter(n => n.categoria?.toLowerCase() === 'notifica' && n.pubblicato);
   
   const [showPopup, setShowPopup] = useState(false);
   const [currentPopup, setCurrentPopup] = useState(null);

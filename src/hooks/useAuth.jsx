@@ -104,6 +104,11 @@ export const AuthProvider = ({ children }) => {
         setSession(session);
 
         if (session?.user?.id) {
+          // TOKEN_REFRESHED è un aggiornamento silenzioso del JWT: non serve
+          // ricaricare il profilo perché i dati utente non sono cambiati.
+          // Ricaricare qui causava race condition e ricaricamenti continui.
+          // SIGNED_OUT / USER_DELETED: profilo già azzerato sotto
+          if (event === 'TOKEN_REFRESHED') return;
           loadProfile(session.user.id);
         } else {
           setProfile(null);

@@ -20,7 +20,7 @@ import { logger } from '../utils/logger';
 
 const POLL_INTERVAL_MS = 10_000; // 10 secondi
 
-export default function PendingApprovalScreen({ email, profileError, profile, refreshProfile, signOut }) {
+export default function PendingApprovalScreen({ email, profileError, profileLoading, profile, refreshProfile, signOut }) {
   const [checking, setChecking] = useState(false);
   const [lastChecked, setLastChecked] = useState(null);
   const checkingRef = useRef(false); // ref per evitare stale closure nel setInterval
@@ -82,6 +82,18 @@ export default function PendingApprovalScreen({ email, profileError, profile, re
     fontWeight: '600',
     cursor: 'pointer',
   };
+
+  // --- Schermata caricamento profilo (primo avvio) ---
+  if (profileLoading && !profile && !profileError) {
+    return (
+      <div style={base}>
+        <Spinner color="var(--color-primary)" size={32} />
+        <p style={{ color: 'var(--color-text-light)', marginTop: '16px', fontSize: '0.95rem' }}>
+          Caricamento profilo…
+        </p>
+      </div>
+    );
+  }
 
   // --- Schermata errore profilo (RLS / rete) ---
   if (profileError || !profile) {
@@ -153,15 +165,15 @@ export default function PendingApprovalScreen({ email, profileError, profile, re
   );
 }
 
-function Spinner() {
+function Spinner({ color = '#fff', size = 14 }) {
   return (
     <span
       style={{
         display: 'inline-block',
-        width: '14px',
-        height: '14px',
-        border: '2px solid rgba(255,255,255,0.4)',
-        borderTopColor: '#fff',
+        width: `${size}px`,
+        height: `${size}px`,
+        border: `${size <= 14 ? 2 : 3}px solid ${color === '#fff' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.15)'}`,
+        borderTopColor: color,
         borderRadius: '50%',
         animation: 'spin 0.7s linear infinite',
       }}
