@@ -157,9 +157,17 @@ export const AdminNotifiche = () => {
       {/* Stats subscriber */}
       <div style={{ ...card, display: 'flex', alignItems: 'center', gap: '14px' }}>
         <span style={{ fontSize: '2rem' }}>📲</span>
-        <div>
+        <div style={{ flex: 1 }}>
           {subscribersLoading
             ? <span style={{ color: C.textLight }}>Caricamento…</span>
+            : subscribersError
+            ? <span style={{ color: C.danger, fontSize: '0.85rem' }}>
+                ⚠️ {subscribersError}
+                <br />
+                <small style={{ color: C.textLight }}>
+                  Verifica che la migration SQL <code>20260623_create_push_subscriptions.sql</code> sia stata eseguita su Supabase e che la policy admin sia corretta (usa <code>is_admin()</code> SECURITY DEFINER).
+                </small>
+              </span>
             : <>
                 <span style={{ fontSize: '1.4rem', fontWeight: '700', color: C.accent }}>
                   {subscribers.length}
@@ -167,6 +175,11 @@ export const AdminNotifiche = () => {
                 <span style={{ color: C.textLight, marginLeft: '6px', fontSize: '0.9rem' }}>
                   {subscribers.length === 1 ? 'utente iscritto' : 'utenti iscritti'}
                 </span>
+                {subscribers.length === 0 && (
+                  <p style={{ fontSize: '0.8rem', color: C.textLight, margin: '4px 0 0' }}>
+                    Nessun dispositivo registrato. Gli utenti devono cliccare "Attiva" nel Profilo.
+                  </p>
+                )}
               </>
           }
         </div>
