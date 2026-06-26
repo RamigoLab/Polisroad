@@ -11,20 +11,24 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
-    version: '1.8.8b',
+    version: '1.8.9',
     date: '26 Giugno 2026',
     items: [
-      'Notifiche push ora funzionanti: il dispositivo le riceve e mostra anche a schermo spento',
-      'Toccando una notifica si apre l\'app direttamente nella sezione corretta',
-      'Installazione PWA ripristinata: il pulsante "Installa" riappare nel Profilo quando disponibile',
-      'Pannello admin: nuova sezione "Notifiche" per inviare messaggi push a tutti o a singoli utenti',
+      'Risolto blocco iOS: gli utenti approvati ora accedono correttamente senza ricaricare l\'app',
+      'Eliminato il flash "Errore caricamento profilo" mostrato erroneamente durante il caricamento iniziale',
+      'Aggiornamento automatico su desktop migliorato: il browser controlla il nuovo SW anche quando la scheda rimane aperta',
+      'Corretti crash nella Home con notizie prive di categoria',
     ],
   },
   {
     version: '1.8.8',
     date: '26 Giugno 2026',
     items: [
-      'Account in attesa: l\'app si sblocca automaticamente non appena l\'amministratore approva l\'account, senza ricaricare',
+      'Notifiche push ora funzionanti: il dispositivo le riceve e mostra anche a schermo spento',
+      'Toccando una notifica si apre l\'app direttamente nella sezione corretta',
+      'Installazione PWA ripristinata: il pulsante "Installa" riappare nel Profilo quando disponibile',
+      'Pannello admin: nuova sezione "Notifiche" per inviare messaggi push a tutti o a singoli utenti',
+      'Account in attesa: l\'app si sblocca automaticamente non appena l\'amministratore approva l\'account',
       'Nuovo pulsante "Verifica ora" nella schermata di attesa per un controllo manuale immediato',
     ],
   },
