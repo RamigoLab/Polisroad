@@ -8,11 +8,20 @@ import { getItem, setItem } from '../utils/storage';
 const OFFLINE_READY_DISMISSED_KEY = 'polisroad_pwa_offline_dismissed';
 
 const PwaUpdater = () => {
+  const [manualNeedRefresh, setManualNeedRefresh] = useState(false);
+  const [manualOfflineReady, setManualOfflineReady] = useState(false);
+
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
     updateServiceWorker,
   } = useRegisterSW({
+    onNeedRefresh() {
+      setManualNeedRefresh(true);
+    },
+    onOfflineReady() {
+      setManualOfflineReady(true);
+    },
     onRegistered() {
       // optional polling logic
     },
@@ -25,16 +34,20 @@ const PwaUpdater = () => {
   const [offlineReadyDismissed] = useState(() => !!getItem(OFFLINE_READY_DISMISSED_KEY));
 
   const close = () => {
-    if (offlineReady && !needRefresh) {
+    if ((offlineReady || manualOfflineReady) && !needRefresh && !manualNeedRefresh) {
       // Persiste il dismiss del banner "pronta offline" per non rifarlo vedere
       setItem(OFFLINE_READY_DISMISSED_KEY, true);
     }
     setOfflineReady(false);
     setNeedRefresh(false);
+    setManualNeedRefresh(false);
+    setManualOfflineReady(false);
   };
 
   // needRefresh ha priorità su offlineReady
-  const showBanner = needRefresh || (offlineReady && !offlineReadyDismissed);
+  const isNeedRefresh = needRefresh || manualNeedRefresh;
+  const isOfflineReady = offlineReady || manualOfflineReady;
+  const showBanner = isNeedRefresh || (isOfflineReady && !offlineReadyDismissed);
 
   if (!showBanner) return null;
 
@@ -57,7 +70,7 @@ const PwaUpdater = () => {
       }}
     >
       <div style={{ marginBottom: '12px', color: C.text }}>
-        {needRefresh ? (
+        {isNeedRefresh ? (
           <span>
             <strong style={{ color: C.primary, display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
               <Icon name="rocket" size={18} /> Nuovo aggiornamento disponibile!
@@ -72,7 +85,7 @@ const PwaUpdater = () => {
         )}
       </div>
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
-        {needRefresh && (
+        {isNeedRefresh && (
           <button
             onClick={() => updateServiceWorker(true)}
             style={{

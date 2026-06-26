@@ -1,5 +1,16 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.8.7] - 26 Giugno 2026
+
+### 🐛 Fix — Errore al primo caricamento (login flash + schermata bianca)
+- **Causa:** `App.jsx` usava `loading = authLoading || dataLoading` come gate per mostrare lo Splash/login. `dataLoading` (React Query che idrata da IndexedDB) rimaneva `true` dopo che `authLoading` era già `false` → la Splash scompariva e React valutava `session === null` → schermata di login mostrata erroneamente anche per utenti già autenticati. Un refresh ricaricava con la cache già pronta e non si manifestava.
+- **Fix:** `loading` ora è solo `authLoading`. I dati delle singole pagine hanno già i propri skeleton loader — `dataLoading` non deve mai bloccare il render dell'app.
+
+### 🐛 Fix — Notifica aggiornamento PWA mai mostrata
+- **Causa:** `registerType: 'autoUpdate'` + `skipWaiting: true` + `clientsClaim: true` causava l'aggiornamento silenzioso del service worker senza mai triggerare `needRefresh` → il banner `PwaUpdater` non appariva mai.
+- **Fix 1 — `vite.config.js`:** `registerType` cambiato in `'prompt'`; rimossi `skipWaiting` e `clientsClaim` da workbox (il controllo del take-over è ora in mano all'utente via `updateServiceWorker(true)`).
+- **Fix 2 — `PwaUpdater.jsx`:** aggiunti callback `onNeedRefresh` e `onOfflineReady` richiesti dalla modalità `prompt`; stato locale `manualNeedRefresh`/`manualOfflineReady` per garantire il trigger del banner.
+
 ## [1.8.6] - 26 Giugno 2026
 
 ### 👥 Admin — Gestione approvazione utenti

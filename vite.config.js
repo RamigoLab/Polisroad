@@ -7,13 +7,17 @@ export default defineConfig({
     react(),
 
     VitePWA({
-      registerType: 'autoUpdate',
+      // 'prompt': il nuovo SW viene installato ma NON prende controllo finché
+      // l'utente non clicca "Riavvia & Aggiorna" nel banner PwaUpdater.
+      // Con 'autoUpdate' il SW si aggiornava silenziosamente e needRefresh
+      // non veniva mai triggerato → il banner non appariva mai.
+      registerType: 'prompt',
       injectRegister: 'auto',
 
       workbox: {
         cleanupOutdatedCaches: true,
-        clientsClaim: true,
-        skipWaiting: true
+        // clientsClaim e skipWaiting rimossi: con registerType 'prompt'
+        // il controllo del take-over è in mano all'utente (updateServiceWorker(true))
       },
 
       manifest: {

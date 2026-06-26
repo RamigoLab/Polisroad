@@ -55,7 +55,10 @@ function AppInner() {
   // Initialize gamification on app load
   useInitializeGamification();
 
-  const loading = authLoading || dataLoading;
+  // Solo authLoading blocca il gate iniziale (sessione + profilo).
+  // dataLoading (React Query / IndexedDB) non deve bloccare: le singole
+  // pagine mostrano i loro skeleton loader mentre i dati arrivano.
+  const loading = authLoading;
   const [currentPage, setCurrentPage] = useState(() => {
     const saved = getItem('polisroad_current_page');
     return saved || 'home';

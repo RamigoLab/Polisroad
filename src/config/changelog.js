@@ -11,6 +11,14 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '1.8.7',
+    date: '26 Giugno 2026',
+    items: [
+      'Risolto errore al primo caricamento: l\'app non mostrava più la schermata di login agli utenti già autenticati',
+      'Notifica aggiornamento PWA ripristinata: il banner "Nuovo aggiornamento disponibile!" ora appare correttamente',
+    ],
+  },
+  {
     version: '1.8.6',
     date: '26 Giugno 2026',
     items: [
