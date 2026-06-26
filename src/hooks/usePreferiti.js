@@ -33,7 +33,6 @@ export const usePreferiti = () => {
     queryKey: queryKey(userId),
     queryFn: () => getPreferiti(userId),
     enabled: !!userId,
-    onError: (e) => logger.error('Failed to load favorites:', e),
   });
 
   // ─── MUTATION: toggle preferito con aggiornamento ottimistico ─────────────

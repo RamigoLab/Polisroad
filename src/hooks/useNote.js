@@ -30,7 +30,6 @@ export const useNote = () => {
     queryKey: queryKey(userId),
     queryFn: () => getNote(userId),
     enabled: !!userId,
-    onError: (e) => logger.error('Failed to load notes:', e),
   });
 
   // ─── MUTATION: salva/elimina nota con aggiornamento ottimistico ───────────

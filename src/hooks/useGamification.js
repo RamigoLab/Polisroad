@@ -23,7 +23,6 @@ export const useGamification = () => {
     queryKey: queryKey(userId),
     queryFn: () => getGamificationStats(userId),
     enabled: !!userId && isSupabaseConfigured,
-    onError: (e) => logger.error('Error fetching gamification stats:', e),
   });
 
   const error = queryError?.message || null;

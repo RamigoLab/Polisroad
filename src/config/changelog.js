@@ -14,6 +14,7 @@ const CHANGELOG_DATA = [
     version: '1.8.6',
     date: '26 Giugno 2026',
     items: [
+      'Risolto crash su Normativa, Prontuario, News, Preferiti e Ricerca (incompatibilità React Query v5)',
       'Accesso immediato per amministratori: risolto blocco improprio alla schermata di attesa approvazione',
       'Schermata di accesso: campi email e password ora visivamente uniformi',
       'Privacy Policy e Termini di Servizio leggibili direttamente dalla schermata di login',

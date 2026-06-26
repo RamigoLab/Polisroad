@@ -35,7 +35,6 @@ export const DataProvider = ({ children }) => {
     staleTime: 1000 * 60 * 30,   // 30 min: dati stabili
     gcTime: 1000 * 60 * 60 * 24, // 24 ore in cache
     retry: 2,
-    onError: (e) => logger.error('Prontuario fetch error:', e),
   });
 
   // ─── NORMATIVA ───────────────────────────────────────────────────────────
@@ -49,7 +48,6 @@ export const DataProvider = ({ children }) => {
     staleTime: 1000 * 60 * 30,
     gcTime: 1000 * 60 * 60 * 24,
     retry: 2,
-    onError: (e) => logger.error('Normativa fetch error:', e),
   });
 
   // ─── NEWS ─────────────────────────────────────────────────────────────────
@@ -63,7 +61,6 @@ export const DataProvider = ({ children }) => {
     staleTime: 1000 * 60 * 5,    // 5 min: news più dinamiche
     gcTime: 1000 * 60 * 60 * 12,
     retry: 2,
-    onError: (e) => logger.error('News fetch error:', e),
   });
 
   const loading = prontuarioLoading || normativaLoading || newsLoading;
