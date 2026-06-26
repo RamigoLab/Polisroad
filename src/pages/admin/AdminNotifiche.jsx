@@ -40,12 +40,34 @@ export const AdminNotifiche = () => {
       setSubscribersLoading(true);
       setSubscribersError(null);
       try {
-        const { data, error } = await supabase
+        // 1. Recupera tutte le subscription
+        const { data: subs, error: subsError } = await supabase
           .from('push_subscriptions')
-          .select('user_id, updated_at, profiles(nome, cognome, email)')
+          .select('user_id, updated_at')
           .order('updated_at', { ascending: false });
-        if (error) throw error;
-        setSubscribers(data || []);
+        if (subsError) throw subsError;
+
+        if (!subs || subs.length === 0) {
+          setSubscribers([]);
+          return;
+        }
+
+        // 2. Recupera i profili degli utenti iscritti (FK separata da auth.users a profiles)
+        const userIds = [...new Set(subs.map(s => s.user_id))];
+        const { data: profiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, nome, cognome, email')
+          .in('id', userIds);
+        if (profilesError) throw profilesError;
+
+        // 3. Merge client-side
+        const profileMap = Object.fromEntries((profiles || []).map(p => [p.id, p]));
+        const merged = subs.map(s => ({
+          ...s,
+          profiles: profileMap[s.user_id] || null,
+        }));
+
+        setSubscribers(merged);
       } catch (err) {
         logger.error('AdminNotifiche: caricamento subscriber', err);
         setSubscribersError(err.message || 'Errore durante il caricamento dei destinatari');
