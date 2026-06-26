@@ -88,15 +88,28 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-
-      if (session?.user?.id) {
-        loadProfile(session.user.id);
-      } else {
+    supabase.auth.getSession()
+      .then(({ data: { session }, error }) => {
+        if (error) {
+          logger.error('getSession error:', error.message);
+          setLoading(false);
+          return;
+        }
+        setSession(session);
+        if (session?.user?.id) {
+          // Segnala subito che il profilo è in caricamento così App.jsx
+          // non mostra la pending screen per un frame con profileLoading=false
+          setProfileLoading(true);
+          loadProfile(session.user.id);
+        } else {
+          setLoading(false);
+        }
+      })
+      .catch((err) => {
+        // Supabase irraggiungibile: sblocca comunque il gate di caricamento
+        logger.error('getSession unexpected error:', err);
         setLoading(false);
-      }
-    });
+      });
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
@@ -185,10 +198,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
+    // Resetta sempre lo stato locale indipendentemente dall'esito della chiamata
+    setProfile(null);
+    setProfileError(false);
+    setPasswordRecovery(false);
+
     if (!isSupabaseConfigured || !supabase) {
       localStorage.removeItem('polisroad_demo_session');
       setSession(null);
-      setProfile(null);
       return { error: null };
     }
 
@@ -196,6 +213,9 @@ export const AuthProvider = ({ children }) => {
       await signOutService();
       return { error: null };
     } catch (err) {
+      // Anche se signOut fallisce, lo stato locale è già pulito
+      logger.warn('signOut API error (stato locale già resettato):', err);
+      setSession(null);
       return { error: err };
     }
   };
