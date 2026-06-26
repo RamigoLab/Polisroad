@@ -2,16 +2,16 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import React from 'react';
 
-vi.mock('../hooks/useSyncQueue', () => ({
+vi.mock('../../hooks/useSyncQueue', () => ({
   useSyncQueue: () => ({ addToQueue: vi.fn() }),
 }));
-vi.mock('../styles/theme', () => ({ C: { primary: '#000', text: '#000', textLight: '#999', danger: '#c00', warning: '#f90', accent: '#00f', border: '#ccc', surface: '#eee' } }));
-vi.mock('../styles/styles', () => ({ S: { card: {}, warningBox: {}, infoBox: {}, dangerBox: {}, infoBoxTitle: {}, dangerBoxTitle: {}, btnCancel: {}, btnPrimarySmall: {}, btnPrimary: {}, valueDanger: {}, valueSuccess: {} } }));
-vi.mock('../styles/pages', () => ({ PS: { prontuarioDetailBody: {}, prontuarioSanzioniGrid: {}, prontuarioSanzioniCell: {}, prontuarioSanzioniLabel: {}, prontuarioNoteBlock: {}, prontuarioMemoBlock: {}, prontuarioMemoHeader: {} } }));
-vi.mock('./ui/Badge', () => ({ Badge: ({ children }) => <span>{children}</span> }));
-vi.mock('./ui/Icon', () => ({ Icon: ({ name }) => <span aria-hidden>{name}</span> }));
+vi.mock('../../styles/theme', () => ({ C: { primary: '#000', text: '#000', textLight: '#999', danger: '#c00', warning: '#f90', accent: '#00f', border: '#ccc', surface: '#eee' } }));
+vi.mock('../../styles/styles', () => ({ S: { card: {}, warningBox: {}, infoBox: {}, dangerBox: {}, infoBoxTitle: {}, dangerBoxTitle: {}, btnCancel: {}, btnPrimarySmall: {}, btnPrimary: {}, valueDanger: {}, valueSuccess: {} } }));
+vi.mock('../../styles/pages', () => ({ PS: { prontuarioDetailBody: {}, prontuarioSanzioniGrid: {}, prontuarioSanzioniCell: {}, prontuarioSanzioniLabel: {}, prontuarioNoteBlock: {}, prontuarioMemoBlock: {}, prontuarioMemoHeader: {} } }));
+vi.mock('../ui/Badge', () => ({ Badge: ({ children }) => <span>{children}</span> }));
+vi.mock('../ui/Icon', () => ({ Icon: ({ name }) => <span aria-hidden>{name}</span> }));
 
-import { ProntuarioDetail } from '../components/ProntuarioDetail';
+import { ProntuarioDetail } from '../ProntuarioDetail';
 
 const mockItem = {
   id: 1,

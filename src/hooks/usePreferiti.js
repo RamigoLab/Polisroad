@@ -15,24 +15,15 @@ export const usePreferiti = () => {
   const queryClient = useQueryClient();
   const { addToQueue } = useSyncQueue();
 
-  // ─── MOCK (no Supabase) ───────────────────────────────────────────────────
-  if (!USE_SUPABASE) {
-    const saved = localStorage.getItem('cds_preferiti');
-    const preferiti = saved ? JSON.parse(saved) : [];
-    const toggle = (id) => {
-      hapticLight();
-      const isFav = preferiti.includes(id);
-      const next = isFav ? preferiti.filter(x => x !== id) : [...preferiti, id];
-      localStorage.setItem('cds_preferiti', JSON.stringify(next));
-    };
-    return { preferiti, error: null, toggle, togglePreferito: toggle, isPreferito: (id) => preferiti.includes(id) };
-  }
+  // ─── LOCAL STATE FOR MOCK (no Supabase) ───────────────────────────────────
+  const savedMock = localStorage.getItem('cds_preferiti');
+  const mockPreferiti = savedMock ? JSON.parse(savedMock) : [];
 
   // ─── QUERY: carica preferiti (con cache 5 min) ────────────────────────────
   const { data: preferiti = [], error } = useQuery({
     queryKey: queryKey(userId),
     queryFn: () => getPreferiti(userId),
-    enabled: !!userId,
+    enabled: !!userId && USE_SUPABASE,
   });
 
   // ─── MUTATION: toggle preferito con aggiornamento ottimistico ─────────────
@@ -73,13 +64,24 @@ export const usePreferiti = () => {
     },
   });
 
-  const toggle = (id) => mutation.mutate(id);
+  const toggle = (id) => {
+    if (!USE_SUPABASE) {
+      hapticLight();
+      const isFav = mockPreferiti.includes(id);
+      const next = isFav ? mockPreferiti.filter(x => x !== id) : [...mockPreferiti, id];
+      localStorage.setItem('cds_preferiti', JSON.stringify(next));
+      return;
+    }
+    mutation.mutate(id);
+  };
+
+  const finalPreferiti = USE_SUPABASE ? preferiti : mockPreferiti;
 
   return {
-    preferiti,
-    error: error || null,
+    preferiti: finalPreferiti,
+    error: USE_SUPABASE ? (error || null) : null,
     toggle,
     togglePreferito: toggle,
-    isPreferito: (id) => preferiti.includes(id),
+    isPreferito: (id) => finalPreferiti.includes(id),
   };
 };

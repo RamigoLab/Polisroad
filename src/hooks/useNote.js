@@ -13,23 +13,15 @@ export const useNote = () => {
   const queryClient = useQueryClient();
   const { addToQueue } = useSyncQueue();
 
-  // ─── MOCK (no Supabase) ───────────────────────────────────────────────────
-  if (!USE_SUPABASE) {
-    const saved = localStorage.getItem('cds_note');
-    const note = saved ? JSON.parse(saved) : {};
-    const save = (prontuarioId, testo) => {
-      const updated = { ...note, [prontuarioId]: testo };
-      if (!testo?.trim()) delete updated[prontuarioId];
-      localStorage.setItem('cds_note', JSON.stringify(updated));
-    };
-    return { note, error: null, save, getNota: (id) => note[id] || '' };
-  }
+  // ─── LOCAL STATE FOR MOCK (no Supabase) ───────────────────────────────────
+  const savedMock = localStorage.getItem('cds_note');
+  const mockNote = savedMock ? JSON.parse(savedMock) : {};
 
   // ─── QUERY: carica tutte le note utente (con cache) ───────────────────────
   const { data: note = {}, error } = useQuery({
     queryKey: queryKey(userId),
     queryFn: () => getNote(userId),
-    enabled: !!userId,
+    enabled: !!userId && USE_SUPABASE,
   });
 
   // ─── MUTATION: salva/elimina nota con aggiornamento ottimistico ───────────
@@ -73,12 +65,22 @@ export const useNote = () => {
     },
   });
 
-  const save = (prontuarioId, testo) => mutation.mutateAsync({ prontuarioId, testo });
+  const save = (prontuarioId, testo) => {
+    if (!USE_SUPABASE) {
+      const updated = { ...mockNote, [prontuarioId]: testo };
+      if (!testo?.trim()) delete updated[prontuarioId];
+      localStorage.setItem('cds_note', JSON.stringify(updated));
+      return Promise.resolve();
+    }
+    return mutation.mutateAsync({ prontuarioId, testo });
+  };
+
+  const finalNote = USE_SUPABASE ? note : mockNote;
 
   return {
-    note,
-    error: error || null,
+    note: finalNote,
+    error: USE_SUPABASE ? (error || null) : null,
     save,
-    getNota: (id) => note[id] || '',
+    getNota: (id) => finalNote[id] || '',
   };
 };

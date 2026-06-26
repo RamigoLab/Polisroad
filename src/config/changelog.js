@@ -15,8 +15,11 @@ const CHANGELOG_DATA = [
     date: '26 Giugno 2026',
     items: [
       'Risolto blocco iOS: gli utenti approvati ora accedono correttamente senza ricaricare l\'app',
-      'Eliminato il flash "Errore caricamento profilo" mostrato erroneamente durante il caricamento iniziale',
+      'Eliminato il flash "Errore caricamento profilo" mostrato erroneamente al primo avvio',
+      'Risolto il loop infinito di sincronizzazione offline al boot o al cambio rete',
+      'Abilitato il caricamento del database locale anche quando configurato senza Supabase (Rules of Hooks fix)',
       'Aggiornamento automatico su desktop migliorato: il browser controlla il nuovo SW anche quando la scheda rimane aperta',
+      'Notifiche push: sezione profilo sempre visibile con dettagli configurazione / supporto browser',
       'Corretti crash nella Home con notizie prive di categoria',
     ],
   },

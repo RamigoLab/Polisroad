@@ -22,8 +22,19 @@ const PwaUpdater = () => {
     onOfflineReady() {
       setManualOfflineReady(true);
     },
-    onRegistered() {
-      // optional polling logic
+    onRegistered(registration) {
+      if (!registration) return;
+      // Controllo aggiornamenti ogni ora (60 minuti)
+      setInterval(() => {
+        registration.update().catch(err => logger.error('SW polling update error', err));
+      }, 60 * 60 * 1000);
+
+      // Controllo aggiornamenti quando l'utente riattiva la scheda
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') {
+          registration.update().catch(err => logger.error('SW visibility update error', err));
+        }
+      });
     },
     onRegisterError(error) {
       logger.error('SW registration error', error);

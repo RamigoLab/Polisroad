@@ -12,12 +12,10 @@ const mockStats = {
 
 const mockSetQueryData = vi.fn();
 const mockInvalidateQueries = vi.fn();
+const mockUseQuery = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: ({ enabled }) => {
-    if (!enabled) return { data: null, isLoading: false, error: null };
-    return { data: mockStats, isLoading: false, error: null };
-  },
+  useQuery: (...args) => mockUseQuery(...args),
   useMutation: () => ({ mutate: vi.fn() }),
   useQueryClient: () => ({
     setQueryData: mockSetQueryData,
@@ -39,7 +37,7 @@ const mockUpdateStats = vi.fn().mockResolvedValue(undefined);
 const mockInsertXp  = vi.fn().mockResolvedValue(undefined);
 
 vi.mock('../../services/gamificationService', () => ({
-  getGamificationStats: vi.fn().mockResolvedValue(mockStats),
+  getGamificationStats: vi.fn(() => Promise.resolve(mockStats)),
   updateGamificationStats: (...args) => mockUpdateStats(...args),
   insertXpHistory: (...args) => mockInsertXp(...args),
 }));
@@ -58,6 +56,10 @@ import { useGamification } from '../useGamification';
 describe('useGamification', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mockUseQuery.mockImplementation(({ enabled }) => {
+      if (!enabled) return { data: null, isLoading: false, error: null };
+      return { data: mockStats, isLoading: false, error: null };
+    });
   });
 
   it('espone correttamente le stats dalla cache', () => {
@@ -99,7 +101,7 @@ describe('useGamification', () => {
   it('checkNewBadges rileva nuovi badge quando condizione è soddisfatta', async () => {
     // Simula utente con 500+ XP che sblocca 'expert'
     const richStats = { ...mockStats, xp: 500, unlocked_badges: ['novice'] };
-    vi.mocked(require('@tanstack/react-query').useQuery).mockReturnValueOnce({
+    mockUseQuery.mockReturnValueOnce({
       data: richStats, isLoading: false, error: null,
     });
     const { result } = renderHook(() => useGamification());

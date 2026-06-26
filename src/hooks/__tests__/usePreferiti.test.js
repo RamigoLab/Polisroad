@@ -80,10 +80,12 @@ describe('usePreferiti', () => {
     });
   });
 
-  it('toggle aggiorna ottimisticamente la cache', () => {
+  it('toggle aggiorna ottimisticamente la cache', async () => {
     const { result } = renderHook(() => usePreferiti());
     act(() => { result.current.toggle('pron-new'); });
-    expect(mockSetQueryData).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(mockSetQueryData).toHaveBeenCalled();
+    });
   });
 
   it('modal offline: aggiunge a coda invece di chiamare Supabase', async () => {

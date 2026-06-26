@@ -56,7 +56,10 @@ vi.mock('../../services/prontuarioService', () => ({
   removePreferito: vi.fn().mockResolvedValue(undefined),
 }));
 
-vi.mock('../../config/constants', () => ({ USE_SUPABASE: true }));
+let mockUseSupabase = true;
+vi.mock('../../config/constants', () => ({
+  get USE_SUPABASE() { return mockUseSupabase; },
+}));
 vi.mock('../../utils/logger', () => ({ logger: { error: vi.fn() } }));
 
 import { useProntuario } from '../useProntuario';
@@ -65,6 +68,7 @@ describe('useProntuario', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetQueryData.mockReturnValue(mockItems);
+    mockUseSupabase = true;
   });
 
   it('espone la lista dalla cache', () => {
@@ -104,7 +108,7 @@ describe('useProntuario', () => {
   });
 
   it('add — modalità mock quando USE_SUPABASE=false', async () => {
-    vi.doMock('../../config/constants', () => ({ USE_SUPABASE: false }));
+    mockUseSupabase = false;
     const { result } = renderHook(() => useProntuario());
     await act(async () => {
       const { error } = await result.current.add({ titolo: 'Mock' });

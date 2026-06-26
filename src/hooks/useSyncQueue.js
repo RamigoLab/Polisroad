@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '../config/supabase';
 import { useAuth } from './useAuth';
 import { useToast } from '../components/ui/ToastManager';
@@ -26,7 +26,10 @@ export const useSyncQueue = () => {
 
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
 
+  // Usa refs per evitare loop infiniti di dipendenza in useEffect e useCallback
+  const queueRef = useRef(queue);
   useEffect(() => {
+    queueRef.current = queue;
     localStorage.setItem('polisroad_sync_queue', JSON.stringify(queue));
   }, [queue]);
 
@@ -94,13 +97,14 @@ export const useSyncQueue = () => {
   }, [session]);
 
   const processQueue = useCallback(async () => {
-    if (queue.length === 0 || !navigator.onLine || !session?.user) return;
+    const currentQueue = queueRef.current;
+    if (currentQueue.length === 0 || !navigator.onLine || !session?.user) return;
 
     showToast('Sincronizzazione in corso...', 'info');
     const remaining = [];
     let successCount = 0;
 
-    for (const action of queue) {
+    for (const action of currentQueue) {
       const success = await processAction(action);
       if (success) {
         successCount++;
@@ -114,13 +118,19 @@ export const useSyncQueue = () => {
     setQueue(remaining);
     if (successCount > 0) showToast(`Sincronizzati ${successCount} elementi.`, 'success');
     if (remaining.length > 0) showToast(`${remaining.length} elementi ancora in coda.`, 'error');
-  }, [queue, processAction, session, showToast]);
+  }, [processAction, session, showToast]);
+
+  // Usiamo un ref anche per processQueue per staccare l'effetto di ascolto rete dalle mutazioni di processQueue
+  const processQueueRef = useRef(processQueue);
+  useEffect(() => {
+    processQueueRef.current = processQueue;
+  }, [processQueue]);
 
   useEffect(() => {
     const handleOnline = () => {
       setIsOnline(true);
       showToast('Sei di nuovo online!', 'success');
-      processQueue();
+      processQueueRef.current();
     };
     const handleOffline = () => {
       setIsOnline(false);
@@ -128,12 +138,20 @@ export const useSyncQueue = () => {
     };
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    if (navigator.onLine && queue.length > 0) processQueue();
+    
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
-  }, [processQueue, queue.length, showToast]);
+  }, [showToast]);
+
+  // Effetto separato per il processamento al mount/session caricata
+  const queueLength = queue.length;
+  useEffect(() => {
+    if (navigator.onLine && queueLength > 0 && session?.user) {
+      processQueueRef.current();
+    }
+  }, [queueLength, session]);
 
   return { queue, isOnline, addToQueue, processQueue };
 };

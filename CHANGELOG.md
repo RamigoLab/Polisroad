@@ -2,20 +2,30 @@
 
 ## [1.8.9] - 26 Giugno 2026
 
-### 🐛 Fix — Race condition auth & flash errore profilo
+### 🐛 Fix — Race condition auth, flash errore profilo, hook condizionali e loop offline sync
 
 **Bug 1 — iOS: utente approvato non entra (race condition TOKEN_REFRESHED)**
-- **Causa:** `onAuthStateChange` in `useAuth.jsx` chiamava `loadProfile` ad ogni evento auth, incluso `TOKEN_REFRESHED` (refresh silenzioso del JWT). Questo causava ricaricamenti continui del profilo con potenziali stati inconsistenti: il profilo poteva tornare a `null` nel mezzo del ciclo, bloccando indefinitamente un utente già approvato sulla schermata di attesa.
-- **Fix — `useAuth.jsx`:** aggiunta guardia `if (event === 'TOKEN_REFRESHED') return;` prima della chiamata a `loadProfile`. Il profilo non viene ricaricato su refresh del token (i dati utente non cambiano con un TOKEN_REFRESHED).
+- **Causa:** `onAuthStateChange` in `useAuth.jsx` chiamava `loadProfile` ad ogni evento auth, incluso `TOKEN_REFRESHED`.
+- **Fix:** Aggiunta guardia `if (event === 'TOKEN_REFRESHED') return;`.
 
 **Bug 2 — Flash "Errore caricamento profilo" per utenti validi**
-- **Causa:** `PendingApprovalScreen` mostrava la schermata di errore quando `!profile`, ma durante il caricamento iniziale `profile` è `null` anche per utenti validi con account approvato → flash di errore prima che il profilo fosse caricato.
-- **Fix — `PendingApprovalScreen.jsx`:** aggiunta prop `profileLoading`. Quando `profileLoading && !profile && !profileError`, mostra uno spinner neutro invece della schermata di errore.
-- **Fix — `App.jsx`:** estratta `profileLoading` dal context e passata a `PendingApprovalScreen`. La schermata di attesa approvazione è ora mostrata solo quando `!profileLoading` (profilo caricato), prevenendo il flash.
+- **Causa:** `PendingApprovalScreen` mostrava errore per frame iniziali.
+- **Fix:** Introdotto e gestito `profileLoading` per inibire il flash.
 
 **Bug 3 — Crash `TypeError` in `Home.jsx` con news senza categoria**
-- **Causa:** `n.categoria.toLowerCase()` crashava con `TypeError: Cannot read properties of null` quando una news aveva `categoria: null`.
-- **Fix — `Home.jsx`:** sostituito `n.categoria.toLowerCase()` con `n.categoria?.toLowerCase()` su tutte e tre le righe (banner, popup, notifica).
+- **Causa:** Mancato safe navigation operator su `n.categoria.toLowerCase()`.
+- **Fix:** Sostituito con `n.categoria?.toLowerCase()`.
+
+**Bug 4 — Violazione Rules of Hooks in `useNote.js` e `usePreferiti.js`**
+- **Causa:** Presenza di `if (!USE_SUPABASE) { return ... }` prima dei React Hooks.
+- **Fix:** Rimossa la guardia condizionale precoce; spostata la deviazione mock all'interno delle funzioni di callback e nel return finale.
+
+**Bug 5 — Loop infinito offline in `useSyncQueue.js`**
+- **Causa:** La funzione `processQueue` e l'effect di rete dipendevano direttamente da `queue`, innescando rigenerazioni cicliche.
+- **Fix:** Utilizzato `useRef` (`queueRef` e `processQueueRef`) per disaccoppiare la mutazione di stato dagli ascoltatori di rete.
+
+**UX — Notifiche Push nel Profilo**
+- Mostrata sempre la sezione notifiche nel Profilo con indicazione descrittiva dello stato in caso di mancato supporto browser o assenza della chiave VAPID server.
 
 **Versione package.json**
 - Corretta versione da `1.8.8b` (non conforme) a `1.8.9`.

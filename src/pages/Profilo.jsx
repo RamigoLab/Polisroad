@@ -497,13 +497,21 @@ export const Profilo = ({ onNavigate }) => {
       )}
 
       {/* Notifiche Push */}
-      {pushSupported && (
-        <div style={PS.profileSysBox}>
-          <h4 style={PS.profileSysTitle}>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-              <Icon name="bell" size={16} /> Notifiche Push
-            </span>
-          </h4>
+      <div style={PS.profileSysBox}>
+        <h4 style={PS.profileSysTitle}>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+            <Icon name="bell" size={16} /> Notifiche Push
+          </span>
+        </h4>
+        {!pushSupported ? (
+          <div style={{ color: C.textLight, fontSize: '0.8rem', textAlign: 'left', lineHeight: '1.4' }}>
+            {!('Notification' in window && 'serviceWorker' in navigator && 'PushManager' in window) ? (
+              <span>Notifiche push non supportate da questo browser o dispositivo.</span>
+            ) : (
+              <span>Notifiche non configurate sul server (chiave VAPID assente). Contatta l'amministratore.</span>
+            )}
+          </div>
+        ) : (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
             <div style={{ flex: 1, paddingRight: '12px' }}>
               <span style={{ color: C.text, fontWeight: '500' }}>Notifiche in-app</span>
@@ -535,8 +543,8 @@ export const Profilo = ({ onNavigate }) => {
                 : <><Icon name="bell" size={14} /> Attiva</>}
             </button>
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Modulo Segnala un Problema */}
       <div style={PS.profileSysBox}>

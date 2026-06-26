@@ -53,7 +53,10 @@ vi.mock('../../services/newsService', () => ({
   deleteNews: (...args) => mockDelete(...args),
 }));
 
-vi.mock('../../config/constants', () => ({ USE_SUPABASE: true }));
+let mockUseSupabase = true;
+vi.mock('../../config/constants', () => ({
+  get USE_SUPABASE() { return mockUseSupabase; },
+}));
 vi.mock('../../utils/logger', () => ({ logger: { error: vi.fn() } }));
 
 import { useNews } from '../useNews';
@@ -62,6 +65,7 @@ describe('useNews', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mockGetQueryData.mockReturnValue(mockNewsList);
+    mockUseSupabase = true;
   });
 
   it('espone la lista dalla cache', () => {
@@ -100,12 +104,13 @@ describe('useNews', () => {
   });
 
   it('add — modalità mock (USE_SUPABASE=false)', async () => {
-    vi.doMock('../../config/constants', () => ({ USE_SUPABASE: false }));
+    mockUseSupabase = false;
     const { result } = renderHook(() => useNews());
     await act(async () => {
       const { error } = await result.current.add({ titolo: 'Mock' });
       expect(error).toBeNull();
     });
+    expect(mockAdd).not.toHaveBeenCalled();
   });
 
   it('remove — rollback cache su errore', async () => {
