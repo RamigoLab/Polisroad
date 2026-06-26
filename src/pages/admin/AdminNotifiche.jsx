@@ -29,6 +29,7 @@ export const AdminNotifiche = () => {
 
   const [subscribers,       setSubscribers]       = useState([]);
   const [subscribersLoading, setSubscribersLoading] = useState(true);
+  const [subscribersError,   setSubscribersError]   = useState(null);
   const [sending,  setSending]  = useState(false);
   const [result,   setResult]   = useState(null); // { sent, failed } | { error }
 
@@ -37,6 +38,7 @@ export const AdminNotifiche = () => {
     const load = async () => {
       if (!isSupabaseConfigured || !supabase) { setSubscribersLoading(false); return; }
       setSubscribersLoading(true);
+      setSubscribersError(null);
       try {
         const { data, error } = await supabase
           .from('push_subscriptions')
@@ -46,6 +48,7 @@ export const AdminNotifiche = () => {
         setSubscribers(data || []);
       } catch (err) {
         logger.error('AdminNotifiche: caricamento subscriber', err);
+        setSubscribersError(err.message || 'Errore durante il caricamento dei destinatari');
       } finally {
         setSubscribersLoading(false);
       }
