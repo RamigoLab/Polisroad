@@ -79,7 +79,7 @@ export const Ricerca = ({ onNavigate }) => {
       '',
       '?page=ricerca'
     );
-    onNavigate('prontuario', { selectedId: item.id });
+    onNavigate('prontuario', { selectedId: item.id, returnTo: 'ricerca' });
   };
 
   const handleNormativaItemClick = (item) => {
@@ -88,7 +88,7 @@ export const Ricerca = ({ onNavigate }) => {
       '',
       '?page=ricerca'
     );
-    onNavigate('normativa', { selectedId: item.id });
+    onNavigate('normativa', { selectedId: item.id, returnTo: 'ricerca' });
   };
 
   // ─── RENDER HELPERS ───────────────────────────────────────────────────────

@@ -61,12 +61,18 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedGroup, setSelectedGroup] = useState(null);
+  const [returnTo, setReturnTo] = useState(null);
   const debouncedSearch = useDebounce(search, 300);
 
   useEffect(() => {
     if (navigationParams?.selectedId && list.length > 0) {
       const item = list.find(i => i.id === navigationParams.selectedId);
-      if (item) { setSelectedItem(item); onNavigate('prontuario', null); }
+      if (item) {
+        setSelectedItem(item);
+        // Salva returnTo prima di azzerare i params
+        if (navigationParams.returnTo) setReturnTo(navigationParams.returnTo);
+        onNavigate('prontuario', null);
+      }
     }
   }, [navigationParams, list, onNavigate]);
 
@@ -114,7 +120,22 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
         title={null}
         subtitle={selectedItem.rif_normativo}
         onNavigate={onNavigate}
-        headerLeftAction={<button onClick={() => setSelectedItem(null)} style={backBtnStyle}>← Indietro</button>}
+        headerLeftAction={
+          <button
+            onClick={() => {
+              if (returnTo === 'ricerca') {
+                setReturnTo(null);
+                setSelectedItem(null);
+                onNavigate('ricerca');
+              } else {
+                setSelectedItem(null);
+              }
+            }}
+            style={backBtnStyle}
+          >
+            ← Indietro
+          </button>
+        }
         headerChildren={
           <div style={{ display: 'flex', justifyContent: 'flex-end', width: '100%' }}>
             <button onClick={() => handleToggleFavorite(selectedItem.id)} style={{ fontSize: '1rem', color: '#fff', fontWeight: 'bold' }}>

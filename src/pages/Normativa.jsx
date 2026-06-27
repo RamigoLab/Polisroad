@@ -22,6 +22,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   const [selectedTitolo, setSelectedTitolo] = useState(null);
   const [selectedCapo, setSelectedCapo] = useState(null);
   const [selectedArticolo, setSelectedArticolo] = useState(null);
+  const [returnTo, setReturnTo] = useState(null);
 
   const cleanTitle = (title) => {
     if (!title) return '';
@@ -120,6 +121,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
       const art = hierarchy.articoliMap.find(a => a.commi.some(c => c.id === navigationParams.selectedId));
       if (art) {
         setSelectedArticolo(art);
+        if (navigationParams.returnTo) setReturnTo(navigationParams.returnTo);
         onNavigate('normativa', null);
       }
       return;
@@ -182,8 +184,15 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   }, [hierarchy, debouncedSearch]);
 
   const handleBack = () => {
-    if (selectedArticolo) setSelectedArticolo(null);
-    else if (selectedCapo) setSelectedCapo(null);
+    if (selectedArticolo) {
+      if (returnTo === 'ricerca') {
+        setReturnTo(null);
+        setSelectedArticolo(null);
+        onNavigate('ricerca');
+        return;
+      }
+      setSelectedArticolo(null);
+    } else if (selectedCapo) setSelectedCapo(null);
     else if (selectedTitolo) setSelectedTitolo(null);
     else if (selectedCategory) setSelectedCategory(null);
   };
