@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { C } from '../styles/theme';
 import { Icon } from './ui/Icon';
@@ -10,6 +10,7 @@ const OFFLINE_READY_DISMISSED_KEY = 'polisroad_pwa_offline_dismissed';
 const PwaUpdater = () => {
   const [manualNeedRefresh, setManualNeedRefresh] = useState(false);
   const [manualOfflineReady, setManualOfflineReady] = useState(false);
+  const [updating, setUpdating] = useState(false);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
@@ -24,7 +25,7 @@ const PwaUpdater = () => {
     },
     onRegistered(registration) {
       if (!registration) return;
-      // Controllo aggiornamenti ogni ora (60 minuti)
+      // Controllo aggiornamenti ogni ora
       setInterval(() => {
         registration.update().catch(err => logger.error('SW polling update error', err));
       }, 60 * 60 * 1000);
@@ -41,12 +42,10 @@ const PwaUpdater = () => {
     },
   });
 
-  // Nasconde il banner "offline ready" se già dismesso in precedenza
   const [offlineReadyDismissed] = useState(() => !!getItem(OFFLINE_READY_DISMISSED_KEY));
 
   const close = () => {
     if ((offlineReady || manualOfflineReady) && !needRefresh && !manualNeedRefresh) {
-      // Persiste il dismiss del banner "pronta offline" per non rifarlo vedere
       setItem(OFFLINE_READY_DISMISSED_KEY, true);
     }
     setOfflineReady(false);
@@ -55,7 +54,16 @@ const PwaUpdater = () => {
     setManualOfflineReady(false);
   };
 
-  // needRefresh ha priorità su offlineReady
+  const handleUpdate = () => {
+    setUpdating(true);
+    // Ascolta il cambio di controller PRIMA di mandare skipWaiting,
+    // così quando il nuovo SW prende controllo la pagina si ricarica subito.
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      window.location.reload();
+    }, { once: true });
+    updateServiceWorker(true);
+  };
+
   const isNeedRefresh = needRefresh || manualNeedRefresh;
   const isOfflineReady = offlineReady || manualOfflineReady;
   const showBanner = isNeedRefresh || (isOfflineReady && !offlineReadyDismissed);
@@ -98,7 +106,8 @@ const PwaUpdater = () => {
       <div style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
         {isNeedRefresh && (
           <button
-            onClick={() => updateServiceWorker(true)}
+            onClick={handleUpdate}
+            disabled={updating}
             style={{
               backgroundColor: C.accent,
               color: '#fff',
@@ -106,10 +115,11 @@ const PwaUpdater = () => {
               padding: '8px 16px',
               borderRadius: C.radiusPill,
               fontWeight: 'bold',
-              cursor: 'pointer',
+              cursor: updating ? 'wait' : 'pointer',
+              opacity: updating ? 0.7 : 1,
             }}
           >
-            Riavvia & Aggiorna
+            {updating ? 'Riavvio...' : 'Riavvia & Aggiorna'}
           </button>
         )}
         <button
