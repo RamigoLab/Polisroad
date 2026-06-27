@@ -3,10 +3,42 @@ import React from 'react';
 import { logger } from '../utils/logger';
 import { C } from '../styles/theme';
 import { Icon } from './ui/Icon';
+
+// Chiave usata dal persister IndexedDB di React Query
+const IDB_CACHE_KEY = 'polisroad-query-cache';
+
+/**
+ * Svuota la cache IndexedDB di React Query prima del reload.
+ * Se la cache è corrotta (es. dati malformati dopo un bug), senza questo
+ * step il PersistQueryClientProvider la reidrata immediatamente al mount
+ * e l'app crasha di nuovo in loop infinito.
+ */
+async function clearQueryCacheAndReload() {
+  try {
+    // Usa idb-keyval se disponibile (stessa lib usata in main.jsx)
+    // oppure cade su indexedDB nativo
+    const { del } = await import('idb-keyval').catch(() => ({ del: null }));
+    if (del) {
+      await del(IDB_CACHE_KEY);
+    } else {
+      // Fallback: cancella tutto l'IDB store 'keyval'
+      await new Promise((resolve) => {
+        const req = indexedDB.deleteDatabase('keyval-store');
+        req.onsuccess = resolve;
+        req.onerror = resolve; // risolvi comunque
+      });
+    }
+  } catch (e) {
+    // Se non riesce a pulire la cache, ricarica comunque
+    logger.warn('ErrorBoundary: impossibile pulire la cache IDB', e);
+  }
+  window.location.reload();
+}
+
 export class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
-    this.state = { hasError: false, error: null };
+    this.state = { hasError: false, error: null, reloading: false };
   }
 
   static getDerivedStateFromError(error) {
@@ -20,8 +52,8 @@ export class ErrorBoundary extends React.Component {
   }
 
   handleReload = () => {
-    this.setState({ hasError: false, error: null });
-    window.location.reload();
+    this.setState({ reloading: true });
+    clearQueryCacheAndReload();
   };
 
   render() {
@@ -97,6 +129,7 @@ export class ErrorBoundary extends React.Component {
 
           <button
             onClick={this.handleReload}
+            disabled={this.state.reloading}
             style={{
               display: 'flex',
               alignItems: 'center',
@@ -108,14 +141,16 @@ export class ErrorBoundary extends React.Component {
               borderRadius: C.radiusPill,
               fontSize: '1rem',
               fontWeight: 'bold',
-              cursor: 'pointer',
+              cursor: this.state.reloading ? 'wait' : 'pointer',
+              opacity: this.state.reloading ? 0.7 : 1,
               boxShadow: 'var(--shadow-md)',
-              transition: 'filter 0.2s',
+              transition: 'filter 0.2s, opacity 0.2s',
             }}
-            onMouseOver={(e) => (e.currentTarget.style.filter = 'brightness(1.1)')}
+            onMouseOver={(e) => { if (!this.state.reloading) e.currentTarget.style.filter = 'brightness(1.1)'; }}
             onMouseOut={(e) => (e.currentTarget.style.filter = 'none')}
           >
-            <Icon name="rotate-cw" size={18} /> Ricarica PolisRoad
+            <Icon name="rotate-cw" size={18} />
+            {this.state.reloading ? 'Pulizia cache...' : 'Ricarica PolisRoad'}
           </button>
         </div>
       );

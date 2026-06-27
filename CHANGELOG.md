@@ -1,34 +1,37 @@
 # 📝 CHANGELOG - PolisRoad
 
-## [1.8.9] - 26 Giugno 2026
+## [1.8.9] - 27 Giugno 2026
 
-### 🐛 Fix — Race condition auth, flash errore profilo, hook condizionali e loop offline sync
+### 🐛 Fix — Service Worker duplicato, reload ErrorBoundary in loop, race condition auth e altri
 
-**Bug 1 — iOS: utente approvato non entra (race condition TOKEN_REFRESHED)**
+**Bug 1 — `sw.js`: listener duplicati**
+- Tutti gli handler (`install`, `activate`, `fetch`, `message`, `push`, `notificationclick`) erano registrati due volte. Il secondo `activate` mancava di `self.clients.claim()`, lasciando il vecchio SW attivo dopo un aggiornamento.
+
+**Bug 2 — `ErrorBoundary`: reload in loop infinito**
+- Il pulsante "Ricarica PolisRoad" ora svuota la cache IndexedDB di React Query (`polisroad-query-cache`) prima del reload. In precedenza, se il crash era causato da dati corrotti nella cache persistita, il `PersistQueryClientProvider` la reidratava al remount e l'app crashava di nuovo in loop.
+
+**Bug 3 — iOS: utente approvato non entra (race condition TOKEN_REFRESHED)**
 - **Causa:** `onAuthStateChange` in `useAuth.jsx` chiamava `loadProfile` ad ogni evento auth, incluso `TOKEN_REFRESHED`.
 - **Fix:** Aggiunta guardia `if (event === 'TOKEN_REFRESHED') return;`.
 
-**Bug 2 — Flash "Errore caricamento profilo" per utenti validi**
+**Bug 4 — Flash "Errore caricamento profilo" per utenti validi**
 - **Causa:** `PendingApprovalScreen` mostrava errore per frame iniziali.
 - **Fix:** Introdotto e gestito `profileLoading` per inibire il flash.
 
-**Bug 3 — Crash `TypeError` in `Home.jsx` con news senza categoria**
+**Bug 5 — Crash `TypeError` in `Home.jsx` con news senza categoria**
 - **Causa:** Mancato safe navigation operator su `n.categoria.toLowerCase()`.
 - **Fix:** Sostituito con `n.categoria?.toLowerCase()`.
 
-**Bug 4 — Violazione Rules of Hooks in `useNote.js` e `usePreferiti.js`**
+**Bug 6 — Violazione Rules of Hooks in `useNote.js` e `usePreferiti.js`**
 - **Causa:** Presenza di `if (!USE_SUPABASE) { return ... }` prima dei React Hooks.
 - **Fix:** Rimossa la guardia condizionale precoce; spostata la deviazione mock all'interno delle funzioni di callback e nel return finale.
 
-**Bug 5 — Loop infinito offline in `useSyncQueue.js`**
+**Bug 7 — Loop infinito offline in `useSyncQueue.js`**
 - **Causa:** La funzione `processQueue` e l'effect di rete dipendevano direttamente da `queue`, innescando rigenerazioni cicliche.
 - **Fix:** Utilizzato `useRef` (`queueRef` e `processQueueRef`) per disaccoppiare la mutazione di stato dagli ascoltatori di rete.
 
 **UX — Notifiche Push nel Profilo**
 - Mostrata sempre la sezione notifiche nel Profilo con indicazione descrittiva dello stato in caso di mancato supporto browser o assenza della chiave VAPID server.
-
-**Versione package.json**
-- Corretta versione da `1.8.8b` (non conforme) a `1.8.9`.
 
 ---
 
