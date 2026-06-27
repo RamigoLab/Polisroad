@@ -10,24 +10,24 @@ import { AuthProvider } from './hooks/useAuth';
 import { DataProvider } from './context/DataContext';
 import { ToastProvider } from './components/ui/ToastManager';
 import { GamificationProvider } from './context/GamificationContext';
+import { clearIdbIfFlagged } from './components/ErrorBoundary';
 import * as Sentry from '@sentry/react';
-
 import posthog from 'posthog-js';
 import { APP_VERSION } from './config/constants';
 
+// Pulizia cache IDB se l'ErrorBoundary ha segnalato un crash nella sessione precedente.
+// Deve avvenire PRIMA del mount di React — così il PersistQueryClientProvider
+// non reidrata una cache corrotta. await bloccante prima di createRoot.
+await clearIdbIfFlagged();
 
 // Inizializza Sentry per error monitoring in produzione.
-// Attivo solo se VITE_SENTRY_DSN è configurato — in dev non fa niente.
 const sentryDsn = import.meta.env.VITE_SENTRY_DSN;
 if (sentryDsn && import.meta.env.PROD) {
   Sentry.init({
     dsn: sentryDsn,
     environment: 'production',
-    // Campionamento: 10% delle sessioni per tracciamento performance
     tracesSampleRate: 0.1,
-    // Non inviare dati personali
     beforeSend(event) {
-      // Rimuovi dati utente identificabili
       if (event.user) {
         event.user = { id: event.user.id };
       }
@@ -42,10 +42,9 @@ if (savedTheme === 'dark') {
   document.documentElement.setAttribute('data-theme', 'dark');
 }
 
-// Inizializza PostHog se la chiave è presente nelle variabili d'ambiente di Vite
+// Inizializza PostHog
 const posthogKey = import.meta.env.VITE_POSTHOG_KEY;
 const posthogHost = import.meta.env.VITE_POSTHOG_HOST || 'https://eu.i.posthog.com';
-
 if (posthogKey) {
   posthog.init(posthogKey, {
     api_host: posthogHost,
@@ -58,17 +57,14 @@ if (posthogKey) {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5,      // 5 min: dati freschi, nessun refetch
-      gcTime: 1000 * 60 * 60 * 24,   // 24 ore: cache in memoria (persister la salva su disco)
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 60 * 24,
       retry: 2,
       refetchOnWindowFocus: false,
     },
   },
 });
 
-// Persister IndexedDB: la cache sopravvive al refresh e alla chiusura del browser.
-// Chiave 'polisroad-query-cache' su IndexedDB.
-// maxAge 24 ore: dopo scade e si ricarica dal server.
 const idbPersister = createAsyncStoragePersister({
   storage: {
     getItem: (key) => get(key),
@@ -84,7 +80,7 @@ createRoot(document.getElementById('root')).render(
       client={queryClient}
       persistOptions={{
         persister: idbPersister,
-        maxAge: 1000 * 60 * 60 * 24,  // 24 ore
+        maxAge: 1000 * 60 * 60 * 24,
         buster: import.meta.env.VITE_CACHE_BUSTER || APP_VERSION,
       }}
     >
