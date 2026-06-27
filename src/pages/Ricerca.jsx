@@ -33,17 +33,14 @@ export const Ricerca = ({ onNavigate }) => {
   const { history, addSearch, removeSearch, clearHistory } = useSearchHistory();
   const { addXP } = useGamificationContext();
 
-  // Stato locale per i gruppi espansi nella sezione "altri risultati"
   const [expandedProntuario, setExpandedProntuario] = useState(null);
   const [expandedNormativa, setExpandedNormativa] = useState(null);
 
-  // Chiudi i gruppi espansi quando cambia la ricerca
   useEffect(() => {
     setExpandedProntuario(null);
     setExpandedNormativa(null);
   }, [search]);
 
-  // Salva in cronologia dopo 1.5s di inattività
   useEffect(() => {
     if (search.trim().length >= 3) {
       const timer = setTimeout(async () => {
@@ -58,7 +55,6 @@ export const Ricerca = ({ onNavigate }) => {
     }
   }, [search, addSearch, addXP]);
 
-  // Suggerimenti autocomplete: ricerche recenti che iniziano col testo digitato
   const autoSuggestions = React.useMemo(() => {
     const q = search.trim().toLowerCase();
     if (!q || q.length < 1) return history.slice(0, 5);
@@ -68,9 +64,35 @@ export const Ricerca = ({ onNavigate }) => {
   const hasSearch = search.trim().length > 0;
   const searchTerms = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
+  // ─── HANDLERS NAVIGAZIONE ────────────────────────────────────────────────
+  // FIX: dopo aver aperto un dettaglio e premuto Indietro, il browser torna
+  // alla pagina 'prontuario'/'normativa' perché onNavigate fa pushState.
+  // Usiamo replaceState-based navigation: navighiamo SENZA aggiungere entry
+  // in history, in modo che il Back del browser torni direttamente a 'ricerca'.
+
+  const handleProntuarioItemClick = (item) => {
+    // Naviga al dettaglio passando dal prontuario con selectedId,
+    // ma manteniamo 'ricerca' come pagina di ritorno spingendo prima
+    // uno stato intermedio che punta a ricerca.
+    window.history.replaceState(
+      { page: 'ricerca', params: null },
+      '',
+      '?page=ricerca'
+    );
+    onNavigate('prontuario', { selectedId: item.id });
+  };
+
+  const handleNormativaItemClick = (item) => {
+    window.history.replaceState(
+      { page: 'ricerca', params: null },
+      '',
+      '?page=ricerca'
+    );
+    onNavigate('normativa', { selectedId: item.id });
+  };
+
   // ─── RENDER HELPERS ───────────────────────────────────────────────────────
 
-  // Card articolo Prontuario (gruppo)
   const renderProntuarioGroup = (group, isExact = false) => {
     const isExpanded = expandedProntuario === group.articolo_numero;
     return (
@@ -86,7 +108,6 @@ export const Ricerca = ({ onNavigate }) => {
         }}
         onClick={() => setExpandedProntuario(isExpanded ? null : group.articolo_numero)}
       >
-        {/* Header gruppo */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <span style={{ fontWeight: '800', color: isExact ? C.accent : C.primary, fontSize: '1rem' }}>
@@ -105,18 +126,30 @@ export const Ricerca = ({ onNavigate }) => {
           </span>
         </div>
 
-        {/* Voci espanse */}
         {isExpanded && (
-          <div onClick={e => e.stopPropagation()} style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}
+          >
             {group.voci.map(item => (
               <div
                 key={item.id}
-                onClick={() => onNavigate('prontuario', { selectedId: item.id })}
+                // FIX: ogni voce usa il proprio handler con item corretto,
+                // non c'è più rischio di closure stale o index sbagliato
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleProntuarioItemClick(item);
+                }}
                 style={{ ...PS.ricercaResultItem, margin: 0 }}
               >
+                {/* FIX layout mobile: badge e euro su righe separate */}
                 <div style={PS.ricercaResultMeta}>
-                  <Badge style={{ fontSize: '0.65rem' }}>{item.rif_normativo}</Badge>
-                  <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: C.danger }}>€{item.pmr}</span>
+                  <div style={PS.ricercaResultMetaRow}>
+                    <Badge style={{ fontSize: '0.65rem', flexShrink: 0 }}>{item.rif_normativo}</Badge>
+                    <span style={{ fontSize: '0.8rem', fontWeight: 'bold', color: C.danger, flexShrink: 0 }}>
+                      €{item.pmr}
+                    </span>
+                  </div>
                 </div>
                 <p style={PS.ricercaResultTitle}>{item.titolo}</p>
               </div>
@@ -127,7 +160,6 @@ export const Ricerca = ({ onNavigate }) => {
     );
   };
 
-  // Card articolo Normativa (gruppo commi)
   const renderNormativaGroup = (group, isExact = false) => {
     const isExpanded = expandedNormativa === group.articolo_num;
     return (
@@ -143,7 +175,6 @@ export const Ricerca = ({ onNavigate }) => {
         }}
         onClick={() => setExpandedNormativa(isExpanded ? null : group.articolo_num)}
       >
-        {/* Header gruppo */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
             <span style={{ fontWeight: '800', color: isExact ? C.success : C.primary, fontSize: '1rem' }}>
@@ -162,13 +193,18 @@ export const Ricerca = ({ onNavigate }) => {
           </span>
         </div>
 
-        {/* Commi espansi */}
         {isExpanded && (
-          <div onClick={e => e.stopPropagation()} style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ marginTop: '10px', display: 'flex', flexDirection: 'column', gap: '8px' }}
+          >
             {group.commi.map(item => (
               <div
                 key={item.id}
-                onClick={() => onNavigate('normativa', { selectedId: item.id })}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleNormativaItemClick(item);
+                }}
                 style={{ ...PS.ricercaResultItem, margin: 0 }}
               >
                 <div style={{ marginBottom: '4px', display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -193,7 +229,6 @@ export const Ricerca = ({ onNavigate }) => {
     );
   };
 
-  // Conteggio totale per label sezione
   const pronTot = risultatiProntuario.exact.length + risultatiProntuario.other.length;
   const normTot = risultatiNormativa.exact.length + risultatiNormativa.other.length;
 
@@ -251,7 +286,6 @@ export const Ricerca = ({ onNavigate }) => {
         </div>
       )}
 
-      {/* Empty state */}
       {!hasSearch && history.length === 0 && (
         <EmptyState
           icon="search"
@@ -260,7 +294,6 @@ export const Ricerca = ({ onNavigate }) => {
         />
       )}
 
-      {/* Risultati */}
       {search.length > 2 && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
@@ -273,9 +306,7 @@ export const Ricerca = ({ onNavigate }) => {
               <EmptyState compact icon="clipboard-list" title="Nessun risultato nel Prontuario" subtitle="Prova con un termine diverso o il numero dell'articolo." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {/* Esatti prima */}
                 {risultatiProntuario.exact.map(g => renderProntuarioGroup(g, true))}
-                {/* Poi gli altri */}
                 {risultatiProntuario.other.length > 0 && (
                   <>
                     {risultatiProntuario.exact.length > 0 && (
@@ -304,9 +335,7 @@ export const Ricerca = ({ onNavigate }) => {
               <EmptyState compact icon="book-open" title="Nessun risultato nella Normativa" subtitle="Prova con un termine diverso o il numero dell'articolo." />
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {/* Esatti prima */}
                 {risultatiNormativa.exact.map(g => renderNormativaGroup(g, true))}
-                {/* Poi gli altri */}
                 {risultatiNormativa.other.length > 0 && (
                   <>
                     {risultatiNormativa.exact.length > 0 && (

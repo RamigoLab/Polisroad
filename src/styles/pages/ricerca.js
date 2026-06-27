@@ -14,10 +14,20 @@ export const ricerca = {
     borderRadius: '8px',
     cursor: 'pointer',
   },
+  // Contenitore colonna: badge rif_normativo sopra, euro sotto a destra
   ricercaResultMeta: {
     display: 'flex',
+    flexDirection: 'column',
+    gap: '4px',
+    marginBottom: '6px',
+  },
+  // Riga interna: badge a sinistra, euro a destra
+  ricercaResultMetaRow: {
+    display: 'flex',
+    alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: '4px',
+    gap: '8px',
+    flexWrap: 'wrap',
   },
   ricercaResultTitle: {
     fontSize: '0.85rem',

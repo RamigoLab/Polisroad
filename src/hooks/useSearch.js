@@ -4,22 +4,21 @@ import { useDebounce } from './useDebounce';
 import { parseArticoloNum } from '../utils/prontuarioUtils';
 
 /**
- * useSearch — ricerca fuzzy su Prontuario e Normativa tramite Fuse.js.
+ * useSearch — ricerca su Prontuario e Normativa.
  *
- * Logica di priorità:
- *  1. Corrispondenza esatta sull'articolo (es. "186" → tutte le voci/commi di Art. 186)
- *  2. Risultati fuzzy raggruppati per articolo, ordinati per rilevanza
+ * Logica unificata con Prontuario.jsx e Normativa.jsx:
+ *  1. Numero articolo esatto (es. "186") → tutte le voci/commi di quell'articolo
+ *  2. Ricerca testuale esatta con includes() su tutti i campi rilevanti
+ *  3. Ricerca fuzzy Fuse.js come fallback per errori di battitura
  *
- * Fuse.js garantisce tolleranza a errori di battitura (threshold 0.35)
- * su tutti i campi testuali principali.
+ * Questo garantisce risultati coerenti tra Ricerca Globale, Prontuario e Normativa.
  */
 
-// ─── Opzioni Fuse per il PRONTUARIO ──────────────────────────────────────────
 const FUSE_PRONTUARIO_OPTIONS = {
-  threshold: 0.35,         // tolleranza errori (0 = esatto, 1 = tutto)
+  threshold: 0.35,
   minMatchCharLength: 3,
   includeScore: true,
-  ignoreLocation: true,    // cerca in tutto il testo, non solo all'inizio
+  ignoreLocation: true,
   keys: [
     { name: 'titolo',          weight: 0.4 },
     { name: 'descrizione',     weight: 0.3 },
@@ -28,7 +27,6 @@ const FUSE_PRONTUARIO_OPTIONS = {
   ],
 };
 
-// ─── Opzioni Fuse per la NORMATIVA ────────────────────────────────────────────
 const FUSE_NORMATIVA_OPTIONS = {
   threshold: 0.35,
   minMatchCharLength: 3,
@@ -48,7 +46,6 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
 
   const isSearching = debouncedSearch.length > 0 && debouncedSearch.length < minChars;
 
-  // Istanze Fuse memorizzate — si ricalcolano solo se cambia la lista
   const fuseProntuario = useMemo(
     () => new Fuse(prontuarioList, FUSE_PRONTUARIO_OPTIONS),
     [prontuarioList]
@@ -63,10 +60,10 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
   const risultatiProntuario = useMemo(() => {
     if (debouncedSearch.length < minChars) return { exact: [], other: [] };
 
-    const s = debouncedSearch.trim();
+    const s = debouncedSearch.trim().toLowerCase();
     const isNumeric = /^\d+$/.test(s);
 
-    // Corrispondenza esatta per numero articolo
+    // 1. Corrispondenza esatta numero articolo
     if (isNumeric) {
       const groupMap = new Map();
       prontuarioList.forEach(item => {
@@ -81,19 +78,40 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
         }
         groupMap.get(key).voci.push(item);
       });
-
       const exactGroup = groupMap.get(s);
-      if (exactGroup) {
-        return { exact: [exactGroup], other: [] };
-      }
+      if (exactGroup) return { exact: [exactGroup], other: [] };
     }
 
-    // Ricerca fuzzy
-    const fuseResults = fuseProntuario.search(s);
+    // 2. Ricerca testuale esatta (includes) — stessa logica di Prontuario.jsx
+    const textMatchIds = new Set();
+    prontuarioList.forEach(item => {
+      const titolo = (item.titolo || '').toLowerCase();
+      const rifNorm = (item.rif_normativo || '').toLowerCase();
+      const codice = (item.codice_violazione || '').toLowerCase();
+      const descrizione = (item.descrizione || '').toLowerCase();
+      if (
+        titolo.includes(s) ||
+        rifNorm.includes(s) ||
+        codice.includes(s) ||
+        descrizione.includes(s)
+      ) {
+        textMatchIds.add(item.id);
+      }
+    });
 
-    // Raggruppa per articolo_numero preservando ordine di rilevanza
+    // 3. Fuzzy su quelli non trovati per testo esatto
+    const fuseResults = fuseProntuario.search(s);
+    const fuseIds = new Set(fuseResults.map(r => r.item.id));
+
+    // Unione: testo esatto + fuzzy, senza duplicati
+    const allItems = [
+      ...prontuarioList.filter(item => textMatchIds.has(item.id)),
+      ...fuseResults.map(r => r.item).filter(item => !textMatchIds.has(item.id)),
+    ];
+
+    // Raggruppa per articolo
     const groupMap = new Map();
-    fuseResults.forEach(({ item }) => {
+    allItems.forEach(item => {
       const key = (item.articolo_numero || 'N.D.').trim();
       if (!groupMap.has(key)) {
         groupMap.set(key, {
@@ -117,10 +135,10 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
   const risultatiNormativa = useMemo(() => {
     if (debouncedSearch.length < minChars) return { exact: [], other: [] };
 
-    const s = debouncedSearch.trim();
+    const s = debouncedSearch.trim().toLowerCase();
     const isNumeric = /^\d+$/.test(s);
 
-    // Corrispondenza esatta per numero articolo
+    // 1. Corrispondenza esatta numero articolo
     if (isNumeric) {
       const groupMap = new Map();
       normativaList.forEach(item => {
@@ -136,7 +154,6 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
         }
         groupMap.get(key).commi.push(item);
       });
-
       const exactGroup = groupMap.get(Number(s)) || groupMap.get(s);
       if (exactGroup) {
         exactGroup.commi.sort((a, b) => (a.comma_num || 0) - (b.comma_num || 0));
@@ -144,11 +161,33 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
       }
     }
 
-    // Ricerca fuzzy
+    // 2. Ricerca testuale esatta — stessa logica di Normativa.jsx
+    const textMatchIds = new Set();
+    normativaList.forEach(item => {
+      const titolo = (item.titolo_articolo || item.titolo || '').toLowerCase();
+      const testo = (item.testo || '').toLowerCase();
+      const articolo = (item.articolo || '').toLowerCase();
+      const comma = (item.comma || '').toLowerCase();
+      if (
+        titolo.includes(s) ||
+        testo.includes(s) ||
+        articolo.includes(s) ||
+        comma.includes(s)
+      ) {
+        textMatchIds.add(item.id);
+      }
+    });
+
+    // 3. Fuzzy su quelli non trovati per testo esatto
     const fuseResults = fuseNormativa.search(s);
 
+    const allItems = [
+      ...normativaList.filter(item => textMatchIds.has(item.id)),
+      ...fuseResults.map(r => r.item).filter(item => !textMatchIds.has(item.id)),
+    ];
+
     const groupMap = new Map();
-    fuseResults.forEach(({ item }) => {
+    allItems.forEach(item => {
       const key = item.articolo_num;
       if (key == null) return;
       if (!groupMap.has(key)) {
