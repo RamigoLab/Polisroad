@@ -1,5 +1,15 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.9.3] — 28 Giugno 2026
+
+### Bug Fix
+- **Fix critico**: risolto crash della pagina Home per tutti gli utenti che non hanno un badge impostato (`featuredBadge` null causava `TypeError: Cannot read properties of null (reading 'icon')`)
+- Fix `AppHeader`: il badge viene ora renderizzato solo se effettivamente presente
+- Questo bug causava la schermata bianca per tutti gli utenti tranne l'admin
+
+---
+
+
 ## [1.9.2] — 28 Giugno 2026
 
 ### Bug Fix

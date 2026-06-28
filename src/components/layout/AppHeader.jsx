@@ -12,7 +12,7 @@ export const AppHeader = ({
   children,
   leftAction,
   rightAction,
-  showBadge = false,   // esplicito: solo Home lo imposta a true
+  showBadge = false,
 }) => {
   const { featuredBadge: featuredBadgeId } = useGamificationContext();
   const featuredBadge = showBadge && featuredBadgeId
@@ -20,6 +20,11 @@ export const AppHeader = ({
     : null;
 
   const hasText = subtitle || title || meta;
+
+  // Badge icon: mostra solo se showBadge=true E badge trovato
+  const badgeIcon = showBadge && featuredBadge
+    ? <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>
+    : null;
 
   return (
     <header style={LS.appHeader}>
@@ -41,16 +46,14 @@ export const AppHeader = ({
           {title && (
             <h2 style={LS.appHeaderTitle}>
               {title}
-              {showBadge && (
-                <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>
-              )}
+              {badgeIcon}
             </h2>
           )}
           {meta && <p style={LS.appHeaderMeta}>{meta}</p>}
           {!hasText && (
             <h2 style={LS.appHeaderTitle}>
               PolisRoad
-              {showBadge && <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>}
+              {badgeIcon}
             </h2>
           )}
         </div>

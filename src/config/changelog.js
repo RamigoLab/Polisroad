@@ -11,6 +11,15 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '1.9.3',
+    date: '28 Giugno 2026',
+    items: [
+      'Fix critico: risolto crash della Home per tutti gli utenti senza badge impostato',
+      'Fix: AppHeader non va più in errore quando featuredBadge è null',
+      'Stabilità: aggiunti guard null su tutti gli accessi a proprietà badge',
+    ],
+  },
+  {
     version: '1.9.2',
     date: '28 Giugno 2026',
     items: [
