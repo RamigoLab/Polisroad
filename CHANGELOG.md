@@ -33,8 +33,8 @@
 - Aggiunto pulsante "Elimina" per ogni utente nella pagina Admin Utenti.
 - Il delete avviene in due step: primo click mostra un pannello di conferma con dettagli dell'utente e avviso sulle conseguenze, secondo click esegue l'eliminazione effettiva.
 - Vengono rimossi: profilo, note, preferiti, XP, gamification e subscription push.
-- L'account auth (email/password) rimane su Supabase Auth e va eliminato manualmente dalla Dashboard se necessario.
-- Aggiunta migration SQL `20260627_admin_delete_profiles.sql` con policy RLS DELETE per admin su `profiles` e tabelle figlio.
+- L'eliminazione ora rimuove in modo **irreversibile** anche l'account di accesso (`auth.users`) tramite una funzione RPC `delete_user_by_admin`, senza richiedere pulizia manuale dalla Dashboard Supabase.
+- Aggiunta migration SQL `20260628_admin_delete_auth_user.sql` con funzione RPC SECURITY DEFINER per eliminazione sicura.
 
 ---
 

@@ -170,11 +170,9 @@ export const AdminUtenti = () => {
         if (error) logger.warn(`Delete ${table} for user ${userId}:`, error.message);
       }
 
-      // 2. Elimina il profilo
+      // 2. Elimina l'account auth e il profilo (tramite RPC Security Definer)
       const { error: profileError } = await supabase
-        .from('profiles')
-        .delete()
-        .eq('id', userId);
+        .rpc('delete_user_by_admin', { user_id: userId });
 
       if (profileError) throw profileError;
 
@@ -350,11 +348,7 @@ export const AdminUtenti = () => {
                         </div>
                         <div style={{ fontSize: '0.85rem', color: C.text }}>
                           Stai per eliminare <strong>{user.cognome} {user.nome}</strong> ({user.email}).
-                          Verranno rimossi anche note, preferiti, XP e subscription push.
-                          <br />
-                          <span style={{ color: C.textLight, fontSize: '0.8rem' }}>
-                            L'account di accesso (email/password) rimane su Supabase Auth — eliminalo manualmente dalla Dashboard se necessario.
-                          </span>
+                          Verranno rimossi in modo <strong>irreversibile</strong> profilo, note, preferiti, XP e l'account di accesso.
                         </div>
                       </div>
                     </div>
