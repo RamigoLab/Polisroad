@@ -235,6 +235,7 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
       )}
       <div className="auth-viewport-wrapper">
         <div style={authHeaderStyle}>
+          <img src="/icons/icon-512.png" alt="PolisRoad Logo" style={{ width: '80px', height: '80px', marginBottom: '16px' }} />
           <h1 style={authTitleStyle}>PolisRoad</h1>
           <p style={authSubtitleStyle}>Il Codice della Strada, sempre con te</p>
         </div>

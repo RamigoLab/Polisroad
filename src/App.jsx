@@ -96,7 +96,8 @@ function AppInner() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
-    window.history.replaceState({ page: currentPage, params: navigationParams }, '', `?page=${currentPage}`);
+    const hash = window.location.hash;
+    window.history.replaceState({ page: currentPage, params: navigationParams }, '', `?page=${currentPage}${hash}`);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
