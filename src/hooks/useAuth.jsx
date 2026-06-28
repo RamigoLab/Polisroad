@@ -144,7 +144,14 @@ export const AuthProvider = ({ children }) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       (event, session) => {
-        setPasswordRecovery(event === 'PASSWORD_RECOVERY');
+        // PASSWORD_RECOVERY: setta il flag e NON procedere con il login normale.
+        // Il flag viene resettato solo dopo updatePassword o clearPasswordRecovery.
+        if (event === 'PASSWORD_RECOVERY') {
+          setPasswordRecovery(true);
+          setSession(session);
+          return;
+        }
+
         setSession(session);
 
         if (session?.user?.id) {

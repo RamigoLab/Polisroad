@@ -99,7 +99,12 @@ export const Onboarding = ({ onDone }) => {
 
       {/* Contenuto centrale */}
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', maxWidth: '360px', textAlign: 'center' }}>
-        <div style={{ fontSize: '5rem', lineHeight: 1 }}>{slide.icon}</div>
+        <img
+          src="/icons/icon-192.png"
+          alt="PolisRoad"
+          style={{ width: '80px', height: '80px', borderRadius: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.25)' }}
+        />
+        <div style={{ fontSize: '4rem', lineHeight: 1 }}>{slide.icon}</div>
         <h2 style={{ fontSize: '1.6rem', fontWeight: '800', margin: 0, lineHeight: 1.3 }}>
           {slide.title}
         </h2>
