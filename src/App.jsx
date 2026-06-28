@@ -126,25 +126,7 @@ function AppInner() {
 
   const [onboardingDone, setOnboardingDone] = useState(() => isOnboardingDone());
 
-  const [showSplash, setShowSplash] = useState(() => {
-    const savedPage = getItem('polisroad_current_page');
-    if (savedPage && savedPage !== 'home') return false;
-    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-    const hasShown = sessionStorage.getItem('polisroad_splash_shown');
-    return !hasShown && !isStandalone;
-  });
-
-  useEffect(() => {
-    if (showSplash) {
-      const timer = setTimeout(() => {
-        setShowSplash(false);
-        sessionStorage.setItem('polisroad_splash_shown', 'true');
-      }, 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showSplash]);
-
-  if (showSplash || loading) return <Splash />;
+  if (loading) return <Splash />;
   if (!session) return <Auth onNavigate={navigate} />;
   if (passwordRecovery) return <Auth passwordUpdateMode onNavigate={navigate} />;
 
