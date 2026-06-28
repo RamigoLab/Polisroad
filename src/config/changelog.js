@@ -11,8 +11,52 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '1.9.2',
+    date: '28 Giugno 2026',
+    items: [
+      'Fix autenticazione: risolto il blocco al login per gli utenti non-admin',
+      'Fix iOS: eliminato il flash della schermata di attesa durante il caricamento del profilo',
+      'Fix recupero password: il link via email ora porta correttamente al form di reset',
+      'Fix build: downgrade Vite a versione stabile, eliminati errori di compilazione',
+      'Fix Profilo: rimosso import duplicato che poteva causare errori su iOS',
+      'Stabilità generale: rimosso ErrorBoundary doppio, ridotti casi di crash imprevisti',
+    ],
+  },
+  {
+    version: '1.9.1',
+    date: '27 Giugno 2026',
+    items: [
+      "Admin Utenti: aggiunta funzione di eliminazione profilo con pannello di conferma",
+      "Eliminazione utente rimuove anche note, preferiti, XP e subscription push",
+      "Aggiunta policy RLS per permettere agli admin di eliminare i profili",
+    ],
+  },
+  {
+    version: '1.9.0',
+    date: '27 Giugno 2026',
+    items: [
+      'Fix iOS: eliminata la race condition che mostrava errore subito dopo la registrazione',
+      'Fix iOS PWA: risolto il rimbalzo alla schermata di login al ritorno dal background',
+      'Fix iOS: eliminata la doppia chiamata al profilo al primo avvio (INITIAL_SESSION + getSession)',
+      "Timeout 8 secondi su caricamento profilo: l'app non si blocca più su reti irraggiungibili",
+      'Notifiche push: contatore dispositivi attivi nel Profilo con opzione disattiva su tutti',
+      "Notifiche push: messaggio dedicato su Safari per guidare all'installazione come PWA",
+      "Notifiche push: click sulla notifica ora naviga alla sezione corretta senza ricaricare l'app",
+      'Admin Notifiche: contatore mostra ora subscription e utenti unici separatamente',
+      'Form registrazione: campi azzerati dopo la registrazione riuscita',
+      'Schermata attesa approvazione: polling ottimizzato con backoff (10s → 30s → 60s → 120s)',
+      'Corretto testo: "credenziali" → "profilo" nella schermata di attesa approvazione',
+      'Corretto toggle Dark Mode: ora mostra "Attivo" quando è attiva',
+      'Fix memory leak: listener visibilitychange rimosso correttamente al remount',
+      'Home: aggiunto link "Vedi tutte" quando le comunicazioni superano 3',
+      'Animazione icona ErrorBoundary ripristinata (keyframe bounce)',
+      'Rimosso file manifest.json duplicato (la PWA usa il manifest generato da Vite)',
+    ],
+  },
+
+  {
     version: '1.8.9',
-    date: '26 Giugno 2026',
+    date: '27 Giugno 2026',
     items: [
       'Risolto blocco iOS: gli utenti approvati ora accedono correttamente senza ricaricare l\'app',
       'Eliminato il flash "Errore caricamento profilo" mostrato erroneamente al primo avvio',

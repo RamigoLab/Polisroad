@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { PS } from '../styles/pages';
 import { S } from '../styles/styles';
@@ -13,9 +13,20 @@ export const Home = ({ onNavigate }) => {
   const { profile } = useAuth();
   const { list: newsList } = useNews();
   const isAdmin = profile?.ruolo === 'admin';
-  const bannerNews = newsList.find(n => n.categoria?.toLowerCase() === 'banner' && n.pubblicato);
-  const popupNewsList = newsList.filter(n => n.categoria?.toLowerCase() === 'popup' && n.pubblicato);
-  const notificaNewsList = newsList.filter(n => n.categoria?.toLowerCase() === 'notifica' && n.pubblicato);
+  // BUG-14: useMemo evita che l'useEffect del popup scatti ad ogni render
+  // (filter() crea sempre un nuovo array reference anche con dati invariati)
+  const bannerNews = useMemo(
+    () => newsList.find(n => n.categoria?.toLowerCase() === 'banner' && n.pubblicato),
+    [newsList]
+  );
+  const popupNewsList = useMemo(
+    () => newsList.filter(n => n.categoria?.toLowerCase() === 'popup' && n.pubblicato),
+    [newsList]
+  );
+  const notificaNewsList = useMemo(
+    () => newsList.filter(n => n.categoria?.toLowerCase() === 'notifica' && n.pubblicato),
+    [newsList]
+  );
   
   const [showPopup, setShowPopup] = useState(false);
   const [currentPopup, setCurrentPopup] = useState(null);
@@ -99,6 +110,14 @@ export const Home = ({ onNavigate }) => {
               <p style={{ margin: 0, fontSize: '0.85rem', color: C.textLight }}>{notifica.contenuto}</p>
             </div>
           ))}
+          {notificaNewsList.length > 3 && (
+            <button
+              onClick={() => onNavigate('news')}
+              style={{ background: 'none', border: 'none', color: C.accent, fontSize: '0.85rem', cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}
+            >
+              Vedi tutte ({notificaNewsList.length}) →
+            </button>
+          )}
         </div>
       )}
 

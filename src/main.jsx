@@ -36,6 +36,20 @@ if (sentryDsn && import.meta.env.PROD) {
   });
 }
 
+// FIX BUG-08: listener per navigazione da click su notifica push.
+// Il SW invia { type: "NAVIGATE_TO", page } via postMessage invece di navigate()
+// (navigate() ricaricherebbe la SPA perdendo lo stato).
+// La navigazione avviene dopo il mount di React tramite evento custom.
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.addEventListener("message", (event) => {
+    if (event.data?.type === "NAVIGATE_TO" && event.data?.page) {
+      window.dispatchEvent(
+        new CustomEvent("polisroad:navigate", { detail: { page: event.data.page } })
+      );
+    }
+  });
+}
+
 // Applica il tema salvato prima del render per evitare flash bianchi
 const savedTheme = localStorage.getItem('polisroad_theme') || 'light';
 if (savedTheme === 'dark') {

@@ -9,11 +9,11 @@
  * 4. La subscription viene salvata in Supabase (tabella push_subscriptions)
  * 5. L'Edge Function send-push può inviare notifiche a tutti i subscriber
  *
- * SETUP NECESSARIO:
- * - Generare chiavi VAPID: npx web-push generate-vapid-keys
- * - Aggiungere VITE_VAPID_PUBLIC_KEY alle env vars (Vercel + .env)
- * - Eseguire la migration SQL push_subscriptions
- * - Deployare la Edge Function supabase/functions/send-push
+ * MULTI-DISPOSITIVO / MULTI-BROWSER:
+ * Ogni browser/dispositivo ha il proprio endpoint push univoco.
+ * Un utente con Chrome + Safari + Firefox avrà 3 righe in push_subscriptions.
+ * isSubscribed riflette solo lo stato del browser corrente (by design).
+ * Il campo deviceCount mostra quante subscription totali ha l'utente su Supabase.
  */
 import { useState, useEffect, useCallback } from 'react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
@@ -36,8 +36,15 @@ export const usePushNotifications = () => {
     'Notification' in window ? Notification.permission : 'unsupported'
   );
   const [isSubscribed, setIsSubscribed] = useState(false);
+  const [deviceCount, setDeviceCount] = useState(0); // subscription totali utente su Supabase
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
+  // FIX BUG-07: rilevamento Safari non-standalone per messaggio mirato
+  const isSafariNotStandalone =
+    /^((?!chrome|android).)*safari/i.test(navigator.userAgent) &&
+    !window.navigator.standalone &&
+    !(window.matchMedia('(display-mode: standalone)').matches);
 
   const isSupported =
     'Notification' in window &&
@@ -45,13 +52,24 @@ export const usePushNotifications = () => {
     'PushManager' in window &&
     !!VAPID_PUBLIC_KEY;
 
-  // Controlla se già iscritto al mount
+  // Controlla se già iscritto nel browser corrente + conta dispositivi totali
   useEffect(() => {
     if (!isSupported || !session) return;
+
     navigator.serviceWorker.ready
       .then(reg => reg.pushManager.getSubscription())
       .then(sub => setIsSubscribed(!!sub))
       .catch(() => {});
+
+    // Conta quante subscription ha l'utente su Supabase (tutti i dispositivi)
+    if (isSupabaseConfigured && supabase) {
+      supabase
+        .from('push_subscriptions')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', session.user.id)
+        .then(({ count }) => setDeviceCount(count || 0))
+        .catch(() => {});
+    }
   }, [isSupported, session]);
 
   const subscribe = useCallback(async () => {
@@ -61,7 +79,6 @@ export const usePushNotifications = () => {
     try {
       const reg = await navigator.serviceWorker.ready;
 
-      // Chiedi permesso
       const perm = await Notification.requestPermission();
       setPermission(perm);
       if (perm !== 'granted') {
@@ -69,13 +86,11 @@ export const usePushNotifications = () => {
         return;
       }
 
-      // Crea subscription
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY),
       });
 
-      // Salva in Supabase
       if (isSupabaseConfigured && supabase) {
         const { error: dbError } = await supabase
           .from('push_subscriptions')
@@ -87,6 +102,8 @@ export const usePushNotifications = () => {
             updated_at: new Date().toISOString(),
           }, { onConflict: 'endpoint' });
         if (dbError) throw dbError;
+        // Aggiorna il contatore dopo subscribe
+        setDeviceCount(prev => prev + 1);
       }
 
       setIsSubscribed(true);
@@ -112,6 +129,7 @@ export const usePushNotifications = () => {
             .from('push_subscriptions')
             .delete()
             .eq('endpoint', sub.endpoint);
+          setDeviceCount(prev => Math.max(0, prev - 1));
         }
       }
       setIsSubscribed(false);
@@ -123,13 +141,45 @@ export const usePushNotifications = () => {
     }
   }, []);
 
+  // Disattiva su tutti i dispositivi dell'utente
+  const unsubscribeAll = useCallback(async () => {
+    if (!session) return;
+    setLoading(true);
+    setError(null);
+    try {
+      // Prima disiscrive il browser corrente via Push API
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+
+      // Poi elimina TUTTE le subscription dell'utente da Supabase
+      if (isSupabaseConfigured && supabase) {
+        await supabase
+          .from('push_subscriptions')
+          .delete()
+          .eq('user_id', session.user.id);
+      }
+
+      setIsSubscribed(false);
+      setDeviceCount(0);
+    } catch (err) {
+      logger.error('Push unsubscribeAll error:', err);
+      setError('Impossibile disattivare le notifiche su tutti i dispositivi. Riprova.');
+    } finally {
+      setLoading(false);
+    }
+  }, [session]);
+
   return {
     isSupported,
+    isSafariNotStandalone,
     isSubscribed,
+    deviceCount,
     permission,
     loading,
     error,
     subscribe,
     unsubscribe,
+    unsubscribeAll,
   };
 };

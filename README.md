@@ -2,13 +2,13 @@
 
 Progressive Web App React/Vite per la consultazione rapida del Codice della Strada, prontuario infrazioni, calcolo sanzioni, preferiti, news, profilo operatore e funzioni amministrative.
 
-Versione corrente: **1.8.9** — 27 Giugno 2026
+Versione corrente: **1.9.2** — 28 Giugno 2026
 
 ---
 
 ## Stack
 
-- **React 19** + **Vite 8**
+- **React 19** + **Vite 5**
 - **Supabase** — autenticazione e database (RLS)
 - **Vite PWA** — service worker e installazione offline
 - **lucide-react** — icone SVG coerenti

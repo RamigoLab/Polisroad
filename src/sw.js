@@ -3,22 +3,11 @@
  *
  * Strategia: injectManifest (vite-plugin-pwa).
  * Workbox al build sostituisce self.__WB_MANIFEST con la lista dei file
- * da precachare e aggiunge gli import workbox necessari automaticamente
- * quando si usa importScripts o le injected workbox globals.
- *
- * Per semplicità e compatibilità con l'ambiente di build (nessun workbox-*
- * come dipendenza diretta), usiamo il precaching tramite Cache API nativo
- * e lasciamo che vite-plugin-pwa inietti __WB_MANIFEST.
- *
- * ⚠️ NON importare da react/vite qui — questo file gira nel SW context.
+ * da precachare e aggiunge gli import workbox necessari automaticamente.
  */
 
-// Vite-plugin-pwa inietta qui la lista dei file da precachare al build.
-// In development è un array vuoto.
 const PRECACHE_ASSETS = self.__WB_MANIFEST || [];
 
-// Cache versioned: usa il timestamp di build (sostituito da vite.config.js)
-// così ogni nuovo deploy usa una cache diversa e activate() fa pulizia corretta.
 const CACHE_VERSION = typeof __BUILD_TIMESTAMP__ !== 'undefined' ? __BUILD_TIMESTAMP__ : 'dev';
 const CACHE_NAME = `polisroad-${CACHE_VERSION}`;
 
@@ -29,9 +18,7 @@ self.addEventListener('install', (event) => {
       const urls = PRECACHE_ASSETS.map(entry =>
         typeof entry === 'string' ? entry : entry.url
       );
-      return cache.addAll(urls).catch(() => {
-        // Fallisce silenziosamente se qualche asset non è raggiungibile
-      });
+      return cache.addAll(urls).catch(() => {});
     })
   );
 });
@@ -49,7 +36,6 @@ self.addEventListener('activate', (event) => {
 
 // ─── Fetch: cache-first per asset precachati, network-first per il resto ─────
 self.addEventListener('fetch', (event) => {
-  // Solo GET, solo stesso origin o CDN noti
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
@@ -60,9 +46,7 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// ─── Prompt mode: skipWaiting su richiesta esplicita ─────────────────────────
-// Chiamato da updateServiceWorker(true) in PwaUpdater quando l'utente
-// clicca "Riavvia & Aggiorna"
+// ─── Message: skipWaiting su richiesta esplicita ──────────────────────────────
 self.addEventListener('message', (event) => {
   if (event.data && event.data.type === 'SKIP_WAITING') {
     self.skipWaiting();
@@ -84,10 +68,10 @@ self.addEventListener('push', (event) => {
     icon:     data.icon  || '/icons/icon-192.png',
     badge:    data.badge || '/icons/icon-192.png',
     tag:      data.tag   || 'polisroad-push',
-    // renotify: mostra la notifica anche se esiste già una con lo stesso tag
     renotify: true,
     data: {
-      url: data.url || '/',
+      url:  data.url  || '/',
+      page: data.page || 'home', // FIX BUG-08: pagina SPA da aprire
     },
   };
 
@@ -100,21 +84,24 @@ self.addEventListener('push', (event) => {
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
 
-  const targetUrl = (event.notification.data && event.notification.data.url) || '/';
+  const notifData = event.notification.data || {};
+  const targetPage = notifData.page || 'home';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
-      // Se l'app è già aperta: portala in primo piano e naviga all'URL
       for (const client of clientList) {
         if ('focus' in client) {
           client.focus();
-          if ('navigate' in client) client.navigate(targetUrl);
+          // FIX BUG-08: usa postMessage invece di navigate() per le SPA.
+          // navigate() ricarica l'app perdendo lo stato; postMessage comunica
+          // la pagina da aprire al listener in main.jsx senza reload.
+          client.postMessage({ type: 'NAVIGATE_TO', page: targetPage });
           return;
         }
       }
-      // Altrimenti apri una nuova finestra
+      // App non aperta: apri una nuova finestra
       if (clients.openWindow) {
-        return clients.openWindow(targetUrl);
+        return clients.openWindow('/');
       }
     })
   );

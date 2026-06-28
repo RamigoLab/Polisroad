@@ -21,7 +21,7 @@ import PendingApprovalScreen from './components/PendingApprovalScreen';
 import { useToast } from './components/ui/ToastManager';
 import { getItem, setItem, removeItem } from './utils/storage';
 
-// Lazy loading pages for high performance & smaller initial bundle size
+// Lazy loading pages
 const Home = lazy(() => import('./pages/Home').then(m => ({ default: m.Home })));
 const Prontuario = lazy(() => import('./pages/Prontuario').then(m => ({ default: m.Prontuario })));
 const Normativa = lazy(() => import('./pages/Normativa').then(m => ({ default: m.Normativa })));
@@ -47,20 +47,26 @@ const AdminNotifiche = lazy(() => import('./pages/admin/AdminNotifiche').then(m 
 
 import posthog from 'posthog-js';
 
-// Inner component that can safely use useToast (inside ToastProvider)
 function AppInner() {
-  const { session, loading: authLoading, passwordRecovery, isApproved, profile, profileError, profileLoading, signOut, refreshProfile } = useAuth();
+  const {
+    session,
+    loading: authLoading,
+    passwordRecovery,
+    isApproved,
+    profile,
+    profileError,
+    profileLoading,
+    signOut,
+    refreshProfile,
+  } = useAuth();
   const queryClient = useQueryClient();
   const { loading: dataLoading, error: dataError } = useData();
   const { showToast } = useToast();
 
-  // Initialize gamification on app load
   useInitializeGamification();
 
-  // Solo authLoading blocca il gate iniziale (sessione + profilo).
-  // dataLoading (React Query / IndexedDB) non deve bloccare: le singole
-  // pagine mostrano i loro skeleton loader mentre i dati arrivano.
   const loading = authLoading;
+
   const [currentPage, setCurrentPage] = useState(() => {
     const saved = getItem('polisroad_current_page');
     return saved || 'home';
@@ -75,14 +81,20 @@ function AppInner() {
     }
   });
 
-  // Mostra dataError come toast (sostituisce il vecchio componente <Toast>)
   useEffect(() => {
-    if (dataError) {
-      showToast(dataError, 'error');
-    }
+    if (dataError) showToast(dataError, 'error');
   }, [dataError, showToast]);
 
-  // Sincronizza lo stato iniziale nella history e ascolta il tasto Indietro
+  // Navigazione da click notifica push
+  useEffect(() => {
+    const handler = (e) => {
+      const page = e.detail?.page;
+      if (page) navigate(page);
+    };
+    window.addEventListener('polisroad:navigate', handler);
+    return () => window.removeEventListener('polisroad:navigate', handler);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
   useEffect(() => {
     window.history.replaceState({ page: currentPage, params: navigationParams }, '', `?page=${currentPage}`);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -109,11 +121,9 @@ function AppInner() {
     } else {
       removeItem('polisroad_navigation_params');
     }
-    // Traccia la navigazione in PostHog
     posthog.capture('page_view', { page, has_params: !!params });
   };
 
-  // Onboarding: stato inizializzato da localStorage, aggiornato a true quando completato
   const [onboardingDone, setOnboardingDone] = useState(() => isOnboardingDone());
 
   const [showSplash, setShowSplash] = useState(() => {
@@ -138,19 +148,25 @@ function AppInner() {
   if (!session) return <Auth onNavigate={navigate} />;
   if (passwordRecovery) return <Auth passwordUpdateMode onNavigate={navigate} />;
 
-  // Account in attesa di approvazione admin.
-  // Non mostrare la pending screen finché il profilo è ancora in caricamento
-  // (evita il flash di errore per utenti validi durante il caricamento iniziale).
-  if (session && !isApproved && !profileLoading) {
-    return <PendingApprovalScreen
-      email={session.user?.email}
-      profileError={profileError}
-      profileLoading={profileLoading}
-      profile={profile}
-      refreshProfile={refreshProfile}
-      signOut={signOut}
-    />;
+  // FIX iOS: mostra la pending screen solo quando il profilo è stato
+  // effettivamente caricato (non null per via del loading in corso).
+  // profileLoading=false + profile=null + session = errore reale, non race condition.
+  const profileReady = !profileLoading && (profile !== null || profileError);
+  if (profileReady && !isApproved) {
+    return (
+      <PendingApprovalScreen
+        email={session.user?.email}
+        profileError={profileError}
+        profileLoading={profileLoading}
+        profile={profile}
+        refreshProfile={refreshProfile}
+        signOut={signOut}
+      />
+    );
   }
+
+  // Mostra splash/loader mentre il profilo è ancora in caricamento
+  if (!profileReady) return <Splash />;
 
   if (!onboardingDone && session) {
     return <Onboarding onDone={() => setOnboardingDone(true)} />;
@@ -231,7 +247,6 @@ function AppInner() {
 
   return (
     <Sentry.ErrorBoundary fallback={<ErrorBoundary />} showDialog={false}>
-    <ErrorBoundary>
       <OfflineBanner />
       <SyncIndicator />
       <PwaUpdater />
@@ -244,7 +259,6 @@ function AppInner() {
           {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
         </div>
       </Suspense>
-    </ErrorBoundary>
     </Sentry.ErrorBoundary>
   );
 }

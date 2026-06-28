@@ -28,6 +28,7 @@ export const AdminNotifiche = () => {
   const [target,  setTarget]  = useState('all'); // 'all' | userId
 
   const [subscribers,       setSubscribers]       = useState([]);
+  const [uniqueUserCount,    setUniqueUserCount]    = useState(0);
   const [subscribersLoading, setSubscribersLoading] = useState(true);
   const [subscribersError,   setSubscribersError]   = useState(null);
   const [sending,  setSending]  = useState(false);
@@ -67,6 +68,9 @@ export const AdminNotifiche = () => {
           profiles: profileMap[s.user_id] || null,
         }));
 
+        // Calcola utenti unici (un utente può avere più subscription)
+        const uniqueUserIds = new Set(merged.map(s => s.user_id));
+        setUniqueUserCount(uniqueUserIds.size);
         setSubscribers(merged);
       } catch (err) {
         logger.error('AdminNotifiche: caricamento subscriber', err);
@@ -195,7 +199,12 @@ export const AdminNotifiche = () => {
                   {subscribers.length}
                 </span>
                 <span style={{ color: C.textLight, marginLeft: '6px', fontSize: '0.9rem' }}>
-                  {subscribers.length === 1 ? 'utente iscritto' : 'utenti iscritti'}
+                  {subscribers.length === 1 ? 'subscription attiva' : 'subscription attive'}
+                  {uniqueUserCount > 0 && (
+                    <span style={{ marginLeft: '6px', color: C.textLight }}>
+                      ({uniqueUserCount} {uniqueUserCount === 1 ? 'utente' : 'utenti'})
+                    </span>
+                  )}
                 </span>
                 {subscribers.length === 0 && (
                   <p style={{ fontSize: '0.8rem', color: C.textLight, margin: '4px 0 0' }}>
@@ -245,12 +254,16 @@ export const AdminNotifiche = () => {
           value={target}
           onChange={e => setTarget(e.target.value)}
         >
-          <option value="all">Tutti gli iscritti ({subscribers.length})</option>
-          {subscribers.map(s => {
+          <option value="all">Tutti ({subscribers.length} subscription · {uniqueUserCount} utenti)</option>
+          {/* Deduplica per user_id: un utente con più dispositivi appare una sola volta */}
+          {[...new Map(subscribers.map(s => [s.user_id, s])).values()].map(s => {
             const p = s.profiles;
             const name = p ? `${p.nome || ''} ${p.cognome || ''}`.trim() || p.email : s.user_id;
+            const subCount = subscribers.filter(x => x.user_id === s.user_id).length;
             return (
-              <option key={s.user_id} value={s.user_id}>{name}</option>
+              <option key={s.user_id} value={s.user_id}>
+                {name}{subCount > 1 ? ` (${subCount} dispositivi)` : ''}
+              </option>
             );
           })}
         </select>

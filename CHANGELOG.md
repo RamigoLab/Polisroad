@@ -1,5 +1,103 @@
 # 📝 CHANGELOG - PolisRoad
 
+## [1.9.2] — 28 Giugno 2026
+
+### Bug Fix
+- Fix critico: risolto il blocco al login per tutti gli utenti non-admin (flowType implicit ripristinato)
+- Fix iOS: eliminato il flash della schermata "in attesa di approvazione" durante il caricamento del profilo
+- Fix recupero password: il link email ora porta correttamente al form di nuova password
+- Fix build Vercel: downgrade Vite 8 → 5 e vitest 4 → 2, eliminati errori di compilazione
+- Fix Profilo: rimosso import dinamico duplicato di `isSupabaseConfigured`
+- Rimosso ErrorBoundary doppio annidato in App.jsx (Sentry + custom)
+- vite.config.js: aggiunto `rollupFormat: 'iife'` per eliminare il warning deprecato sul service worker
+
+---
+
+
+## [1.9.1] - 27 Giugno 2026
+
+### 👤 Admin Utenti — Eliminazione profilo
+
+**Funzione mancante: eliminazione utente dall'area admin**
+- Aggiunto pulsante "Elimina" per ogni utente nella pagina Admin Utenti.
+- Il delete avviene in due step: primo click mostra un pannello di conferma con dettagli dell'utente e avviso sulle conseguenze, secondo click esegue l'eliminazione effettiva.
+- Vengono rimossi: profilo, note, preferiti, XP, gamification e subscription push.
+- L'account auth (email/password) rimane su Supabase Auth e va eliminato manualmente dalla Dashboard se necessario.
+- Aggiunta migration SQL `20260627_admin_delete_profiles.sql` con policy RLS DELETE per admin su `profiles` e tabelle figlio.
+
+---
+
+## [1.9.0] - 27 Giugno 2026
+
+### 🍎 Fix iOS — Stabilità autenticazione e sessione
+
+**Bug 1 — Race condition al signup: errore subito dopo la registrazione**
+- **Causa:** Supabase emetteva l'evento `SIGNED_IN` prima che il profilo fosse inserito in `profiles`. `loadProfile` trovava la riga vuota e impostava `profileError = true`, mostrando un errore all'utente appena registrato.
+- **Fix:** `loadProfile` in `useAuth.jsx` ora ritenta fino a 3 volte con backoff progressivo (600ms × tentativo) prima di dichiarare errore.
+
+**Bug 2 — Rimbalzo alla schermata di login al ritorno dal background**
+- **Causa:** Su iOS PWA, al resume dal background `getSession()` restituiva `null` per alcuni ms prima che iOS completasse il restore della sessione tramite `INITIAL_SESSION`. In quell'istante l'app mostrava il login.
+- **Fix:** Aggiunto guard di 350ms: se `getSession()` ritorna `null`, si attende l'evento `INITIAL_SESSION` prima di dichiarare "nessuna sessione".
+
+**Bug 3 — Doppia chiamata al profilo al mount (INITIAL_SESSION + getSession)**
+- **Causa:** Sia `getSession()` che `onAuthStateChange(INITIAL_SESSION)` chiamavano `loadProfile` in parallelo, generando due query Supabase simultanee.
+- **Fix:** Introdotto `profileLoadInitiated` ref: `INITIAL_SESSION` viene ignorato se `getSession()` ha già avviato il caricamento.
+
+**Bug 4 — `loadProfile` senza timeout: blocco indefinito su rete irraggiungibile**
+- **Fix:** `loadProfile` usa `Promise.race` con timeout di 8 secondi. Se Supabase non risponde, l'app mostra lo stato di errore invece di restare bloccata sullo splash.
+
+---
+
+### 🔔 Fix Notifiche Push — Multi-browser e navigazione
+
+**Bug 5 — Click sulla notifica non navigava alla sezione corretta**
+- **Causa:** `notificationclick` in `sw.js` usava `client.navigate(url)`, che ricarica la SPA dall'inizio perdendo lo stato.
+- **Fix:** Il SW ora invia `postMessage({ type: "NAVIGATE_TO", page })`. Un listener in `main.jsx` dispatcha un `CustomEvent` che `App.jsx` intercetta per navigare senza reload.
+
+**Bug 6 — AdminNotifiche: contatore confondeva subscription e utenti**
+- Un utente con Chrome + Safari + Firefox generava 3 righe in `push_subscriptions`. Il pannello ora mostra subscription totali e utenti unici separatamente (es. "3 subscription attive · 2 utenti"). La select destinatari raggruppa per utente con numero di dispositivi.
+
+**Miglioramento — Profilo: info e controlli multi-dispositivo**
+- Quando l'utente ha notifiche attive su più browser, il Profilo mostra il conteggio dei dispositivi registrati e il pulsante "Disattiva su tutti i dispositivi".
+- Aggiunto messaggio dedicato per Safari non-standalone: guida l'utente all'installazione come PWA (Condividi → Aggiungi a schermata Home).
+
+---
+
+### 🐛 Bug minori
+
+- **Memory leak PwaUpdater:** Il listener `visibilitychange` ora viene rimosso correttamente all'unmount.
+- **Profilo.jsx:** Rimosso `await import` dinamico di `supabase` in `handleSendReport` (usato l'import statico già presente).
+- **Home.jsx:** `popupNewsList` e `notificaNewsList` memoizzati con `useMemo`.
+- **Home.jsx:** Aggiunto link "Vedi tutte (N) →" quando le comunicazioni superano 3.
+- **ErrorBoundary:** Aggiunta keyframe `bounce` in `index.css`.
+- **public/manifest.json:** Rimosso file duplicato (il manifest è generato da `vite-plugin-pwa`).
+
+---
+
+### ✏️ Testi e refusi
+
+- PendingApprovalScreen: "credenziali" → "profilo".
+- Toggle Dark Mode: "Attiva" → "Attivo" quando il dark mode è già attivo.
+- changelog.js: data versione 1.8.9 corretta (26 → 27 Giugno).
+- CHANGELOG.md: rimossa riga footer obsoleta "Versione 1.5.0".
+
+---
+
+### ♻️ Ottimizzazioni
+
+- Schermata attesa approvazione: polling con backoff esponenziale (10s → 30s → 60s → 120s).
+
+---
+
+### 📋 Nota operativa — Migration SQL
+
+Verificare che le migration seguenti siano state applicate in Supabase SQL Editor prima del deploy:
+- `20260626_fix_data_tables_rls.sql`
+- `20260626_fix_push_subscriptions_rls.sql`
+- `20260626_fix_profiles_rls_deadlock.sql`
+
+---
+
 ## [1.8.9] - 27 Giugno 2026
 
 ### 🐛 Fix — Service Worker duplicato, reload ErrorBoundary in loop, race condition auth e altri
@@ -1164,5 +1262,3 @@ Per problemi o domande:
 ---
 
 **PolisRoad Development Team** ❤️
-
-*Versione 1.5.0 - 6 Giugno 2026*

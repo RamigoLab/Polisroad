@@ -18,7 +18,9 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { logger } from '../utils/logger';
 
-const POLL_INTERVAL_MS = 10_000; // 10 secondi
+// UX-03: backoff esponenziale per ridurre il carico su Supabase e batteria.
+// 10s → 30s → 60s → 120s (poi rimane a 120s)
+const POLL_INTERVALS_MS = [10_000, 30_000, 60_000, 120_000];
 
 export default function PendingApprovalScreen({ email, profileError, profileLoading, profile, refreshProfile, signOut }) {
   const [checking, setChecking] = useState(false);
@@ -40,12 +42,21 @@ export default function PendingApprovalScreen({ email, profileError, profileLoad
     }
   }, [refreshProfile]); // checking rimosso dalle dipendenze: usiamo il ref
 
-  // Avvia il polling automatico al mount, lo ferma all'unmount.
-  // doRefresh è stabile (dipende solo da refreshProfile) quindi l'interval
-  // non viene mai ricreato inutilmente.
+  // UX-03: polling con backoff esponenziale (10s → 30s → 60s → 120s)
+  const pollAttemptRef = useRef(0);
   useEffect(() => {
-    const id = setInterval(doRefresh, POLL_INTERVAL_MS);
-    return () => clearInterval(id);
+    let timeoutId;
+    const scheduleNext = () => {
+      const idx = Math.min(pollAttemptRef.current, POLL_INTERVALS_MS.length - 1);
+      const delay = POLL_INTERVALS_MS[idx];
+      timeoutId = setTimeout(async () => {
+        await doRefresh();
+        pollAttemptRef.current += 1;
+        scheduleNext();
+      }, delay);
+    };
+    scheduleNext();
+    return () => clearTimeout(timeoutId);
   }, [doRefresh]);
 
   const base = {
@@ -133,8 +144,8 @@ export default function PendingApprovalScreen({ email, profileError, profileLoad
         Account in attesa di approvazione
       </h2>
       <p style={{ color: 'var(--color-text-light)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '320px', marginBottom: '8px' }}>
-        La tua registrazione è stata ricevuta. Un amministratore verificherà le tue
-        credenziali e attiverà l'account a breve.
+        La tua registrazione è stata ricevuta. Un amministratore verificherà il tuo
+        profilo e attiverà l'account a breve.
       </p>
       <p style={{ fontSize: '0.8rem', color: 'var(--color-text-light)', marginBottom: '8px' }}>
         Registrato come: <strong>{email}</strong>

@@ -165,7 +165,13 @@ export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
       if (error) {
         showToast(mapAuthError(error, 'register'), 'error');
       }
-      else { showToast('Registrazione completata! Controlla la tua email per confermare l\'account.', 'success'); setIsLogin(true); }
+      else {
+        showToast('Registrazione completata! Controlla la tua email per confermare l\'account.', 'success');
+        // UX-04: reset campi registrazione al passaggio al login
+        setNome(''); setCognome(''); setGrado(''); setForza('');
+        setPassword(''); setPrivacyAccepted(false);
+        setIsLogin(true);
+      }
     }
     setLoading(false);
   };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useRegisterSW } from 'virtual:pwa-register/react';
 import { C } from '../styles/theme';
 import { Icon } from './ui/Icon';
@@ -11,6 +11,7 @@ const PwaUpdater = () => {
   const [manualNeedRefresh, setManualNeedRefresh] = useState(false);
   const [manualOfflineReady, setManualOfflineReady] = useState(false);
   const [updating, setUpdating] = useState(false);
+  const registrationRef = useRef(null);
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
@@ -25,22 +26,31 @@ const PwaUpdater = () => {
     },
     onRegistered(registration) {
       if (!registration) return;
+      registrationRef.current = registration;
+
       // Controllo aggiornamenti ogni ora
       setInterval(() => {
         registration.update().catch(err => logger.error('SW polling update error', err));
       }, 60 * 60 * 1000);
-
-      // Controllo aggiornamenti quando l'utente riattiva la scheda
-      document.addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'visible') {
-          registration.update().catch(err => logger.error('SW visibility update error', err));
-        }
-      });
     },
     onRegisterError(error) {
       logger.error('SW registration error', error);
     },
   });
+
+  // FIX BUG-12: visibilitychange aggiunto con cleanup per evitare memory leak
+  // al remount del componente (es. dopo un ErrorBoundary reset).
+  useEffect(() => {
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible' && registrationRef.current) {
+        registrationRef.current
+          .update()
+          .catch(err => logger.error('SW visibility update error', err));
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, []);
 
   const [offlineReadyDismissed] = useState(() => !!getItem(OFFLINE_READY_DISMISSED_KEY));
 
@@ -56,8 +66,6 @@ const PwaUpdater = () => {
 
   const handleUpdate = () => {
     setUpdating(true);
-    // Ascolta il cambio di controller PRIMA di mandare skipWaiting,
-    // così quando il nuovo SW prende controllo la pagina si ricarica subito.
     navigator.serviceWorker.addEventListener('controllerchange', () => {
       window.location.reload();
     }, { once: true });

@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase, isSupabaseConfigured } from '../config/supabase';
 import {
   fetchProfile,
@@ -36,9 +36,10 @@ export const AuthProvider = ({ children }) => {
   const [profileError, setProfileError] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
 
-  // 👉 FIX: approvazione derivata correttamente
-  // - gli admin sono sempre approvati (ruolo === 'admin')
-  // - altrimenti si legge il campo approvato dal profilo DB
+  // FIX BUG-01/04: ref per tracciare se getSession() ha già avviato un loadProfile,
+  // evitando che INITIAL_SESSION lo lanci di nuovo in parallelo.
+  const profileLoadInitiated = useRef(false);
+
   const isAdmin = profile?.ruolo === 'admin';
   const isApproved = isAdmin || !!profile?.approvato;
 
@@ -55,12 +56,32 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const loadProfile = async (userId) => {
+  // FIX BUG-11: loadProfile con timeout 8s e FIX BUG-01: retry per race condition signUp
+  const loadProfile = async (userId, { retries = 0, silent = false } = {}) => {
     try {
-      setProfileLoading(true);
-      setProfileError(false);
-      const data = await fetchProfile(userId);
+      if (!silent) {
+        setProfileLoading(true);
+        setProfileError(false);
+      }
+
+      // Timeout 8s per evitare blocchi indefiniti su rete irraggiungibile
+      const data = await Promise.race([
+        fetchProfile(userId),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('profile_timeout')), 8000)
+        ),
+      ]);
+
+      if (!data && retries < 3) {
+        // FIX BUG-01: race condition signUp → profile insert non ancora completato.
+        // Riprova con backoff (600ms × tentativo) prima di dichiarare errore.
+        logger.warn(`loadProfile: profilo non trovato, retry ${retries + 1}/3`);
+        await new Promise(r => setTimeout(r, 600 * (retries + 1)));
+        return loadProfile(userId, { retries: retries + 1, silent });
+      }
+
       setProfile(data || null);
+      if (!data) setProfileError(true);
     } catch (err) {
       logger.error('Error fetching profile:', err.message);
       setProfile(null);
@@ -88,6 +109,13 @@ export const AuthProvider = ({ children }) => {
       return;
     }
 
+    // FIX BUG-02: su iOS PWA, la sessione può richiedere un momento per essere
+    // ripristinata dal browser dopo un resume dal background. getSession() può
+    // tornare null prima che INITIAL_SESSION arrivi con la sessione reale.
+    // Usiamo un timeout di 350ms: se getSession() ritorna null, aspettiamo
+    // prima di concludere che l'utente non è autenticato.
+    let noSessionTimer = null;
+
     supabase.auth.getSession()
       .then(({ data: { session }, error }) => {
         if (error) {
@@ -95,18 +123,21 @@ export const AuthProvider = ({ children }) => {
           setLoading(false);
           return;
         }
-        setSession(session);
+
         if (session?.user?.id) {
-          // Segnala subito che il profilo è in caricamento così App.jsx
-          // non mostra la pending screen per un frame con profileLoading=false
+          profileLoadInitiated.current = true;
+          setSession(session);
           setProfileLoading(true);
           loadProfile(session.user.id);
         } else {
-          setLoading(false);
+          // FIX BUG-02: non dichiarare subito "nessuna sessione" — su iOS PWA
+          // INITIAL_SESSION può arrivare poco dopo con la sessione reale.
+          noSessionTimer = setTimeout(() => {
+            setLoading(false);
+          }, 350);
         }
       })
       .catch((err) => {
-        // Supabase irraggiungibile: sblocca comunque il gate di caricamento
         logger.error('getSession unexpected error:', err);
         setLoading(false);
       });
@@ -117,13 +148,27 @@ export const AuthProvider = ({ children }) => {
         setSession(session);
 
         if (session?.user?.id) {
-          // TOKEN_REFRESHED è un aggiornamento silenzioso del JWT: non serve
-          // ricaricare il profilo perché i dati utente non sono cambiati.
-          // Ricaricare qui causava race condition e ricaricamenti continui.
-          // SIGNED_OUT / USER_DELETED: profilo già azzerato sotto
+          // FIX BUG-04: INITIAL_SESSION è già gestito da getSession() sopra.
+          // Evitare un secondo loadProfile parallelo che causa doppie query su Supabase.
+          if (event === 'INITIAL_SESSION') {
+            if (!profileLoadInitiated.current) {
+              // getSession() aveva restituito null (es. iOS race), ora arriva la sessione
+              clearTimeout(noSessionTimer);
+              profileLoadInitiated.current = true;
+              setProfileLoading(true);
+              loadProfile(session.user.id);
+            }
+            return;
+          }
+
+          // TOKEN_REFRESHED: aggiornamento silenzioso del JWT, profilo invariato
           if (event === 'TOKEN_REFRESHED') return;
+
+          // Per tutti gli altri eventi (SIGNED_IN, USER_UPDATED, ecc.)
           loadProfile(session.user.id);
         } else {
+          clearTimeout(noSessionTimer);
+          profileLoadInitiated.current = false;
           setProfile(null);
           setLoading(false);
         }
@@ -131,8 +176,11 @@ export const AuthProvider = ({ children }) => {
     );
 
     loadUserCount();
-    return () => subscription.unsubscribe();
-  }, []);
+    return () => {
+      clearTimeout(noSessionTimer);
+      subscription.unsubscribe();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const signIn = async (email, password) => {
     if (!isSupabaseConfigured || !supabase) {
@@ -198,7 +246,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const signOut = async () => {
-    // Resetta sempre lo stato locale indipendentemente dall'esito della chiamata
+    profileLoadInitiated.current = false;
     setProfile(null);
     setProfileError(false);
     setPasswordRecovery(false);
@@ -213,7 +261,6 @@ export const AuthProvider = ({ children }) => {
       await signOutService();
       return { error: null };
     } catch (err) {
-      // Anche se signOut fallisce, lo stato locale è già pulito
       logger.warn('signOut API error (stato locale già resettato):', err);
       setSession(null);
       return { error: err };
@@ -245,12 +292,9 @@ export const AuthProvider = ({ children }) => {
         loading,
         profileLoading,
         passwordRecovery,
-
-        // 🔥 FIX IMPORTANTE
         isApproved,
         isAdmin,
         profileError,
-
         signIn,
         signUp,
         signOut,
@@ -259,8 +303,6 @@ export const AuthProvider = ({ children }) => {
         updateProfile,
         clearPasswordRecovery: () => setPasswordRecovery(false),
         refreshUserCount: loadUserCount,
-        // Usato dalla schermata "in attesa di approvazione" per rilevare
-        // quando l'admin approva l'account senza che l'utente ricarichi.
         refreshProfile: () => session?.user?.id ? loadProfile(session.user.id) : Promise.resolve(),
       }}
     >
