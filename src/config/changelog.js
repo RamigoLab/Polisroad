@@ -17,7 +17,6 @@ const CHANGELOG_DATA = [
       'Fix critico: risolto crash della Home per tutti gli utenti senza badge impostato',
       'Fix: AppHeader non va più in errore quando featuredBadge è null',
       'Stabilità: aggiunti guard null su tutti gli accessi a proprietà badge',
-      'UI: aggiunto logo ufficiale alla pagina di login',
       "Fix: risolto bug nel recupero password causato dall'inizializzazione dell'URL",
     ],
   },

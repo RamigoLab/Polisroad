@@ -384,14 +384,14 @@ export const AdminUtenti = () => {
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '12px' }}>
                     <div>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-                        <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: C.text }}>
+                        <span style={{ fontWeight: 'bold', fontSize: '1.1rem', color: C.text, lineHeight: 1 }}>
                           {user.cognome} {user.nome}
                         </span>
                         <span style={{
                           backgroundColor: user.ruolo === 'admin' ? `${C.danger}15` : `${C.accent}15`,
                           color: user.ruolo === 'admin' ? C.danger : C.accent,
                           fontSize: '0.75rem', fontWeight: 'bold',
-                          padding: '2px 8px', borderRadius: '12px', textTransform: 'uppercase'
+                          padding: '3px 8px', borderRadius: '12px', textTransform: 'uppercase', lineHeight: 1
                         }}>
                           {user.ruolo}
                         </span>
@@ -410,42 +410,50 @@ export const AdminUtenti = () => {
                         display: 'inline-flex', alignItems: 'center', gap: '4px',
                         backgroundColor: user.approvato ? `${C.success || '#27ae60'}18` : `${C.warning || '#e67e22'}18`,
                         color: user.approvato ? (C.success || '#27ae60') : (C.warning || '#e67e22'),
-                        fontSize: '0.75rem', fontWeight: '700',
-                        padding: '3px 10px', borderRadius: '12px',
+                        fontSize: '0.9rem', fontWeight: '700',
+                        padding: '4px 12px', borderRadius: '12px',
                       }}>
                         {user.approvato ? '✓ Approvato' : '⏳ In attesa'}
                       </span>
-                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', justifyContent: 'flex-end', marginTop: '4px' }}>
                         {/* Toggle approvazione */}
                         <button
                           onClick={() => toggleApprovazione(user.id, user.approvato)}
                           style={{
-                            display: 'flex', alignItems: 'center', gap: '5px',
-                            padding: '6px 12px', fontSize: '0.82rem', fontWeight: '600',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            padding: '6px 12px', fontSize: '0.85rem', fontWeight: '600',
                             borderRadius: '8px', cursor: 'pointer', border: 'none',
-                            backgroundColor: user.approvato ? `${C.warning || '#e67e22'}18` : `${C.success || '#27ae60'}18`,
+                            backgroundColor: user.approvato ? `${C.warning || '#e67e22'}15` : `${C.success || '#27ae60'}15`,
                             color: user.approvato ? (C.warning || '#e67e22') : (C.success || '#27ae60'),
                           }}
                         >
-                          <Icon name={user.approvato ? 'ban' : 'check-circle'} size={13} />
+                          <Icon name={user.approvato ? 'ban' : 'check-circle'} size={14} />
                           {user.approvato ? 'Sospendi' : 'Approva'}
                         </button>
                         {/* Modifica dati */}
-                        <button onClick={() => handleEdit(user)} style={{ ...S.btnOutline, display: 'flex', alignItems: 'center', gap: '6px', padding: '6px 12px', fontSize: '0.85rem' }}>
-                          <Icon name="pen-line" size={13} /> Modifica
+                        <button 
+                          onClick={() => handleEdit(user)} 
+                          style={{ 
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            padding: '6px 12px', fontSize: '0.85rem', fontWeight: '600',
+                            borderRadius: '8px', cursor: 'pointer', border: 'none',
+                            backgroundColor: `${C.accent}15`, color: C.accent
+                          }}
+                        >
+                          <Icon name="pen-line" size={14} /> Modifica
                         </button>
                         {/* Elimina profilo */}
                         <button
                           onClick={() => handleDeleteClick(user.id)}
                           style={{
-                            display: 'flex', alignItems: 'center', gap: '5px',
-                            padding: '6px 12px', fontSize: '0.82rem', fontWeight: '600',
+                            display: 'flex', alignItems: 'center', gap: '6px',
+                            padding: '6px 12px', fontSize: '0.85rem', fontWeight: '600',
                             borderRadius: '8px', cursor: 'pointer', border: 'none',
                             backgroundColor: `${C.danger || '#e74c3c'}15`,
                             color: C.danger || '#e74c3c',
                           }}
                         >
-                          <Icon name="trash-2" size={13} /> Elimina
+                          <Icon name="trash-2" size={14} /> Elimina
                         </button>
                       </div>
                     </div>

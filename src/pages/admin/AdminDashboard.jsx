@@ -10,7 +10,7 @@ import { useAuth } from '../../hooks/useAuth';
 import { DB_VERSION_CDS, SYSTEM_STATUS } from '../../config/constants';
 import { supabase, isSupabaseConfigured } from '../../config/supabase';
 
-export const AdminDashboard = () => {
+export const AdminDashboard = ({ onNavigate }) => {
   const { list: newsList } = useNews();
   const { list: prontuarioList } = useProntuario();
   const { list: normativaList } = useNormativa();
@@ -58,11 +58,11 @@ export const AdminDashboard = () => {
       <h2 style={S.sectionTitle}>Dashboard</h2>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
-        <StatCard title="Operatori Iscritti" count={userCount} color={C.accent} icon="user" />
-        <StatCard title="Segnalazioni Attive" count={segnalazioniCount} color={C.danger} icon="shield-alert" />
-        <StatCard title="Voci Prontuario" count={prontuarioList.length} color={C.primary} icon="clipboard-list" />
-        <StatCard title="Articoli Normativa" count={normativaList.length} color={C.success} icon="book-open" />
-        <StatCard title="News Pubblicate" count={newsList.filter(n => n.pubblicato).length} color={C.warning} icon="megaphone" />
+        <StatCard title="Operatori Iscritti" count={userCount} color={C.accent} icon="user" onClick={() => onNavigate('admin_utenti')} />
+        <StatCard title="Segnalazioni Attive" count={segnalazioniCount} color={C.danger} icon="shield-alert" onClick={() => onNavigate('admin_segnalazioni')} />
+        <StatCard title="Voci Prontuario" count={prontuarioList.length} color={C.primary} icon="clipboard-list" onClick={() => onNavigate('admin_prontuario')} />
+        <StatCard title="Articoli Normativa" count={normativaList.length} color={C.success} icon="book-open" onClick={() => onNavigate('admin_normativa')} />
+        <StatCard title="News Pubblicate" count={newsList.filter(n => n.pubblicato).length} color={C.warning} icon="megaphone" onClick={() => onNavigate('admin_news')} />
       </div>
 
       <div style={{ marginTop: '32px', ...S.card, border: `1px solid ${C.border}` }}>
@@ -90,8 +90,11 @@ export const AdminDashboard = () => {
   );
 };
 
-const StatCard = ({ title, count, color, icon }) => (
-  <div style={{ ...S.card, borderLeft: `4px solid ${color}`, boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+const StatCard = ({ title, count, color, icon, onClick }) => (
+  <div 
+    onClick={onClick}
+    style={{ ...S.card, borderLeft: `4px solid ${color}`, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: onClick ? 'pointer' : 'default', transition: 'transform 0.2s ease', ':hover': { transform: 'translateY(-2px)' } }}
+  >
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
       <span style={S.labelUppercase}>{title}</span>
       <span style={{ color }}><Icon name={icon} size={22} /></span>

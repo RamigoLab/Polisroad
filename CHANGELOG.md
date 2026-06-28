@@ -2,9 +2,6 @@
 
 ## [1.9.3] — 28 Giugno 2026
 
-### Feature & UI
-- **Logo**: Aggiunto il logo ufficiale dell'app (`icon-512.png`) nella schermata di login.
-
 ### Bug Fix
 - **Fix critico**: risolto crash della pagina Home per tutti gli utenti che non hanno un badge impostato (`featuredBadge` null causava `TypeError: Cannot read properties of null (reading 'icon')`)
 - Fix `AppHeader`: il badge viene ora renderizzato solo se effettivamente presente

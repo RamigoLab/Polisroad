@@ -189,7 +189,7 @@ function AppInner() {
       case 'termini': return <TerminiServizio {...props} />;
       case 'admin_dashboard': return (
         <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
-          <AdminLayout currentTab="dashboard" {...props}><AdminDashboard /></AdminLayout>
+          <AdminLayout currentTab="dashboard" {...props}><AdminDashboard {...props}/></AdminLayout>
         </ProtectedRoute>
       );
       case 'admin_utenti': return (
