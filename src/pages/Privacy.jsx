@@ -37,7 +37,7 @@ export const PrivacyContent = () => {
       <h3 style={h3Style}>3. Finalità del trattamento</h3>
       <ul style={ulStyle}>
         <li style={liStyle}>Consentire l'accesso e l'utilizzo dell'App (autenticazione)</li>
-        <li style={liStyle}>Personalizzare l'esperienza dell'utente (profilo, statistiche di utilizzo, sistema di gamification)</li>
+        <li style={liStyle}>Personalizzare l'esperienza dell'utente (profilo, statistiche di utilizzo)</li>
         <li style={liStyle}>Garantire la sicurezza del servizio</li>
       </ul>
       <h3 style={h3Style}>4. Base giuridica</h3>

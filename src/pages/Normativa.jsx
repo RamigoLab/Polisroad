@@ -10,12 +10,10 @@ import { Icon } from '../components/ui/Icon';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useNormativa } from '../hooks/useNormativa';
-import { useGamificationContext } from '../context/GamificationContext';
 import { useDebounce } from '../hooks/useDebounce';
 
 export const Normativa = ({ onNavigate, navigationParams }) => {
   const { list, loading, refresh } = useNormativa();
-  const { addXP } = useGamificationContext();
   const [search, setSearch] = useState('');
   
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -213,7 +211,6 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
 
   const renderArticleRow = (art) => (
     <div key={art.id} onClick={async () => {
-      await addXP(5, 'article');
       posthog.capture('normativa_article_opened', {
         articolo_num: art.articolo_num,
         titolo: art.titolo_articolo,

@@ -13,8 +13,7 @@ export const Home = ({ onNavigate }) => {
   const { profile } = useAuth();
   const { list: newsList } = useNews();
   const isAdmin = profile?.ruolo === 'admin';
-  // BUG-14: useMemo evita che l'useEffect del popup scatti ad ogni render
-  // (filter() crea sempre un nuovo array reference anche con dati invariati)
+
   const bannerNews = useMemo(
     () => newsList.find(n => n.categoria?.toLowerCase() === 'banner' && n.pubblicato),
     [newsList]
@@ -27,13 +26,12 @@ export const Home = ({ onNavigate }) => {
     () => newsList.filter(n => n.categoria?.toLowerCase() === 'notifica' && n.pubblicato),
     [newsList]
   );
-  
+
   const [showPopup, setShowPopup] = useState(false);
   const [currentPopup, setCurrentPopup] = useState(null);
 
   useEffect(() => {
     if (popupNewsList.length > 0) {
-      // Show the latest popup if not already dismissed
       const latestPopup = popupNewsList[0];
       const dismissed = getItem(`polisroad_dismissed_popup_${latestPopup.id}`);
       if (!dismissed) {
@@ -60,7 +58,6 @@ export const Home = ({ onNavigate }) => {
       subtitle="Bentornato,"
       title={operatorName}
       meta={profile?.forza}
-      showBadge={true}
       onHeaderTitleClick={() => onNavigate('profilo')}
       headerChildren={
         <div style={PS.homeQuickActions}>
@@ -98,11 +95,11 @@ export const Home = ({ onNavigate }) => {
             <Icon name="bell" size={16} /> Comunicazioni
           </h4>
           {notificaNewsList.slice(0, 3).map(notifica => (
-            <div key={notifica.id} style={{ 
-              backgroundColor: C.card, 
-              borderRadius: '12px', 
-              padding: '12px', 
-              marginBottom: '8px', 
+            <div key={notifica.id} style={{
+              backgroundColor: C.card,
+              borderRadius: '12px',
+              padding: '12px',
+              marginBottom: '8px',
               borderLeft: `4px solid ${C.primary}`,
               boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
             }}>
@@ -127,88 +124,102 @@ export const Home = ({ onNavigate }) => {
         </button>
       )}
 
-      {/* Footer / Credits */}
+      {/* Footer unificato */}
       <div style={{
         marginTop: '32px',
-        padding: '24px 16px',
+        padding: '20px 16px',
         textAlign: 'center',
         borderTop: `1px solid ${C.border}`,
         fontSize: '0.75rem',
         color: C.textLight,
-        lineHeight: '1.6'
+        lineHeight: '1.6',
       }}>
-        <p style={{ fontWeight: 'bold', marginBottom: '8px' }}>
-          {new Date().getFullYear()} PolisRoad v{APP_VERSION} – Applicazione sviluppata da Giorgio Raimondi
+        <p style={{ fontWeight: 'bold', marginBottom: '6px' }}>
+          {new Date().getFullYear()} PolisRoad v{APP_VERSION} — sviluppata da Giorgio Raimondi
         </p>
         <p style={{ marginBottom: '4px' }}>
-          Sistema informativo di supporto alle attività di controllo in materia di circolazione stradale.
+          Sistema di supporto alle attività di controllo in materia di circolazione stradale.
+          I dati normativi sono tratti da fonti ufficiali (Normattiva) e hanno finalità informativa.
         </p>
-        <p style={{ marginBottom: '4px' }}>
-          I dati normativi sono tratti da fonti ufficiali (es. Normattiva) e hanno finalità informativa.
+        <p style={{ marginBottom: '12px' }}>
+          Le verifiche e le contestazioni restano di esclusiva responsabilità degli organi accertatori.
         </p>
-        <p style={{ marginBottom: '4px' }}>
-          Le verifiche e le eventuali contestazioni restano di esclusiva responsabilità degli organi accertatori.
-        </p>
-        <p>
-          Non è garantita la completezza o l’aggiornamento dei dati provenienti da servizi di terze parti.
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+          <button onClick={() => onNavigate('privacy')} style={{ background: 'none', border: 'none', color: C.accent, fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+            Privacy Policy
+          </button>
+          <button onClick={() => onNavigate('termini')} style={{ background: 'none', border: 'none', color: C.accent, fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
+            Termini di Servizio
+          </button>
+        </div>
       </div>
 
       {/* Popup Modale */}
       {showPopup && currentPopup && (
-        <div style={{
-          position: 'fixed',
-          top: 0, left: 0, right: 0, bottom: 0,
-          backgroundColor: 'rgba(0,0,0,0.6)',
-          zIndex: 10000,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          padding: '20px'
-        }}>
-          <div style={{
-            backgroundColor: C.card,
-            borderRadius: '16px',
-            padding: '24px',
-            maxWidth: '400px',
-            width: '100%',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
-          }}>
-            <h3 style={{ margin: '0 0 12px 0', color: C.text, fontSize: '1.2rem' }}>{currentPopup.titolo}</h3>
+        <div
+          onClick={handleDismissPopup}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.6)',
+            zIndex: 10000,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '20px',
+          }}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="popup-title"
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{
+              backgroundColor: C.card,
+              borderRadius: '16px',
+              padding: '24px',
+              maxWidth: '400px',
+              width: '100%',
+              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+            }}>
+            <h3 id="popup-title" style={{ margin: '0 0 12px 0', color: C.text, fontSize: '1.2rem' }}>{currentPopup.titolo}</h3>
             <div style={{ color: C.textLight, fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '20px', whiteSpace: 'pre-wrap' }}>
               {currentPopup.contenuto}
             </div>
-            <button 
+            <button
               onClick={handleDismissPopup}
               style={{ ...S.btnPrimary, width: '100%' }}
+              autoFocus
             >
               Ho capito
             </button>
           </div>
         </div>
       )}
-
-      {/* Legal Info Card */}
-      <div style={PS.homeLegalCard}>
-        <span style={PS.homeLegalVersion}>PolisRoad v{APP_VERSION} · Contenuto a scopo informativo</span>
-        <div style={PS.homeLegalRow}>
-          <button onClick={() => onNavigate('privacy')} style={PS.homeLegalLink}>
-            Privacy Policy
-          </button>
-          <button onClick={() => onNavigate('termini')} style={PS.homeLegalLink}>
-            Termini di Servizio
-          </button>
-        </div>
-      </div>
     </PageWrapper>
   );
 };
 
-const NavCard = ({ icon, title, color, bg, onClick }) => (
-  <div onClick={onClick} style={PS.homeNavCard}>
-    <span style={{ ...PS.homeNavCardIcon, backgroundColor: bg, color }}>
-      <Icon name={icon} size={26} />
-    </span>
-    <span style={{ ...PS.homeNavCardLabel, color: '#333' }}>{title}</span>
-  </div>
-);
+const NavCard = ({ icon, title, color, bg, onClick }) => {
+  const [pressed, setPressed] = useState(false);
+
+  return (
+    <div
+      onClick={onClick}
+      onPointerDown={() => setPressed(true)}
+      onPointerUp={() => setPressed(false)}
+      onPointerLeave={() => setPressed(false)}
+      style={{
+        ...PS.homeNavCard,
+        transform: pressed ? 'scale(0.94)' : 'scale(1)',
+        transition: 'transform 0.12s ease',
+        cursor: 'pointer',
+      }}
+    >
+      <span style={{ ...PS.homeNavCardIcon, backgroundColor: bg, color }}>
+        <Icon name={icon} size={26} />
+      </span>
+      <span style={{ ...PS.homeNavCardLabel, color: C.text }}>{title}</span>
+    </div>
+  );
+};

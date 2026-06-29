@@ -11,6 +11,40 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '1.9.5',
+    date: '29 Giugno 2026',
+    items: [
+      'Fix: sincronizzazione offline non scrive più su tabelle gamification rimosse',
+      'Fix: popup nella Home si chiude toccando fuori dal riquadro',
+      'Fix: etichette delle card nella Home ora rispettano la dark mode',
+      'Fix: auth più sicura — migrazione a PKCE flow (standard OAuth2 moderno)',
+      'Fix: CSP aggiornata con domini Sentry e worker-src per Service Worker',
+      'Fix: Edge Function notifiche limita le origini autorizzate',
+      'Tecnico: rimosso codice morto (stato inutilizzato in Profilo e App)',
+      'Tecnico: storage interno usa API moderne invece di funzioni deprecate',
+    ],
+  },
+  {
+    version: '1.9.4',
+    date: '29 Giugno 2026',
+    items: [
+      'Rimossa gamification (XP, badge, streak) — non portava valore senza un layer sociale',
+      'Fix critico: eliminazione utente da admin ora funziona correttamente (errore 403 risolto)',
+      'Fix: eliminazione account dal Profilo non lascia più dati orfani in caso di errore',
+      'Notifica push automatica agli admin quando un nuovo utente si registra',
+      'Service Worker: le chiamate API Supabase bypassano la cache (dati sempre aggiornati)',
+      'Profilo: sezioni collassabili per ridurre lo scroll su mobile',
+      'Home: footer unificato, rimosso il blocco Credits duplicato',
+      'Home: NavCard con feedback visivo al tocco (rimbalzo)',
+      'Ricerca: filtri rapidi per tipo (Prontuario / Normativa / Tutti)',
+      'Calcolatore: lo stato del calcolo persiste nella sessione (navigazione sicura)',
+      'Popup nella Home ora accessibile da tastiera e screen reader (role dialog)',
+      'AdminUtenti: mostra la data di registrazione di ogni utente',
+      'AdminUtenti: filtro In attesa esclude correttamente gli admin',
+      'Dashboard admin: stato server Supabase verificato in tempo reale (non più hardcoded)',
+    ],
+  },
+  {
     version: '1.9.3',
     date: '28 Giugno 2026',
     items: [

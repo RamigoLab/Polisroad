@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import posthog from 'posthog-js';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
@@ -8,8 +8,27 @@ import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useProntuario } from '../hooks/useProntuario';
-import { useGamificationContext } from '../context/GamificationContext';
 import { calcolaSanzione, generaTestoCalcolo } from '../utils/calcolatoreUtils';
+
+// Chiave sessionStorage per persistere l'ultimo calcolo nella sessione
+const SESSION_KEY = 'polisroad_calcolatore_state';
+
+function loadSessionState() {
+  try {
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveSessionState(state) {
+  try {
+    sessionStorage.setItem(SESSION_KEY, JSON.stringify(state));
+  } catch {
+    // sessionStorage non disponibile, ignora
+  }
+}
 
 // ─── Componente card risultato ────────────────────────────────────────────────
 const RisultatoCard = ({ style, label, valore, sub, note }) => (
@@ -64,29 +83,30 @@ const Toggle = ({ label, sublabel, checked, onChange, icon }) => (
 // ─── Pagina principale ────────────────────────────────────────────────────────
 export const Calcolatore = ({ onNavigate }) => {
   const { list } = useProntuario();
-  const { addXP } = useGamificationContext();
 
-  // Dati inseriti
-  const [selectedId, setSelectedId]   = useState('');
-  const [pmr, setPmr]                 = useState('');
-  const [edittaleMax, setEdittaleMax] = useState('');
-  const [punti, setPunti]             = useState('');
-  const [nomeViolazione, setNomeViolazione] = useState('');
+  // Inizializza da sessionStorage se disponibile
+  const _saved = loadSessionState();
 
-  // Opzioni calcolo
-  const [recidiva, setRecidiva]               = useState(false);
-  const [notturna, setNotturna]               = useState(false);
-  const [riduzioneFiveDay, setRiduzione]      = useState(true);
-
-  // UI
+  const [selectedId, setSelectedId]   = useState(_saved?.selectedId   ?? '');
+  const [pmr, setPmr]                 = useState(_saved?.pmr          ?? '');
+  const [edittaleMax, setEdittaleMax] = useState(_saved?.edittaleMax  ?? '');
+  const [punti, setPunti]             = useState(_saved?.punti        ?? '');
+  const [nomeViolazione, setNomeViolazione] = useState(_saved?.nomeViolazione ?? '');
+  const [recidiva, setRecidiva]             = useState(_saved?.recidiva       ?? false);
+  const [notturna, setNotturna]             = useState(_saved?.notturna       ?? false);
+  const [riduzioneFiveDay, setRiduzione]    = useState(_saved?.riduzioneFiveDay ?? true);
   const [copied, setCopied] = useState(false);
 
-  const handleSelect = async (e) => {
+  // Persisti stato in sessionStorage ad ogni modifica
+  useEffect(() => {
+    saveSessionState({ selectedId, pmr, edittaleMax, punti, nomeViolazione, recidiva, notturna, riduzioneFiveDay });
+  }, [selectedId, pmr, edittaleMax, punti, nomeViolazione, recidiva, notturna, riduzioneFiveDay]);
+
+  const handleSelect = (e) => {
     const id = e.target.value;
     setSelectedId(id);
     const item = list.find(p => p.id === id);
     if (item) {
-      await addXP(20, 'calculator');
       posthog.capture('calcolatore_used', { prontuario_id: id });
       setPmr(item.pmr ? item.pmr.toString() : '');
       setEdittaleMax(item.edittale_max ? item.edittale_max.toString() : '');
@@ -100,6 +120,7 @@ export const Calcolatore = ({ onNavigate }) => {
     setPunti(''); setNomeViolazione('');
     setRecidiva(false); setNotturna(false); setRiduzione(true);
     setCopied(false);
+    try { sessionStorage.removeItem(SESSION_KEY); } catch { /* noop */ }
   };
 
   const risultato = calcolaSanzione({ pmr, edittaleMax, recidiva, notturna, riduzioneFiveDay });
@@ -193,7 +214,6 @@ export const Calcolatore = ({ onNavigate }) => {
             </div>
           )}
 
-          {/* PMR base */}
           <RisultatoCard
             style={{ ...PS.calcResultPrimary, color: C.primary }}
             label="PMR — Pagamento in Misura Ridotta"
@@ -201,7 +221,6 @@ export const Calcolatore = ({ onNavigate }) => {
             sub={risultato.max ? `Edittale massimo: € ${risultato.max.toFixed(2)}` : null}
           />
 
-          {/* Sconto 5 giorni */}
           {riduzioneFiveDay && (
             <RisultatoCard
               style={PS.calcResultSuccess}
@@ -211,7 +230,6 @@ export const Calcolatore = ({ onNavigate }) => {
             />
           )}
 
-          {/* Notturna */}
           {notturna && (
             <>
               <RisultatoCard
@@ -232,7 +250,6 @@ export const Calcolatore = ({ onNavigate }) => {
             </>
           )}
 
-          {/* Punti patente */}
           {punti > 0 && (
             <div style={{
               ...PS.calcResultPrimary,
@@ -249,7 +266,6 @@ export const Calcolatore = ({ onNavigate }) => {
             </div>
           )}
 
-          {/* Bottoni azione */}
           <div style={{ display: 'flex', gap: '10px', marginTop: '4px' }}>
             <button
               onClick={handleCopy}

@@ -11,7 +11,6 @@ import { logger } from '../utils/logger';
  * Tipi supportati:
  *  - SAVE_NOTE          { prontuarioId, testo }
  *  - TOGGLE_PREFERITO   { prontuarioId, action: 'add'|'remove' }
- *  - SAVE_CONTESTAZIONE { prontuarioId, xp }
  */
 export const useSyncQueue = () => {
   const { session } = useAuth();
@@ -20,13 +19,14 @@ export const useSyncQueue = () => {
   const [queue, setQueue] = useState(() => {
     try {
       const saved = localStorage.getItem('polisroad_sync_queue');
-      return saved ? JSON.parse(saved) : [];
+      const parsed = saved ? JSON.parse(saved) : [];
+      // Filtra eventuali SAVE_CONTESTAZIONE rimasti in coda da versioni precedenti
+      return parsed.filter(a => a.type !== 'SAVE_CONTESTAZIONE');
     } catch { return []; }
   });
 
   const [isOnline, setIsOnline] = useState(() => navigator.onLine);
 
-  // Usa refs per evitare loop infiniti di dipendenza in useEffect e useCallback
   const queueRef = useRef(queue);
   useEffect(() => {
     queueRef.current = queue;
@@ -51,7 +51,7 @@ export const useSyncQueue = () => {
     try {
       if (type === 'SAVE_NOTE') {
         const { prontuarioId, testo } = payload ?? {};
-        if (!prontuarioId) return true; // scarta senza bloccare
+        if (!prontuarioId) return true;
         if (!testo?.trim()) {
           const { error } = await supabase.from('note').delete()
             .match({ user_id: userId, prontuario_id: prontuarioId });
@@ -69,24 +69,16 @@ export const useSyncQueue = () => {
         if (favAction === 'add') {
           const { error } = await supabase.from('preferiti')
             .insert({ user_id: userId, prontuario_id: prontuarioId });
-          if (error && error.code !== '23505') throw error; // ignora duplicati
+          if (error && error.code !== '23505') throw error;
         } else {
           const { error } = await supabase.from('preferiti')
             .delete().match({ user_id: userId, prontuario_id: prontuarioId });
           if (error) throw error;
         }
 
-      } else if (type === 'SAVE_CONTESTAZIONE') {
-        const { prontuarioId, xp } = payload ?? {};
-        if (!prontuarioId) return true;
-        // Salva nella tabella contestazioni se esiste, altrimenti solo XP history
-        const { error } = await supabase.from('xp_history')
-          .insert({ user_id: userId, action: 'contestazione', xp_earned: xp || 20 });
-        if (error) throw error;
-
       } else {
         logger.warn('useSyncQueue: tipo azione non riconosciuto, scartato:', type);
-        return true;
+        return true; // scarta senza bloccare la coda
       }
 
       return true;
@@ -120,7 +112,6 @@ export const useSyncQueue = () => {
     if (remaining.length > 0) showToast(`${remaining.length} elementi ancora in coda.`, 'error');
   }, [processAction, session, showToast]);
 
-  // Usiamo un ref anche per processQueue per staccare l'effetto di ascolto rete dalle mutazioni di processQueue
   const processQueueRef = useRef(processQueue);
   useEffect(() => {
     processQueueRef.current = processQueue;
@@ -138,14 +129,12 @@ export const useSyncQueue = () => {
     };
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
-    
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
     };
   }, [showToast]);
 
-  // Effetto separato per il processamento al mount/session caricata
   const queueLength = queue.length;
   useEffect(() => {
     if (navigator.onLine && queueLength > 0 && session?.user) {

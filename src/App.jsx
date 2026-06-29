@@ -1,7 +1,6 @@
 import React, { useState, useEffect, Suspense, lazy } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useData, QUERY_KEYS } from './context/DataContext';
-import { useInitializeGamification } from './hooks/useInitializeGamification';
 import { useQueryClient } from '@tanstack/react-query';
 import { Auth } from './pages/Auth';
 import { BottomNav } from './components/layout/BottomNav';
@@ -60,10 +59,8 @@ function AppInner() {
     refreshProfile,
   } = useAuth();
   const queryClient = useQueryClient();
-  const { loading: dataLoading, error: dataError } = useData();
+  const { error: dataError } = useData();
   const { showToast } = useToast();
-
-  useInitializeGamification();
 
   const loading = authLoading;
 
@@ -131,9 +128,6 @@ function AppInner() {
   if (!session) return <Auth onNavigate={navigate} />;
   if (passwordRecovery) return <Auth passwordUpdateMode onNavigate={navigate} />;
 
-  // FIX iOS: mostra la pending screen solo quando il profilo è stato
-  // effettivamente caricato (non null per via del loading in corso).
-  // profileLoading=false + profile=null + session = errore reale, non race condition.
   const profileReady = !profileLoading && (profile !== null || profileError);
   if (profileReady && !isApproved) {
     return (
@@ -148,7 +142,6 @@ function AppInner() {
     );
   }
 
-  // Mostra splash/loader mentre il profilo è ancora in caricamento
   if (!profileReady) return <Splash />;
 
   if (!onboardingDone && session) {

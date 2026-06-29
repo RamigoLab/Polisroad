@@ -7,7 +7,6 @@ import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
 import { useAuth } from '../hooks/useAuth';
-import { useGamificationContext } from '../context/GamificationContext';
 import { useToast } from '../components/ui/ToastManager';
 
 // Componente orologio isolato: si aggiorna ogni secondo senza
@@ -29,7 +28,6 @@ export const Operatore = ({ onNavigate }) => {
   const { note } = useNote();
   const { profile } = useAuth();
 
-  const { addXP } = useGamificationContext();
   const { showToast } = useToast();
 
   const [search, setSearch] = useState('');
@@ -39,7 +37,6 @@ export const Operatore = ({ onNavigate }) => {
 
   const handleRegistraContestazione = async (item) => {
     setRegistering(true);
-    await addXP(20, 'contestazione');
     showToast(`Contestazione registrata: ${item.rif_normativo}`, 'success');
     setRegistering(false);
   };

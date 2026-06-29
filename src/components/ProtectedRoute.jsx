@@ -1,21 +1,19 @@
 // src/components/ProtectedRoute.jsx
-// Component that protects child routes based on authentication and optional role.
-
 import React, { useEffect } from 'react';
 import { useAuth } from '../hooks/useAuth';
+import { PageLoader } from './ui/PageLoader';
 
 /**
  * Props:
  *   requiredRole?: string – role that the user must have (e.g., 'admin').
- *   fallback?: ReactNode – element to render while checking auth (default: null).
+ *   fallback?: ReactNode – element to render while checking auth (default: <PageLoader />).
  *   onNavigate?: function – custom navigation function
  *   children: ReactNode – protected component(s).
  */
-export const ProtectedRoute = ({ requiredRole, fallback = null, onNavigate, children }) => {
+export const ProtectedRoute = ({ requiredRole, fallback = <PageLoader />, onNavigate, children }) => {
   const { session, profile, loading } = useAuth();
   const isProfileLoading = session && !profile;
 
-  // Session may be null while loading; we wait.
   useEffect(() => {
     if (!loading && !isProfileLoading && (!session || (requiredRole && profile?.ruolo !== requiredRole))) {
       if (onNavigate) {
@@ -30,10 +28,10 @@ export const ProtectedRoute = ({ requiredRole, fallback = null, onNavigate, chil
     return fallback;
   }
   if (!session) {
-    return null; // navigation effect will handle redirect
+    return null;
   }
   if (requiredRole && profile?.ruolo !== requiredRole) {
-    return null; // unauthorized – navigation handled above
+    return null;
   }
   return <>{children}</>;
 };

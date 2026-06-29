@@ -1,7 +1,5 @@
 import React from 'react';
 import { LS } from '../../styles/layout';
-import { useGamificationContext } from '../../context/GamificationContext';
-import { BADGES } from '../../config/badges';
 
 export const AppHeader = ({
   title,
@@ -12,19 +10,8 @@ export const AppHeader = ({
   children,
   leftAction,
   rightAction,
-  showBadge = false,
 }) => {
-  const { featuredBadge: featuredBadgeId } = useGamificationContext();
-  const featuredBadge = showBadge && featuredBadgeId
-    ? Object.values(BADGES).find(b => b.id === featuredBadgeId) || null
-    : null;
-
   const hasText = subtitle || title || meta;
-
-  // Badge icon: mostra solo se showBadge=true E badge trovato
-  const badgeIcon = showBadge && featuredBadge
-    ? <span style={{ marginLeft: '8px', fontSize: '1.2rem', verticalAlign: 'middle' }}>{featuredBadge.icon}</span>
-    : null;
 
   return (
     <header style={LS.appHeader}>
@@ -43,19 +30,9 @@ export const AppHeader = ({
           }}
         >
           {subtitle && <p style={LS.appHeaderSubtitle}>{subtitle}</p>}
-          {title && (
-            <h2 style={LS.appHeaderTitle}>
-              {title}
-              {badgeIcon}
-            </h2>
-          )}
+          {title && <h2 style={LS.appHeaderTitle}>{title}</h2>}
           {meta && <p style={LS.appHeaderMeta}>{meta}</p>}
-          {!hasText && (
-            <h2 style={LS.appHeaderTitle}>
-              PolisRoad
-              {badgeIcon}
-            </h2>
-          )}
+          {!hasText && <h2 style={LS.appHeaderTitle}>PolisRoad</h2>}
         </div>
         {rightAction}
         <button

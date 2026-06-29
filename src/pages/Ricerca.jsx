@@ -10,7 +10,6 @@ import { useProntuario } from '../hooks/useProntuario';
 import { useNormativa } from '../hooks/useNormativa';
 import { useSearch } from '../hooks/useSearch';
 import { useSearchHistory } from '../hooks/useSearchHistory';
-import { useGamificationContext } from '../context/GamificationContext';
 import { EmptyState } from '../components/ui/EmptyState';
 import posthog from 'posthog-js';
 
@@ -26,15 +25,21 @@ const getSnippet = (text, terms) => {
   return (start > 0 ? '...' : '') + text.substring(start, end) + '...';
 };
 
+// Tipi di filtro disponibili
+const FILTER_ALL        = 'all';
+const FILTER_PRONTUARIO = 'prontuario';
+const FILTER_NORMATIVA  = 'normativa';
+
 export const Ricerca = ({ onNavigate }) => {
   const { list: prontuarioList } = useProntuario();
   const { list: normativaList } = useNormativa();
   const { search, setSearch, risultatiProntuario, risultatiNormativa } = useSearch(prontuarioList, normativaList, 3);
   const { history, addSearch, removeSearch, clearHistory } = useSearchHistory();
-  const { addXP } = useGamificationContext();
 
   const [expandedProntuario, setExpandedProntuario] = useState(null);
   const [expandedNormativa, setExpandedNormativa] = useState(null);
+  // Filtro per tipo risultato
+  const [filter, setFilter] = useState(FILTER_ALL);
 
   useEffect(() => {
     setExpandedProntuario(null);
@@ -45,7 +50,6 @@ export const Ricerca = ({ onNavigate }) => {
     if (search.trim().length >= 3) {
       const timer = setTimeout(async () => {
         await addSearch(search);
-        await addXP(10, 'search');
         posthog.capture('search_executed', {
           query_length: search.length,
           query_has_digits: /\d/.test(search),
@@ -53,7 +57,7 @@ export const Ricerca = ({ onNavigate }) => {
       }, 1500);
       return () => clearTimeout(timer);
     }
-  }, [search, addSearch, addXP]);
+  }, [search, addSearch]);
 
   const autoSuggestions = React.useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -64,16 +68,7 @@ export const Ricerca = ({ onNavigate }) => {
   const hasSearch = search.trim().length > 0;
   const searchTerms = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
-  // ─── HANDLERS NAVIGAZIONE ────────────────────────────────────────────────
-  // FIX: dopo aver aperto un dettaglio e premuto Indietro, il browser torna
-  // alla pagina 'prontuario'/'normativa' perché onNavigate fa pushState.
-  // Usiamo replaceState-based navigation: navighiamo SENZA aggiungere entry
-  // in history, in modo che il Back del browser torni direttamente a 'ricerca'.
-
   const handleProntuarioItemClick = (item) => {
-    // Naviga al dettaglio passando dal prontuario con selectedId,
-    // ma manteniamo 'ricerca' come pagina di ritorno spingendo prima
-    // uno stato intermedio che punta a ricerca.
     window.history.replaceState(
       { page: 'ricerca', params: null },
       '',
@@ -90,8 +85,6 @@ export const Ricerca = ({ onNavigate }) => {
     );
     onNavigate('normativa', { selectedId: item.id, returnTo: 'ricerca' });
   };
-
-  // ─── RENDER HELPERS ───────────────────────────────────────────────────────
 
   const renderProntuarioGroup = (group, isExact = false) => {
     const isExpanded = expandedProntuario === group.articolo_numero;
@@ -134,15 +127,12 @@ export const Ricerca = ({ onNavigate }) => {
             {group.voci.map(item => (
               <div
                 key={item.id}
-                // FIX: ogni voce usa il proprio handler con item corretto,
-                // non c'è più rischio di closure stale o index sbagliato
                 onClick={(e) => {
                   e.stopPropagation();
                   handleProntuarioItemClick(item);
                 }}
                 style={{ ...PS.ricercaResultItem, margin: 0 }}
               >
-                {/* FIX layout mobile: badge e euro su righe separate */}
                 <div style={PS.ricercaResultMeta}>
                   <div style={PS.ricercaResultMetaRow}>
                     <Badge style={{ fontSize: '0.65rem', flexShrink: 0 }}>{item.rif_normativo}</Badge>
@@ -231,10 +221,12 @@ export const Ricerca = ({ onNavigate }) => {
 
   const pronTot = risultatiProntuario.exact.length + risultatiProntuario.other.length;
   const normTot = risultatiNormativa.exact.length + risultatiNormativa.other.length;
+  const hasPron = filter === FILTER_ALL || filter === FILTER_PRONTUARIO;
+  const hasNorm = filter === FILTER_ALL || filter === FILTER_NORMATIVA;
 
   return (
     <PageWrapper title="Ricerca Globale" subtitle="Cerca in tutta PolisRoad" onNavigate={onNavigate}>
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '12px' }}>
         <SearchBar
           value={search}
           onChange={e => setSearch(e.target.value)}
@@ -248,6 +240,32 @@ export const Ricerca = ({ onNavigate }) => {
           </p>
         )}
       </div>
+
+      {/* Filtro tipo — visibile solo quando ci sono risultati */}
+      {search.length > 2 && (pronTot > 0 || normTot > 0) && (
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '20px' }}>
+          {[
+            { key: FILTER_ALL,        label: `Tutti (${pronTot + normTot})` },
+            { key: FILTER_PRONTUARIO, label: `Prontuario (${pronTot})` },
+            { key: FILTER_NORMATIVA,  label: `Normativa (${normTot})` },
+          ].map(f => (
+            <button
+              key={f.key}
+              onClick={() => setFilter(f.key)}
+              style={{
+                padding: '6px 14px', borderRadius: '20px',
+                fontSize: '0.8rem', fontWeight: '600',
+                border: 'none', cursor: 'pointer',
+                backgroundColor: filter === f.key ? C.primary : C.card,
+                color: filter === f.key ? '#fff' : C.textLight,
+                border: `1px solid ${filter === f.key ? C.primary : C.border}`,
+              }}
+            >
+              {f.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Cronologia ricerche */}
       {!hasSearch && history.length > 0 && (
@@ -298,62 +316,66 @@ export const Ricerca = ({ onNavigate }) => {
         <div style={{ display: 'flex', flexDirection: 'column', gap: '28px' }}>
 
           {/* ── PRONTUARIO ── */}
-          <div>
-            <h3 style={PS.ricercaGroupTitle(C.accent)}>
-              Voci Prontuario ({pronTot})
-            </h3>
-            {pronTot === 0 ? (
-              <EmptyState compact icon="clipboard-list" title="Nessun risultato nel Prontuario" subtitle="Prova con un termine diverso o il numero dell'articolo." />
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {risultatiProntuario.exact.map(g => renderProntuarioGroup(g, true))}
-                {risultatiProntuario.other.length > 0 && (
-                  <>
-                    {risultatiProntuario.exact.length > 0 && (
-                      <div style={{ fontSize: '0.72rem', fontWeight: '700', color: C.textLight, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 2px' }}>
-                        Anche in altri articoli
-                      </div>
-                    )}
-                    {risultatiProntuario.other.slice(0, 5).map(g => renderProntuarioGroup(g, false))}
-                    {risultatiProntuario.other.length > 5 && (
-                      <button onClick={() => onNavigate('prontuario')} style={{ color: C.accent, fontSize: '0.85rem', textAlign: 'center', padding: '8px' }}>
-                        Vedi tutti ({risultatiProntuario.other.length}) in Prontuario →
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+          {hasPron && (
+            <div>
+              <h3 style={PS.ricercaGroupTitle(C.accent)}>
+                Voci Prontuario ({pronTot})
+              </h3>
+              {pronTot === 0 ? (
+                <EmptyState compact icon="clipboard-list" title="Nessun risultato nel Prontuario" subtitle="Prova con un termine diverso o il numero dell'articolo." />
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {risultatiProntuario.exact.map(g => renderProntuarioGroup(g, true))}
+                  {risultatiProntuario.other.length > 0 && (
+                    <>
+                      {risultatiProntuario.exact.length > 0 && (
+                        <div style={{ fontSize: '0.72rem', fontWeight: '700', color: C.textLight, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 2px' }}>
+                          Anche in altri articoli
+                        </div>
+                      )}
+                      {risultatiProntuario.other.slice(0, 5).map(g => renderProntuarioGroup(g, false))}
+                      {risultatiProntuario.other.length > 5 && (
+                        <button onClick={() => onNavigate('prontuario')} style={{ color: C.accent, fontSize: '0.85rem', textAlign: 'center', padding: '8px' }}>
+                          Vedi tutti ({risultatiProntuario.other.length}) in Prontuario →
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* ── NORMATIVA ── */}
-          <div>
-            <h3 style={PS.ricercaGroupTitle(C.success)}>
-              Articoli Normativa ({normTot})
-            </h3>
-            {normTot === 0 ? (
-              <EmptyState compact icon="book-open" title="Nessun risultato nella Normativa" subtitle="Prova con un termine diverso o il numero dell'articolo." />
-            ) : (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                {risultatiNormativa.exact.map(g => renderNormativaGroup(g, true))}
-                {risultatiNormativa.other.length > 0 && (
-                  <>
-                    {risultatiNormativa.exact.length > 0 && (
-                      <div style={{ fontSize: '0.72rem', fontWeight: '700', color: C.textLight, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 2px' }}>
-                        Anche in altri articoli
-                      </div>
-                    )}
-                    {risultatiNormativa.other.slice(0, 5).map(g => renderNormativaGroup(g, false))}
-                    {risultatiNormativa.other.length > 5 && (
-                      <button onClick={() => onNavigate('normativa')} style={{ color: C.success, fontSize: '0.85rem', textAlign: 'center', padding: '8px' }}>
-                        Vedi tutti ({risultatiNormativa.other.length}) in Normativa →
-                      </button>
-                    )}
-                  </>
-                )}
-              </div>
-            )}
-          </div>
+          {hasNorm && (
+            <div>
+              <h3 style={PS.ricercaGroupTitle(C.success)}>
+                Articoli Normativa ({normTot})
+              </h3>
+              {normTot === 0 ? (
+                <EmptyState compact icon="book-open" title="Nessun risultato nella Normativa" subtitle="Prova con un termine diverso o il numero dell'articolo." />
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {risultatiNormativa.exact.map(g => renderNormativaGroup(g, true))}
+                  {risultatiNormativa.other.length > 0 && (
+                    <>
+                      {risultatiNormativa.exact.length > 0 && (
+                        <div style={{ fontSize: '0.72rem', fontWeight: '700', color: C.textLight, textTransform: 'uppercase', letterSpacing: '0.5px', padding: '4px 2px' }}>
+                          Anche in altri articoli
+                        </div>
+                      )}
+                      {risultatiNormativa.other.slice(0, 5).map(g => renderNormativaGroup(g, false))}
+                      {risultatiNormativa.other.length > 5 && (
+                        <button onClick={() => onNavigate('normativa')} style={{ color: C.success, fontSize: '0.85rem', textAlign: 'center', padding: '8px' }}>
+                          Vedi tutti ({risultatiNormativa.other.length}) in Normativa →
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
 
         </div>
       )}

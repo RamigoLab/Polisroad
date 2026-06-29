@@ -1,210 +1,90 @@
-# PolisRoad
+# PolisRoad v1.9.5
 
-Progressive Web App React/Vite per la consultazione rapida del Codice della Strada, prontuario infrazioni, calcolo sanzioni, preferiti, news, profilo operatore e funzioni amministrative.
+Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
-Versione corrente: **1.9.3** — 28 Giugno 2026
+## Stack Tecnico
 
----
+- **Frontend**: React 19 + Vite 5 (pinato a ^5.4.19 per compatibilità vite-plugin-pwa)
+- **PWA**: vite-plugin-pwa con strategia `injectManifest` e custom `src/sw.js`
+- **Backend**: Supabase (Auth, Database PostgreSQL, Edge Functions, RLS)
+- **Data Fetching**: TanStack Query v5 con persistenza IndexedDB
+- **Deployment**: Vercel + GitHub Desktop
+- **Analytics**: PostHog EU cloud (`https://eu.i.posthog.com`)
+- **Errori**: Sentry
 
-## Stack
+## Novità 1.9.5
 
-- **React 19** + **Vite 5**
-- **Supabase** — autenticazione e database (RLS)
-- **Vite PWA** — service worker e installazione offline
-- **lucide-react** — icone SVG coerenti
-- **PostHog EU Cloud** — analytics (attivo di default, disattivabile dal Profilo)
-- **@tanstack/react-query v5** — caching query, aggiornamenti ottimistici, zero fetch duplicati
-- **@tanstack/react-query-persist-client + idb-keyval** — cache persistita su IndexedDB (sopravvive al refresh)
+- Fix: `useSyncQueue` non scrive più su `xp_history` (tabella rimossa con gamification)
+- Fix: popup Home si chiude cliccando il backdrop (click-outside)
+- Fix: label `NavCard` usa `C.text` per rispettare dark mode
+- Fix: rimosso state `reportOpen` inutilizzato in Profilo
+- Fix: rimosso `dataLoading` inutilizzato in App.jsx
+- Fix: `flowType: 'pkce'` al posto di `'implicit'` (più sicuro, standard moderno)
+- Fix: `storage.js` sostituisce `escape()`/`unescape()` deprecate con `TextEncoder`/`TextDecoder`
+- Fix: CORS `send-push` Edge Function ristretto alle origini autorizzate (come `delete-user`)
+- Fix: CSP Vercel aggiornata con `*.sentry.io`, `*.ingest.sentry.io` e `worker-src 'self'`
+- Fix: AdminDashboard ping Supabase gestisce eccezioni di rete (`.catch()`)
+- Aggiunto: migration `20260629_drop_gamification_tables.sql` per rimuovere `gamification` e `xp_history`
 
----
+## Migrazioni da eseguire su Supabase (v1.9.5)
 
-## Requisiti
+### ⚠️ IMPORTANTE — Eseguire in ordine
 
-- Node.js 20 o superiore
-- Un progetto Supabase configurato con le tabelle richieste dall'app
+1. **`20260629_drop_gamification_tables.sql`** — Rimuove le tabelle `gamification` e `xp_history` ora inutilizzate.
+   - Sicura: usa `IF EXISTS` su tutto.
+   - Da eseguire via SQL Editor in Supabase Dashboard.
 
----
+2. **`20260629_notify_admin_on_new_user.sql`** (da v1.9.4, se non già eseguita) — Trigger push all'admin su nuova registrazione.
 
-## Configurazione
+   **Prerequisito: estensione `pg_net`**
+   > `pg_net` è disponibile **solo su piani Supabase Pro e superiori**. Su piano Free, la migration viene eseguita senza errori ma il trigger fallirà silenziosamente (il RAISE WARNING interno non blocca l'insert del profilo).
+   >
+   > Per abilitarla: Dashboard → Database → Extensions → pg_net → Enable.
 
-1. Copia `.env.example` in `.env`.
-2. Imposta le variabili d'ambiente:
+   Dopo aver eseguito la migration, configurare le variabili DB:
+   ```sql
+   ALTER DATABASE postgres SET app.supabase_url = 'https://<YOUR_PROJECT_REF>.supabase.co';
+   ALTER DATABASE postgres SET app.service_role_key = '<YOUR_SERVICE_ROLE_KEY>';
+   SELECT pg_reload_conf();
+   ```
 
-```env
-VITE_SUPABASE_URL=https://xxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJ...
-VITE_USE_SUPABASE=true
+### Redeployare le Edge Functions
+
+Dopo il deploy dell'app, redeployare le Edge Functions aggiornate:
+- `delete-user` (aggiornata in v1.9.4 — check ruolo admin)
+- `send-push` (aggiornata in v1.9.5 — CORS ristretto)
+
+```bash
+supabase functions deploy delete-user
+supabase functions deploy send-push
 ```
 
-Variabili opzionali:
+### Supabase Auth — migrazione a PKCE flow
+
+In v1.9.5 il client Supabase usa `flowType: 'pkce'` invece di `'implicit'`.
+Verificare in Supabase Dashboard → Authentication → URL Configuration:
+- **Site URL**: `https://polisroad.vercel.app`
+- **Redirect URLs**: aggiungere `https://polisroad.vercel.app/**`
+
+Il PKCE flow è compatibile con lo stesso redirect URL già configurato.
+
+## Variabili d'Ambiente
 
 ```env
+VITE_SUPABASE_URL=https://xxx.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJ...
 VITE_POSTHOG_KEY=phc_...
 VITE_POSTHOG_HOST=https://eu.i.posthog.com
-VITE_PWA_DEV=false
+VITE_SENTRY_DSN=https://...@sentry.io/...
+VITE_VAPID_PUBLIC_KEY=...
+VITE_CACHE_BUSTER=1.9.5
 ```
 
----
-
-## Script
+## Comandi
 
 ```bash
-npm install        # installa dipendenze
-npm run dev        # avvia server di sviluppo
-npm run lint       # linting ESLint
-npm run test:run   # esegue unit test con Vitest
-npm run build      # build di produzione (dist/)
-npm run preview    # anteprima del bundle produzione
+npm install
+npm run dev       # sviluppo locale
+npm run build     # build produzione
+npm run preview   # anteprima build
 ```
-
-Script di utilità dati:
-
-```bash
-npm run import:prontuario    # importa prontuario in Supabase
-npm run generate:prontuario  # genera SQL prontuario
-npm run convert:prontuario   # converte CSV per Supabase
-```
-
----
-
-## PWA
-
-Il service worker è disattivato in sviluppo per evitare cache inattese. Per testarlo in locale:
-
-```env
-VITE_PWA_DEV=true
-```
-
-In produzione viene mostrato un popup quando è disponibile un aggiornamento con il tasto **Riavvia & Aggiorna**.
-
----
-
-## Sicurezza
-
-- Il login reale passa da Supabase Auth.
-- I ruoli admin sono verificati lato database tramite RLS/policy Supabase — non solo lato client.
-- Non committare mai file `.env` con chiavi reali.
-- La chiave Supabase `anon` è sicura lato client solo se le policy RLS sono configurate correttamente.
-- RSS feed letti tramite Edge Function `supabase/functions/fetch-rss` con verifica ruolo admin lato server — nessuna chiamata diretta dal browser a servizi terzi.
-- I `console.*` di produzione sono gestiti dal logger centralizzato `src/utils/logger.js` (silenziati in build).
-- Stack trace degli errori visibili solo in sviluppo (`import.meta.env.DEV`), nascosti in produzione.
-
----
-
-## Deploy
-
-Su Vercel (configurazione inclusa in `vercel.json` con header CSP, HSTS, CORS):
-
-1. Collega il repository GitHub.
-2. Configura le variabili d'ambiente nel pannello del progetto.
-3. Build command: `npm run build` — output: `dist/`.
-
----
-
-## Struttura principale
-
-```
-src/
-├── components/       # componenti riutilizzabili (Icon, AppHeader, ProntuarioItem, ProntuarioDetail…)
-│   ├── gamification/ # BadgeShowcase, LevelProgress, StreakCounter
-│   ├── layout/       # AppHeader, BottomNav, PageWrapper, Sidebar, Splash
-│   └── ui/           # Badge, Icon, SearchBar, TextInput, TextArea, ToastManager…
-├── context/          # DataContext, GamificationContext
-├── hooks/            # useAuth, useSearch, useNormativa, useProntuario, useTheme…
-├── pages/            # schermate app
-│   └── admin/        # AdminDashboard, AdminNews, AdminNormativa, AdminProntuario…
-├── styles/           # theme.js, styles.js, layout.js, pages.js, ui.js
-├── services/         # service layer Supabase (normativaService, newsService, prontuarioService, gamificationService, authService)
-└── config/           # constants.js, badges.js, navigation.js, supabase.js
-supabase/
-├── functions/        # Edge Functions (fetch-rss, delete-user)
-└── migrations/       # migrazioni SQL con RLS e policy
-scripts/              # script Node.js per import/generazione dati
-```
-
----
-
-## Funzionalità principali
-
-### Consultazione
-- **Codice della Strada** — navigazione gerarchica (Titoli › Capi › Articoli › Commi) con ricerca full-text e per numero articolo
-- **Prontuario** — database infrazioni raggruppato per articolo, con importi, note personali, preferiti e registrazione contestazioni
-- **Calcolatore Sanzioni** — calcolo automatico con aggravanti e attenuanti
-- **Ricerca Globale** — ricerca simultanea su Prontuario e Normativa con risultati raggruppati per articolo e priorità: corrispondenza esatta prima, poi occorrenze in altri articoli
-
-### Operativa
-- **Modalità Operatore** — interfaccia semplificata per uso sul campo: preferiti in evidenza, ricerca rapida, dettaglio sanzione espandibile inline, registrazione contestazione con un tap
-- **Preferiti** — salvataggio e gestione articoli preferiti sincronizzati su Supabase
-
-### Profilo & Gamification
-- **Profilo Operatore** — grado, forza di appartenenza, stats, badge featured, cronologia XP, esportazione dati GDPR, eliminazione account
-- **Sistema XP e Livelli** — punti esperienza per ricerche, articoli, preferiti, contestazioni, streak giornaliero
-- **Badge** — traguardi sbloccabili automaticamente (Bronze → Diamond, Streak Master, Scholar…)
-- **Streak giornaliero** — bonus XP per accessi consecutivi
-
-### News & Comunicazioni
-- **News** — feed editoriale con filtro categorie, aggiornamento RSS tramite Edge Function
-- **Notifiche Home** — banner e popup gestibili dall'admin
-
-### Amministrazione
-- **Area Amministrativa** — dashboard con stats, gestione utenti, segnalazioni, news, prontuario e normativa
-- **Gestione Prontuario** — voci raggruppate per articolo, modifica e aggiunta inline senza navigare tra schermate
-- **Gestione Normativa** — articoli espandibili con modifica intestazione e commi individuali inline
-- **Gestione Utenti** — modifica profili, promozione/revoca ruolo admin
-
-### PWA & Offline
-- **Offline Mode** — funzionamento completo senza connessione, con sync queue per le azioni in attesa
-- **Dark Mode** — tema chiaro/scuro con persistenza e sincronizzazione `theme-color` PWA
-- **Guide Pratiche** — sezione in espansione (WIP)
-
----
-
-## Note versione 1.8.0 (23 Giugno 2026)
-
-### Service layer completo — architettura frontend/backend separata
-- **Nuovi services:** `normativaService.js` (getNormativa + CRUD), `newsService.js` (getNews + CRUD con filtro 30 giorni)
-- **`prontuarioService.js` esteso** con getProntuario, addProntuarioItem, updateProntuarioItem, deleteProntuarioItem
-- Zero chiamate `supabase.from()` negli hook o nei componenti — tutto passa dai services
-
-### DataContext semplificato
-- Rimossa tutta la logica fetch manuale (useState/useEffect/paginazione)
-- Usa `useQuery` per prontuario, normativa e news tramite i rispettivi services
-- `QUERY_KEYS` centralizzate e esportate per hook e pagine
-- `refresh()` invalida le cache React Query invece di rifetchare manualmente
-
-### Hook refactored
-- `useNormativa`, `useNews`, `useProntuario` — dati da `useData()` (cache RQ), mutazioni con `useMutation`, aggiornamenti ottimistici con rollback automatico
-
----
-
-## Note versione 1.7.0 (22 Giugno 2026)
-
-### Service layer + TanStack Query + Persister
-- `src/services/` con `prontuarioService.js`, `gamificationService.js`, `authService.js` — tutte le chiamate Supabase centralizzate.
-- `@tanstack/react-query` v5 con persister IndexedDB: cache sopravvive al refresh, `staleTime 5 min`, aggiornamenti ottimistici con rollback automatico.
-
-### Offline queue estesa
-- `useSyncQueue` ora gestisce `TOGGLE_PREFERITO` e `SAVE_CONTESTAZIONE` oltre a `SAVE_NOTE`.
-
-### Accessibilità
-- `BottomNav`: `role="navigation"`, `aria-current`, navigazione da tastiera.
-- `SearchBar`: `role="search"`, label per screen reader, `type="search"`.
-- Toast e gruppi Prontuario con `aria-label`.
-
-### PostHog — 9 eventi
-`page_view`, `normativa_article_opened`, `preferito_added/removed`, `calcolatore_used`, `badge_unlocked` + i 4 esistenti.
-
-### Split `pages.js` → 8 file per sezione
-API identica (`PS.*`), file più piccoli e manutenibili.
-
-### Vercel edge caching
-Assets con hash → `immutable 1 anno`; `sw.js` e `index.html` → `no-cache`; SPA routing via `rewrites`.
-
-### Fix
-- Badge gamification visibile **solo in Home**.
-- Tasto "Chiudi" area admin ora leggibile.
-- Migrazione SQL `note_comuni`.
-
----
-
-*PolisRoad — sviluppato da [Ramigolab](https://ramigolab.it)*

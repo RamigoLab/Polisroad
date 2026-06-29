@@ -1,5 +1,12 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2"
+/**
+ * delete-user/index.ts — v2
+ *
+ * Permette di eliminare un utente da auth.users via Admin API.
+ * Casi supportati:
+ *   1. L'utente elimina se stesso (user.id === uid)
+ *   2. Un admin elimina un altro utente (verifica ruolo su profiles)
+ */
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const ALLOWED_ORIGINS = [
   'https://polisroad.vercel.app',
@@ -12,80 +19,75 @@ const getCorsHeaders = (req: Request) => {
   return {
     'Access-Control-Allow-Origin': allowedOrigin,
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
 };
 
-serve(async (req) => {
+function json(data: unknown, status = 200, corsHeaders: Record<string, string>) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...corsHeaders },
+  });
+}
+
+Deno.serve(async (req: Request) => {
   const corsHeaders = getCorsHeaders(req);
 
   if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders })
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    const supabaseClient = createClient(
+    const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
-      {
-        auth: {
-          persistSession: false,
-        }
-      }
-    )
+      { auth: { persistSession: false } }
+    );
 
-    // Check auth header
-    const authHeader = req.headers.get('Authorization')
+    // Verifica sessione chiamante
+    const authHeader = req.headers.get('Authorization');
     if (!authHeader) {
-      return new Response(JSON.stringify({ error: 'Nessun header di autorizzazione' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return json({ error: 'Nessun header di autorizzazione' }, 401, corsHeaders);
     }
 
-    // Resolve user from authorization header token
-    const token = authHeader.replace('Bearer ', '')
-    const { data: { user }, error: authError } = await supabaseClient.auth.getUser(token)
+    const token = authHeader.replace('Bearer ', '');
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
     if (authError || !user) {
-      return new Response(JSON.stringify({ error: 'Sessione non autorizzata' }), {
-        status: 401,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return json({ error: 'Sessione non autorizzata' }, 401, corsHeaders);
     }
 
-    // Read requested uid to delete
-    const { uid } = await req.json()
+    const { uid } = await req.json();
     if (!uid) {
-      return new Response(JSON.stringify({ error: 'UID dell\'utente mancante' }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return json({ error: "UID dell'utente mancante" }, 400, corsHeaders);
     }
 
-    // Security: Only allow users to delete themselves
-    if (user.id !== uid) {
-      return new Response(JSON.stringify({ error: 'Operazione non consentita' }), {
-        status: 403,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+    // Sicurezza: solo se stesso OPPURE admin verificato su profiles
+    const isSelf = user.id === uid;
+    let isAdmin = false;
+
+    if (!isSelf) {
+      const { data: profile } = await supabaseAdmin
+        .from('profiles')
+        .select('ruolo')
+        .eq('id', user.id)
+        .single();
+      isAdmin = profile?.ruolo === 'admin';
     }
 
-    // Delete the user from auth
-    const { error: deleteError } = await supabaseClient.auth.admin.deleteUser(uid)
+    if (!isSelf && !isAdmin) {
+      return json({ error: 'Operazione non consentita: non sei admin' }, 403, corsHeaders);
+    }
+
+    // Elimina l'utente da auth.users
+    // Le tabelle figlio vengono pulite tramite CASCADE o dalla chiamata client
+    const { error: deleteError } = await supabaseAdmin.auth.admin.deleteUser(uid);
     if (deleteError) {
-      return new Response(JSON.stringify({ error: deleteError.message }), {
-        status: 400,
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      })
+      return json({ error: deleteError.message }, 400, corsHeaders);
     }
 
-    return new Response(JSON.stringify({ success: true }), {
-      status: 200,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
-  } catch (error) {
-    return new Response(JSON.stringify({ error: error.message }), {
-      status: 500,
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    })
+    return json({ success: true }, 200, corsHeaders);
+  } catch (error: unknown) {
+    const msg = error instanceof Error ? error.message : String(error);
+    return json({ error: msg }, 500, getCorsHeaders(req));
   }
-})
+});

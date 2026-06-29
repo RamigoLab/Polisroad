@@ -34,10 +34,25 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// ─── Fetch: cache-first per asset precachati, network-first per il resto ─────
+// ─── Fetch: bypass cache per API Supabase, cache-first per asset statici ─────
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  const url = event.request.url;
+
+  // Bypass totale per le chiamate API Supabase e PostHog:
+  // questi devono sempre andare in rete, mai da cache.
+  if (
+    url.includes('supabase.co') ||
+    url.includes('supabase.io') ||
+    url.includes('posthog.com') ||
+    url.includes('/functions/v1/')
+  ) {
+    event.respondWith(fetch(event.request));
+    return;
+  }
+
+  // Cache-first per tutti gli altri asset (JS, CSS, icone, HTML)
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
@@ -71,7 +86,7 @@ self.addEventListener('push', (event) => {
     renotify: true,
     data: {
       url:  data.url  || '/',
-      page: data.page || 'home', // FIX BUG-08: pagina SPA da aprire
+      page: data.page || 'home',
     },
   };
 
@@ -92,14 +107,10 @@ self.addEventListener('notificationclick', (event) => {
       for (const client of clientList) {
         if ('focus' in client) {
           client.focus();
-          // FIX BUG-08: usa postMessage invece di navigate() per le SPA.
-          // navigate() ricarica l'app perdendo lo stato; postMessage comunica
-          // la pagina da aprire al listener in main.jsx senza reload.
           client.postMessage({ type: 'NAVIGATE_TO', page: targetPage });
           return;
         }
       }
-      // App non aperta: apri una nuova finestra
       if (clients.openWindow) {
         return clients.openWindow('/');
       }

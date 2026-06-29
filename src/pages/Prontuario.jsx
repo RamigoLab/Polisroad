@@ -11,7 +11,6 @@ import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
 import { useToast } from '../components/ui/ToastManager';
-import { useGamificationContext } from '../context/GamificationContext';
 import { useDebounce } from '../hooks/useDebounce';
 import { sortItems, groupByArticolo } from '../utils/prontuarioUtils';
 import posthog from 'posthog-js';
@@ -56,7 +55,6 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   const { preferiti, toggle } = usePreferiti();
   const { note, save } = useNote();
   const { showToast } = useToast();
-  const { addXP } = useGamificationContext();
 
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -86,12 +84,10 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
 
   const handleSelectItem = async (item) => {
     setSelectedItem(item);
-    await addXP(5, 'article');
     posthog.capture('prontuario_item_selected', { prontuario_id: item.id });
   };
 
   const handleContestazione = async () => {
-    await addXP(20, 'contestazione');
     showToast('Contestazione registrata con successo!', 'success');
     posthog.capture('prontuario_contestazione', { prontuario_id: selectedItem?.id });
   };
@@ -109,7 +105,6 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   const handleToggleFavorite = async (itemId) => {
     const isFav = preferiti.includes(itemId);
     await toggle(itemId);
-    if (!isFav) await addXP(15, 'favorite');
   };
 
   // ── DETTAGLIO VOCE ────────────────────────────────────────────────────────

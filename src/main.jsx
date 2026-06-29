@@ -9,15 +9,12 @@ import App from './App';
 import { AuthProvider } from './hooks/useAuth';
 import { DataProvider } from './context/DataContext';
 import { ToastProvider } from './components/ui/ToastManager';
-import { GamificationProvider } from './context/GamificationContext';
 import { clearIdbIfFlagged } from './components/ErrorBoundary';
 import * as Sentry from '@sentry/react';
 import posthog from 'posthog-js';
 import { APP_VERSION } from './config/constants';
 
 // Pulizia cache IDB se l'ErrorBoundary ha segnalato un crash nella sessione precedente.
-// Deve avvenire PRIMA del mount di React — così il PersistQueryClientProvider
-// non reidrata una cache corrotta. await bloccante prima di createRoot.
 await clearIdbIfFlagged();
 
 // Inizializza Sentry per error monitoring in produzione.
@@ -37,9 +34,6 @@ if (sentryDsn && import.meta.env.PROD) {
 }
 
 // FIX BUG-08: listener per navigazione da click su notifica push.
-// Il SW invia { type: "NAVIGATE_TO", page } via postMessage invece di navigate()
-// (navigate() ricaricherebbe la SPA perdendo lo stato).
-// La navigazione avviene dopo il mount di React tramite evento custom.
 if ("serviceWorker" in navigator) {
   navigator.serviceWorker.addEventListener("message", (event) => {
     if (event.data?.type === "NAVIGATE_TO" && event.data?.page) {
@@ -101,9 +95,7 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <DataProvider>
           <ToastProvider>
-            <GamificationProvider>
-              <App />
-            </GamificationProvider>
+            <App />
           </ToastProvider>
         </DataProvider>
       </AuthProvider>

@@ -7,7 +7,7 @@ import { useNews } from '../../hooks/useNews';
 import { useProntuario } from '../../hooks/useProntuario';
 import { useNormativa } from '../../hooks/useNormativa';
 import { useAuth } from '../../hooks/useAuth';
-import { DB_VERSION_CDS, SYSTEM_STATUS } from '../../config/constants';
+import { DB_VERSION_CDS } from '../../config/constants';
 import { supabase, isSupabaseConfigured } from '../../config/supabase';
 
 export const AdminDashboard = ({ onNavigate }) => {
@@ -16,6 +16,7 @@ export const AdminDashboard = ({ onNavigate }) => {
   const { list: normativaList } = useNormativa();
   const { userCount } = useAuth();
   const [segnalazioniCount, setSegnalazioniCount] = useState(0);
+  const [supabaseStatus, setSupabaseStatus] = useState('Verifica...');
 
   useEffect(() => {
     const fetchCount = async () => {
@@ -53,6 +54,21 @@ export const AdminDashboard = ({ onNavigate }) => {
     fetchCount();
   }, []);
 
+  // Ping Supabase per stato reale
+  useEffect(() => {
+    if (!isSupabaseConfigured || !supabase) {
+      setSupabaseStatus('Non configurato');
+      return;
+    }
+    supabase
+      .from('profiles')
+      .select('id', { count: 'exact', head: true })
+      .then(({ error }) => {
+        setSupabaseStatus(error ? 'Degradato ⚠️' : 'Operativo ✓');
+      })
+      .catch(() => setSupabaseStatus('Non raggiungibile ✗'));
+  }, []);
+
   return (
     <div>
       <h2 style={S.sectionTitle}>Dashboard</h2>
@@ -76,7 +92,7 @@ export const AdminDashboard = ({ onNavigate }) => {
           </div>
           <div style={S.infoRow}>
             <span style={{ color: C.textLight }}>Stato Server:</span>
-            <span style={S.valueSuccess}>{SYSTEM_STATUS}</span>
+            <span style={{ color: supabaseStatus.includes('Operativo') ? C.success : C.warning }}>{supabaseStatus}</span>
           </div>
           <div style={S.infoRow}>
             <span style={{ color: C.textLight }}>Stato Backup:</span>

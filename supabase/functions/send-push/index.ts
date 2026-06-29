@@ -13,16 +13,25 @@ const VAPID_SUBJECT     = Deno.env.get('VAPID_SUBJECT') ?? 'mailto:admin@polisro
 const supabaseUrl       = Deno.env.get('SUPABASE_URL')!;
 const supabaseService   = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
 
-const CORS = {
-  'Access-Control-Allow-Origin':  '*',
-  'Access-Control-Allow-Headers': 'authorization, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-};
+const ALLOWED_ORIGINS = [
+  'https://polisroad.vercel.app',
+  'https://polisroad.it',
+];
 
-function json(data: unknown, status = 200) {
+function getCorsHeaders(req: Request) {
+  const origin = req.headers.get('origin') ?? '';
+  const allowedOrigin = ALLOWED_ORIGINS.includes(origin) ? origin : ALLOWED_ORIGINS[0];
+  return {
+    'Access-Control-Allow-Origin': allowedOrigin,
+    'Access-Control-Allow-Headers': 'authorization, content-type',
+    'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  };
+}
+
+function json(data: unknown, status = 200, corsHeaders?: Record<string, string>) {
   return new Response(JSON.stringify(data), {
     status,
-    headers: { 'Content-Type': 'application/json', ...CORS },
+    headers: { 'Content-Type': 'application/json', ...(corsHeaders ?? {}) },
   });
 }
 
@@ -30,11 +39,12 @@ function json(data: unknown, status = 200) {
 webpush.setVapidDetails(VAPID_SUBJECT, VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY);
 
 Deno.serve(async (req: Request) => {
-  if (req.method === 'OPTIONS') return new Response(null, { headers: CORS });
+  const corsHeaders = getCorsHeaders(req);
+  if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
   try {
     const authHeader = req.headers.get('Authorization');
-    if (!authHeader) return json({ error: 'Unauthorized' }, 401);
+    if (!authHeader) return json({ error: 'Unauthorized' }, 401, corsHeaders);
 
     const supabaseAdmin = createClient(supabaseUrl, supabaseService);
     const supabaseUser  = createClient(supabaseUrl, Deno.env.get('SUPABASE_ANON_KEY')!, {
@@ -42,20 +52,20 @@ Deno.serve(async (req: Request) => {
     });
 
     const { data: { user } } = await supabaseUser.auth.getUser();
-    if (!user) return json({ error: 'Unauthorized' }, 401);
+    if (!user) return json({ error: 'Unauthorized' }, 401, corsHeaders);
 
     const { data: profile } = await supabaseAdmin
       .from('profiles').select('ruolo').eq('id', user.id).single();
-    if (profile?.ruolo !== 'admin') return json({ error: 'Forbidden' }, 403);
+    if (profile?.ruolo !== 'admin') return json({ error: 'Forbidden' }, 403, corsHeaders);
 
     const { title, body, url = '/', userIds } = await req.json();
-    if (!title || !body) return json({ error: 'title e body obbligatori' }, 400);
+    if (!title || !body) return json({ error: 'title e body obbligatori' }, 400, corsHeaders);
 
     let query = supabaseAdmin.from('push_subscriptions').select('*');
     if (userIds?.length) query = query.in('user_id', userIds);
     const { data: subscriptions, error: subErr } = await query;
     if (subErr) throw subErr;
-    if (!subscriptions?.length) return json({ sent: 0, failed: 0, message: 'Nessun subscriber' });
+    if (!subscriptions?.length) return json({ sent: 0, failed: 0, message: 'Nessun subscriber' }, 200, corsHeaders);
 
     const payload = JSON.stringify({
       title, body, url,
@@ -104,9 +114,9 @@ Deno.serve(async (req: Request) => {
       await supabaseAdmin.from('push_subscriptions').delete().in('endpoint', expired);
     }
 
-    return json({ sent, failed, expired: expired.length });
+    return json({ sent, failed, expired: expired.length }, 200, corsHeaders);
   } catch (e) {
     console.error('errore generale:', e);
-    return json({ error: String(e) }, 500);
+    return json({ error: String(e) }, 500, getCorsHeaders(req));
   }
 });
