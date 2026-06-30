@@ -1,11 +1,11 @@
-# PolisRoad v1.9.5
+# PolisRoad v1.9.6
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
 ## Stack Tecnico
 
 - **Frontend**: React 19 + Vite 5 (pinato a ^5.4.19 per compatibilità vite-plugin-pwa)
-- **Icone**: lucide-react v0.383 — set unificato via `Icon.jsx`, strokeWidth 1.75, colori da tema
+- **Icone**: lucide-react v0.383 — set unificato via `Icon.jsx`, strokeWidth 1.75
 - **PWA**: vite-plugin-pwa con strategia `injectManifest` e custom `src/sw.js`
 - **Backend**: Supabase (Auth PKCE, Database PostgreSQL, Edge Functions, RLS)
 - **Data Fetching**: TanStack Query v5 con persistenza IndexedDB
@@ -13,42 +13,38 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
 
-## Novità 1.9.5
+## Novità 1.9.6
 
-**Redesign grafico**
-- Sistema di colori aggiornato via CSS custom properties (light/dark mode)
-- Header con gradient `primary → accent` su tutte le pagine
-- Card con `box-shadow` leggera e `border` sottile — aspetto moderno senza 3D
-- Palette icone coerente: ogni sezione ha bg+color dedicati definiti in `C.icon*`
+- Fix errore 400 in AdminUtenti: colonna `created_at` non presente in `profiles`
+- Header app piatto e uniforme su tutte le pagine (rimossi bordi arrotondati)
+- BottomNav semplificata
+- Fix errori di build (styles.js, changelog.js)
+- Audit RLS completo su tutte le tabelle Supabase
 
-**Profilo ridisegnato**
-- Struttura a gruppi iOS-style con label di sezione
-- Statistiche di utilizzo reali (preferiti, note, segnalazioni)
-- Blocco Help Desk con azioni dirette
-- Zona pericolosa separata con margine deliberato
+## Azioni richieste su Supabase dopo il deploy
 
-**Bug fix**
-- `useSyncQueue` non scrive più su `xp_history` (rimossa con gamification)
-- Auth PKCE flow, CSP Sentry, CORS send-push, storage.js TextEncoder
-- Popup backdrop click-outside, NavCard dark mode, codice morto rimosso
+### 1. Aggiungi colonna created_at a profiles
 
-## Migrazioni Supabase (v1.9.5)
-
-1. **`20260629_drop_gamification_tables.sql`** — rimuove `gamification` e `xp_history`
-2. **`20260629_notify_admin_on_new_user.sql`** (da v1.9.4) — trigger push admin
-
-   ⚠️ `pg_net` richiede piano Supabase **Pro o superiore**. Su Free tier il trigger viene creato ma non può inviare richieste HTTP — fallirà silenziosamente senza bloccare l'insert del profilo.
-
-## Edge Functions da redeployare
-
-```bash
-supabase functions deploy delete-user   # check admin + self (v1.9.4)
-supabase functions deploy send-push     # CORS ristretto (v1.9.5)
+```sql
+ALTER TABLE public.profiles
+ADD COLUMN IF NOT EXISTS created_at timestamptz DEFAULT now();
 ```
 
-## Auth PKCE — configurazione Supabase
+### 2. Esegui le migration pendenti (se non ancora fatto)
 
-In Dashboard → Authentication → URL Configuration verificare:
+- `20260629_drop_gamification_tables.sql` — rimuove `gamification` e `xp_history`
+- `20260629_notify_admin_on_new_user.sql` — trigger push admin (solo piano Pro)
+
+### 3. Redeploy Edge Functions
+
+```bash
+supabase functions deploy delete-user
+supabase functions deploy send-push
+```
+
+## Configurazione Auth PKCE
+
+In Supabase Dashboard → Authentication → URL Configuration:
 - **Site URL**: `https://polisroad.vercel.app`
 - **Redirect URLs**: `https://polisroad.vercel.app/**`
 
@@ -61,7 +57,7 @@ VITE_POSTHOG_KEY=phc_...
 VITE_POSTHOG_HOST=https://eu.i.posthog.com
 VITE_SENTRY_DSN=https://...@sentry.io/...
 VITE_VAPID_PUBLIC_KEY=...
-VITE_CACHE_BUSTER=1.9.5
+VITE_CACHE_BUSTER=1.9.6
 ```
 
 ## Comandi

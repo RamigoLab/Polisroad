@@ -11,6 +11,26 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '1.9.6',
+    date: '30 Giugno 2026',
+    isNew: true,
+    items: [
+      'Fix: AdminUtenti carica correttamente la lista utenti (errore 400 su colonna mancante)',
+      'Fix: rimossa colonna created_at dalla query profiles (non presente nel DB)',
+      'Fix: header app senza bordi arrotondati in basso, uguale su tutte le pagine',
+      'Fix: BottomNav semplificata, rimossa barra stato Online/Offline ridondante',
+      'Fix: stili styles.js corretti (carattere spurio nella definizione btnOutline)',
+      'Fix: apostrofi nelle stringhe del changelog non causano piu errori di build',
+      'DB: aggiunta colonna created_at a profiles per mostrare la data di registrazione',
+      'DB: audit RLS completato su tutte le tabelle',
+      'DB: rimossa profiles_admin senza RLS (buco di sicurezza)',
+      'DB: corrette policy ricorsive su profiles (delete e update)',
+      'DB: eliminate circa 15 policy duplicate su news, note, codice_strada, push_subscriptions',
+      'DB: note e preferiti corrette da public ad authenticated',
+      'DB: rimosso INSERT anonimo su segnalazioni',
+    ],
+  },
+  {
     version: '1.9.5',
     date: '30 Giugno 2026',
     isNew: true,

@@ -37,7 +37,7 @@ export const AdminUtenti = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, nome, cognome, grado, forza, telefono, ruolo, approvato, created_at')
+        .select('id, email, nome, cognome, grado, forza, telefono, ruolo, approvato')
         .order('cognome', { ascending: true });
       if (error) throw error;
       setUsers(data || []);
@@ -161,7 +161,7 @@ export const AdminUtenti = () => {
   });
 
   const formatDate = (dateStr) => {
-    if (!dateStr) return '—';
+    if (!dateStr) return '—'; // colonna non presente
     try {
       return new Date(dateStr).toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
     } catch { return '—'; }
@@ -332,9 +332,11 @@ export const AdminUtenti = () => {
                           <span>{user.grado || '—'} · {user.forza || '—'}</span>
                         )}
                         {/* Data di registrazione */}
-                        <span style={{ fontSize: '0.75rem', color: C.textLight, marginTop: '2px' }}>
-                          Registrato il {formatDate(user.created_at)}
-                        </span>
+                        {user.created_at && (
+                          <span style={{ fontSize: '0.75rem', color: C.textLight, marginTop: '2px' }}>
+                            Registrato il {formatDate(user.created_at)}
+                          </span>
+                        )}
                       </div>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '8px' }}>
