@@ -8,14 +8,20 @@
     <meta name="description" content="PolisRoad - Codice della Strada per Forze dell'Ordine" />
     <!-- App riservata a operatori FDO: non indicizzare -->
     <meta name="robots" content="noindex, nofollow" />
-    <!-- PWA / tema -->
+    <!-- PWA / tema: sfondo blu uguale alla splash per eliminare il flash bianco -->
     <meta name="theme-color" content="#1a3a5c" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="apple-mobile-web-app-title" content="PolisRoad" />
     <title>PolisRoad</title>
+    <!-- Elimina flash bianco prima del caricamento React -->
+    <style>
+      html, body { background-color: #1a3a5c; margin: 0; padding: 0; }
+      #root { min-height: 100vh; background-color: #1a3a5c; }
+    </style>
   </head>
-  <body>
+  <body style="background-color:#1a3a5c;margin:0;padding:0;">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

@@ -131,7 +131,7 @@ export const Home = ({ onNavigate }) => {
       {/* Footer unificato */}
       <div style={{
         marginTop: '24px', paddingTop: '20px',
-        paddingBottom: '8px',
+        paddingBottom: '32px',
         borderTop: `1px solid ${C.border}`,
         textAlign: 'center',
       }}>
@@ -139,15 +139,18 @@ export const Home = ({ onNavigate }) => {
           <p style={{ fontWeight: '700', color: C.textLight, marginBottom: '4px' }}>
             PolisRoad v{APP_VERSION} · {new Date().getFullYear()} Giorgio Raimondi
           </p>
-          <p style={{ marginBottom: '8px' }}>
+          <p style={{ marginBottom: '12px' }}>
             Sistema informativo di supporto alle attività di controllo in materia di circolazione stradale.
             I dati normativi sono tratti da fonti ufficiali (Normattiva) e hanno finalità esclusivamente informativa.
           </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-            <button onClick={() => onNavigate('privacy')} style={{ color: C.accent, fontSize: '0.72rem', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+          <div style={{
+            display: 'flex', justifyContent: 'center', gap: '16px',
+            paddingBottom: '80px',
+          }}>
+            <button onClick={() => onNavigate('privacy')} style={{ color: C.accent, fontSize: '0.8rem', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px' }}>
               Privacy Policy
             </button>
-            <button onClick={() => onNavigate('termini')} style={{ color: C.accent, fontSize: '0.72rem', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            <button onClick={() => onNavigate('termini')} style={{ color: C.accent, fontSize: '0.8rem', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer', padding: '8px 4px' }}>
               Termini di Servizio
             </button>
           </div>
