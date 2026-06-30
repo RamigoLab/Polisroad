@@ -23,9 +23,7 @@ export const LS = {
   appHeader: {
     background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
     color: '#fff',
-    padding: '20px 16px 28px 16px',
-    borderBottomLeftRadius: '24px',
-    borderBottomRightRadius: '24px',
+    padding: '20px 16px 20px 16px',
     flexShrink: 0,
   },
   appHeaderInner: {
@@ -88,23 +86,25 @@ export const LS = {
   navContainer: {
     backgroundColor: C.card,
     borderTop: `1px solid ${C.border}`,
+    boxShadow: '0 -4px 16px rgba(0,0,0,0.06)',
   },
   navScroll: {
     display: 'flex',
     justifyContent: 'space-around',
-    padding: '6px 0 8px',
+    padding: '8px 0 10px',
+    alignItems: 'center',
   },
   navTab: (isActive) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     gap: '3px',
-    padding: '6px 14px',
+    padding: '4px 12px',
     cursor: 'pointer',
-    borderRadius: '12px',
-    transition: 'all 0.15s ease',
-    minWidth: '56px',
-    backgroundColor: isActive ? C.accentLight : 'transparent',
+    borderRadius: '10px',
+    transition: 'opacity 0.15s ease',
+    minWidth: '52px',
+    opacity: isActive ? 1 : 0.6,
   }),
   navTabIndicator: (isActive) => ({
     display: 'flex',
@@ -112,10 +112,11 @@ export const LS = {
     justifyContent: 'center',
   }),
   navTabLabel: (isActive) => ({
-    fontSize: '0.65rem',
+    fontSize: '0.62rem',
     fontWeight: isActive ? '700' : '500',
     color: isActive ? C.accent : C.textLight,
     letterSpacing: '0.01em',
+    marginTop: '1px',
   }),
 
   // ── SPLASH ────────────────────────────────────

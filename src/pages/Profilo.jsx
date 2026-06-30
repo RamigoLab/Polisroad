@@ -272,7 +272,7 @@ export const Profilo = ({ onNavigate }) => {
       <div style={{
         ...PS.profileHeaderBg,
         marginLeft: '-16px', marginRight: '-16px', marginTop: '-16px',
-        marginBottom: '4px',
+        marginBottom: '20px',
       }}>
         <div style={PS.profileAvatar}>
           <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#fff' }}>{initials}</span>
