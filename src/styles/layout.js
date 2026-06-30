@@ -130,13 +130,11 @@ export const LS = {
     position: 'relative',
   },
   splashLogo: {
-    width: '100px',
-    height: '100px',
-    borderRadius: '24px',
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    border: '2px solid rgba(255,255,255,0.3)',
-    padding: '8px',
+    width: '96px',
+    height: '96px',
+    borderRadius: '22px',
     marginBottom: '20px',
+    display: 'block',
   },
   splashTitle: {
     color: '#fff',

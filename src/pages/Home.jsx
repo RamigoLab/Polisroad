@@ -130,7 +130,8 @@ export const Home = ({ onNavigate }) => {
 
       {/* Footer unificato */}
       <div style={{
-        marginTop: '8px', paddingTop: '20px',
+        marginTop: '24px', paddingTop: '20px',
+        paddingBottom: '8px',
         borderTop: `1px solid ${C.border}`,
         textAlign: 'center',
       }}>

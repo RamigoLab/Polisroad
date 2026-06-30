@@ -61,8 +61,8 @@ export const Ricerca = ({ onNavigate }) => {
 
   const autoSuggestions = React.useMemo(() => {
     const q = search.trim().toLowerCase();
-    if (!q || q.length < 1) return history.slice(0, 5);
-    return history.filter(h => h.toLowerCase().startsWith(q)).slice(0, 5);
+    if (!q || q.length < 1) return history;
+    return history.filter(h => h.toLowerCase().startsWith(q));
   }, [search, history]);
 
   const hasSearch = search.trim().length > 0;
@@ -272,7 +272,7 @@ export const Ricerca = ({ onNavigate }) => {
         <div style={{ marginBottom: '24px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
             <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: C.textLight, display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-              <Icon name="clock" size={15} /> Ricerche Recenti
+              <Icon name="clock" size={15} /> Ricerche recenti ({history.length})
             </span>
             <button onClick={clearHistory} style={{ fontSize: '0.75rem', fontWeight: 'bold', color: C.danger }}>
               Cancella tutto
@@ -294,9 +294,14 @@ export const Ricerca = ({ onNavigate }) => {
                 <span style={{ color: C.text }}>{term}</span>
                 <span
                   onClick={e => { e.stopPropagation(); removeSearch(term); }}
-                  style={{ fontSize: '0.75rem', color: C.textLight, marginLeft: '4px', fontWeight: 'bold', padding: '2px' }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    width: '18px', height: '18px', borderRadius: '50%',
+                    backgroundColor: C.surfaceContainer,
+                    marginLeft: '2px', flexShrink: 0,
+                  }}
                 >
-                  <Icon name="close" size={14} />
+                  <Icon name="x" size={11} color={C.textLight} strokeWidth={2.5} />
                 </span>
               </div>
             ))}

@@ -268,21 +268,50 @@ export const Profilo = ({ onNavigate }) => {
       }
     >
 
-      {/* ── HEADER IDENTITÀ ── */}
+      {/* ── HEADER IDENTITÀ — card come le altre sezioni ── */}
       <div style={{
-        ...PS.profileHeaderBg,
-        marginLeft: '-16px', marginRight: '-16px', marginTop: '-16px',
-        marginBottom: '20px',
+        backgroundColor: C.card,
+        borderRadius: C.radiusMd,
+        border: `1px solid ${C.border}`,
+        boxShadow: 'var(--shadow-sm)',
+        overflow: 'hidden',
+        marginBottom: '0px',
       }}>
-        <div style={PS.profileAvatar}>
-          <span style={{ fontSize: '1.25rem', fontWeight: '700', color: '#fff' }}>{initials}</span>
-        </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={PS.profileHeaderName}>{profile?.nome} {profile?.cognome}</div>
-          <div style={PS.profileHeaderGrado}>{profile?.grado || 'Operatore'} · {profile?.forza || '—'}</div>
-          <div style={PS.profileHeaderPills}>
-            <span style={PS.profileHeaderPill}>✓ Approvato</span>
-            {profile?.email && <span style={PS.profileHeaderPill}>{profile.email}</span>}
+        <div style={{
+          height: '4px',
+          background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
+        }} />
+        <div style={{ padding: '16px', display: 'flex', alignItems: 'center', gap: '14px' }}>
+          <div style={{
+            width: '52px', height: '52px', borderRadius: '50%', flexShrink: 0,
+            background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontSize: '1.2rem', fontWeight: '800', color: '#fff' }}>{initials}</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: '1.05rem', fontWeight: '700', color: C.text, marginBottom: '2px' }}>
+              {profile?.nome} {profile?.cognome}
+            </div>
+            <div style={{ fontSize: '0.82rem', color: C.textLight, marginBottom: '8px' }}>
+              {profile?.grado || 'Operatore'} · {profile?.forza || '—'}
+            </div>
+            <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+              <span style={{
+                backgroundColor: '#dcfce7', color: '#15803d',
+                fontSize: '0.7rem', fontWeight: '700',
+                padding: '3px 9px', borderRadius: '999px',
+              }}>✓ Approvato</span>
+              {profile?.email && (
+                <span style={{
+                  backgroundColor: C.surfaceContainer, color: C.textLight,
+                  fontSize: '0.7rem', fontWeight: '500',
+                  padding: '3px 9px', borderRadius: '999px',
+                  overflow: 'hidden', textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap', maxWidth: '180px',
+                }}>{profile.email}</span>
+              )}
+            </div>
           </div>
         </div>
       </div>
