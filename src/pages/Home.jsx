@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { PS } from '../styles/pages';
-import { S } from '../styles/styles';
 import { C } from '../styles/theme';
 import { useAuth } from '../hooks/useAuth';
 import { useNews } from '../hooks/useNews';
@@ -9,42 +8,41 @@ import { APP_VERSION } from '../config/constants';
 import { Icon } from '../components/ui/Icon';
 import { getItem, setItem } from '../utils/storage';
 
+const NAV_CARDS = [
+  { id: 'prontuario',  icon: 'clipboard-list', label: 'Prontuario',     ...C.iconProntuario },
+  { id: 'normativa',   icon: 'book-open',       label: 'Normativa',      ...C.iconNormativa  },
+  { id: 'calcolatore', icon: 'calculator',      label: 'Calcolatore',    ...C.iconCalcola    },
+  { id: 'preferiti',   icon: 'star',            label: 'Preferiti',      ...C.iconPreferiti  },
+  { id: 'guide',       icon: 'graduation-cap',  label: 'Guide Pratiche', ...C.iconGuide      },
+  { id: 'news',        icon: 'newspaper',       label: 'News',           ...C.iconNews       },
+  { id: 'links',       icon: 'link',            label: 'Links Utili',    ...C.iconLinks      },
+  { id: 'profilo',     icon: 'user',            label: 'Profilo',        ...C.iconProfilo    },
+];
+
 export const Home = ({ onNavigate }) => {
   const { profile } = useAuth();
   const { list: newsList } = useNews();
   const isAdmin = profile?.ruolo === 'admin';
 
-  const bannerNews = useMemo(
-    () => newsList.find(n => n.categoria?.toLowerCase() === 'banner' && n.pubblicato),
-    [newsList]
-  );
-  const popupNewsList = useMemo(
-    () => newsList.filter(n => n.categoria?.toLowerCase() === 'popup' && n.pubblicato),
-    [newsList]
-  );
-  const notificaNewsList = useMemo(
-    () => newsList.filter(n => n.categoria?.toLowerCase() === 'notifica' && n.pubblicato),
-    [newsList]
-  );
+  const bannerNews  = useMemo(() => newsList.find(n => n.categoria?.toLowerCase() === 'banner'   && n.pubblicato), [newsList]);
+  const popupNewsList = useMemo(() => newsList.filter(n => n.categoria?.toLowerCase() === 'popup'    && n.pubblicato), [newsList]);
+  const notificaList  = useMemo(() => newsList.filter(n => n.categoria?.toLowerCase() === 'notifica' && n.pubblicato), [newsList]);
 
   const [showPopup, setShowPopup] = useState(false);
   const [currentPopup, setCurrentPopup] = useState(null);
 
   useEffect(() => {
     if (popupNewsList.length > 0) {
-      const latestPopup = popupNewsList[0];
-      const dismissed = getItem(`polisroad_dismissed_popup_${latestPopup.id}`);
-      if (!dismissed) {
-        setCurrentPopup(latestPopup);
+      const latest = popupNewsList[0];
+      if (!getItem(`polisroad_dismissed_popup_${latest.id}`)) {
+        setCurrentPopup(latest);
         setShowPopup(true);
       }
     }
   }, [popupNewsList]);
 
   const handleDismissPopup = () => {
-    if (currentPopup) {
-      setItem(`polisroad_dismissed_popup_${currentPopup.id}`, 'true');
-    }
+    if (currentPopup) setItem(`polisroad_dismissed_popup_${currentPopup.id}`, 'true');
     setShowPopup(false);
   };
 
@@ -62,134 +60,136 @@ export const Home = ({ onNavigate }) => {
       headerChildren={
         <div style={PS.homeQuickActions}>
           <button onClick={() => onNavigate('ricerca')} style={PS.homeSearchBtn}>
-            <Icon name="search" size={18} /> Ricerca Rapida
+            <Icon name="search" size={17} color="rgba(255,255,255,0.85)" />
+            <span>Ricerca rapida...</span>
           </button>
         </div>
       }
     >
+      {/* Pulsante operatore */}
       <button onClick={() => onNavigate('operatore')} style={PS.homeOperatoreBtn}>
-        <Icon name="shield-alert" size={22} /> ATTIVA MODALITÀ OPERATORE
+        <Icon name="shield-alert" size={20} color="#fff" />
+        ATTIVA MODALITÀ OPERATORE
       </button>
 
+      {/* Griglia navigazione */}
       <div style={PS.homeGrid}>
-        <NavCard icon="clipboard-list" title="Prontuario"    color="#1976d2" bg="#e3f0fb" onClick={() => onNavigate('prontuario')} />
-        <NavCard icon="book-open"      title="Normativa"     color="#1a7a4a" bg="#e6f4ed" onClick={() => onNavigate('normativa')} />
-        <NavCard icon="calculator"     title="Calcolatore"   color="#b45309" bg="#fdf3e0" onClick={() => onNavigate('calcolatore')} />
-        <NavCard icon="star"           title="Preferiti"     color="#c0392b" bg="#fbeaea" onClick={() => onNavigate('preferiti')} />
-        <NavCard icon="graduation-cap" title="Guide Pratiche" color="#7b2d8b" bg="#f3e8f9" onClick={() => onNavigate('guide')} />
-        <NavCard icon="newspaper"      title="News"          color="#1a3a5c" bg="#e8eef6" onClick={() => onNavigate('news')} />
-        <NavCard icon="link"           title="Links Utili"   color="#0d7377" bg="#e0f5f5" onClick={() => onNavigate('links')} />
-        <NavCard icon="user"           title="Profilo"       color="#555"    bg="#f0f0f0" onClick={() => onNavigate('profilo')} />
+        {NAV_CARDS.map(card => (
+          <NavCard
+            key={card.id}
+            icon={card.icon}
+            label={card.label}
+            bg={card.bg}
+            color={card.color}
+            onClick={() => onNavigate(card.id)}
+          />
+        ))}
       </div>
 
+      {/* Banner news */}
       {bannerNews && (
-        <div style={PS.homeBannerBox}>
-          <h4 style={PS.homeBannerTitle}>{bannerNews.titolo}</h4>
-          <p style={PS.homeBannerText}>{bannerNews.contenuto}</p>
+        <div style={{ ...PS.homeBannerBox, marginBottom: '16px' }}>
+          <div style={PS.homeBannerTitle}>{bannerNews.titolo}</div>
+          <div style={PS.homeBannerText}>{bannerNews.contenuto}</div>
         </div>
       )}
 
-      {notificaNewsList.length > 0 && (
-        <div style={{ marginTop: '16px' }}>
-          <h4 style={{ color: C.textLight, fontSize: '0.9rem', marginBottom: '8px', paddingLeft: '4px', display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <Icon name="bell" size={16} /> Comunicazioni
-          </h4>
-          {notificaNewsList.slice(0, 3).map(notifica => (
-            <div key={notifica.id} style={{
-              backgroundColor: C.card,
-              borderRadius: '12px',
-              padding: '12px',
-              marginBottom: '8px',
-              borderLeft: `4px solid ${C.primary}`,
-              boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+      {/* Comunicazioni notifica */}
+      {notificaList.length > 0 && (
+        <div style={{ marginBottom: '20px' }}>
+          <div style={{ fontSize: '0.72rem', color: C.textLight, fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
+            Comunicazioni
+          </div>
+          {notificaList.slice(0, 3).map(n => (
+            <div key={n.id} style={{
+              backgroundColor: C.card, borderRadius: C.radiusMd,
+              padding: '12px 14px', marginBottom: '8px',
+              borderLeft: `3px solid ${C.accent}`,
+              border: `1px solid ${C.border}`,
+              boxShadow: 'var(--shadow-sm)',
             }}>
-              <h5 style={{ margin: '0 0 4px 0', fontSize: '0.95rem', color: C.text }}>{notifica.titolo}</h5>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: C.textLight }}>{notifica.contenuto}</p>
+              <div style={{ fontWeight: '600', fontSize: '0.9rem', color: C.text, marginBottom: '3px' }}>{n.titolo}</div>
+              <div style={{ fontSize: '0.82rem', color: C.textLight, lineHeight: '1.4' }}>{n.contenuto}</div>
             </div>
           ))}
-          {notificaNewsList.length > 3 && (
-            <button
-              onClick={() => onNavigate('news')}
-              style={{ background: 'none', border: 'none', color: C.accent, fontSize: '0.85rem', cursor: 'pointer', padding: '4px 0', textDecoration: 'underline' }}
-            >
-              Vedi tutte ({notificaNewsList.length}) →
+          {notificaList.length > 3 && (
+            <button onClick={() => onNavigate('news')} style={{ color: C.accent, fontSize: '0.82rem', fontWeight: '600', padding: '4px 0' }}>
+              Vedi tutte ({notificaList.length}) →
             </button>
           )}
         </div>
       )}
 
+      {/* Admin button */}
       {isAdmin && (
-        <button onClick={() => onNavigate('admin_dashboard')} style={PS.homeAdminBtn}>
-          <Icon name="settings" size={18} /> Pannello Admin
+        <button onClick={() => onNavigate('admin_dashboard')} style={{ ...PS.homeAdminBtn, marginBottom: '20px' }}>
+          <Icon name="settings" size={18} color="#fff" />
+          Pannello Amministratore
         </button>
       )}
 
       {/* Footer unificato */}
       <div style={{
-        marginTop: '32px',
-        padding: '20px 16px',
-        textAlign: 'center',
+        marginTop: '8px', paddingTop: '20px',
         borderTop: `1px solid ${C.border}`,
-        fontSize: '0.75rem',
-        color: C.textLight,
-        lineHeight: '1.6',
+        textAlign: 'center',
       }}>
-        <p style={{ fontWeight: 'bold', marginBottom: '6px' }}>
-          {new Date().getFullYear()} PolisRoad v{APP_VERSION} — sviluppata da Giorgio Raimondi
-        </p>
-        <p style={{ marginBottom: '4px' }}>
-          Sistema di supporto alle attività di controllo in materia di circolazione stradale.
-          I dati normativi sono tratti da fonti ufficiali (Normattiva) e hanno finalità informativa.
-        </p>
-        <p style={{ marginBottom: '12px' }}>
-          Le verifiche e le contestazioni restano di esclusiva responsabilità degli organi accertatori.
-        </p>
-        <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
-          <button onClick={() => onNavigate('privacy')} style={{ background: 'none', border: 'none', color: C.accent, fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
-            Privacy Policy
-          </button>
-          <button onClick={() => onNavigate('termini')} style={{ background: 'none', border: 'none', color: C.accent, fontSize: '0.75rem', cursor: 'pointer', padding: 0, textDecoration: 'underline' }}>
-            Termini di Servizio
-          </button>
+        <div style={{ fontSize: '0.72rem', color: C.textLight, lineHeight: '1.7' }}>
+          <p style={{ fontWeight: '700', color: C.textLight, marginBottom: '4px' }}>
+            PolisRoad v{APP_VERSION} · {new Date().getFullYear()} Giorgio Raimondi
+          </p>
+          <p style={{ marginBottom: '8px' }}>
+            Sistema informativo di supporto alle attività di controllo in materia di circolazione stradale.
+            I dati normativi sono tratti da fonti ufficiali (Normattiva) e hanno finalità esclusivamente informativa.
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '16px' }}>
+            <button onClick={() => onNavigate('privacy')} style={{ color: C.accent, fontSize: '0.72rem', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              Privacy Policy
+            </button>
+            <button onClick={() => onNavigate('termini')} style={{ color: C.accent, fontSize: '0.72rem', fontWeight: '600', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+              Termini di Servizio
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Popup Modale */}
+      {/* Modale popup */}
       {showPopup && currentPopup && (
         <div
           onClick={handleDismissPopup}
           style={{
-            position: 'fixed',
-            top: 0, left: 0, right: 0, bottom: 0,
-            backgroundColor: 'rgba(0,0,0,0.6)',
-            zIndex: 10000,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '20px',
+            position: 'fixed', inset: 0, zIndex: 10000,
+            backgroundColor: 'rgba(0,0,0,0.55)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            padding: '24px',
           }}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="popup-title"
+          role="dialog" aria-modal="true" aria-labelledby="popup-title"
         >
           <div
             onClick={e => e.stopPropagation()}
             style={{
-              backgroundColor: C.card,
-              borderRadius: '16px',
-              padding: '24px',
-              maxWidth: '400px',
-              width: '100%',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-            }}>
-            <h3 id="popup-title" style={{ margin: '0 0 12px 0', color: C.text, fontSize: '1.2rem' }}>{currentPopup.titolo}</h3>
-            <div style={{ color: C.textLight, fontSize: '0.95rem', lineHeight: '1.5', marginBottom: '20px', whiteSpace: 'pre-wrap' }}>
+              backgroundColor: C.card, borderRadius: '20px', padding: '24px',
+              maxWidth: '380px', width: '100%',
+              boxShadow: 'var(--shadow-lg)',
+              border: `1px solid ${C.border}`,
+            }}
+          >
+            <h3 id="popup-title" style={{ margin: '0 0 10px 0', color: C.text, fontSize: '1.15rem', fontWeight: '700' }}>
+              {currentPopup.titolo}
+            </h3>
+            <div style={{ color: C.textLight, fontSize: '0.92rem', lineHeight: '1.55', marginBottom: '20px', whiteSpace: 'pre-wrap' }}>
               {currentPopup.contenuto}
             </div>
             <button
               onClick={handleDismissPopup}
-              style={{ ...S.btnPrimary, width: '100%' }}
               autoFocus
+              style={{
+                width: '100%', padding: '13px',
+                background: `linear-gradient(135deg, ${C.primary} 0%, ${C.accent} 100%)`,
+                color: '#fff', borderRadius: C.radiusPill,
+                fontWeight: '700', fontSize: '0.95rem',
+                border: 'none', cursor: 'pointer',
+              }}
             >
               Ho capito
             </button>
@@ -200,9 +200,8 @@ export const Home = ({ onNavigate }) => {
   );
 };
 
-const NavCard = ({ icon, title, color, bg, onClick }) => {
+const NavCard = ({ icon, label, bg, color, onClick }) => {
   const [pressed, setPressed] = useState(false);
-
   return (
     <div
       onClick={onClick}
@@ -211,15 +210,15 @@ const NavCard = ({ icon, title, color, bg, onClick }) => {
       onPointerLeave={() => setPressed(false)}
       style={{
         ...PS.homeNavCard,
-        transform: pressed ? 'scale(0.94)' : 'scale(1)',
-        transition: 'transform 0.12s ease',
-        cursor: 'pointer',
+        transform: pressed ? 'scale(0.93)' : 'scale(1)',
+        transition: 'transform 0.12s ease, box-shadow 0.12s ease',
+        boxShadow: pressed ? 'none' : 'var(--shadow-sm)',
       }}
     >
       <span style={{ ...PS.homeNavCardIcon, backgroundColor: bg, color }}>
-        <Icon name={icon} size={26} />
+        <Icon name={icon} size={24} color={color} strokeWidth={1.75} />
       </span>
-      <span style={{ ...PS.homeNavCardLabel, color: C.text }}>{title}</span>
+      <span style={{ ...PS.homeNavCardLabel, color: C.text }}>{label}</span>
     </div>
   );
 };

@@ -1,47 +1,40 @@
-/**
- * Onboarding.jsx
- * Wizard di 4 schermate mostrato UNA SOLA VOLTA al primo accesso dopo la registrazione.
- * Flag in localStorage: 'polisroad_onboarding_done'.
- * Saltabile in qualsiasi momento. Supporta swipe orizzontale tra le schermate.
- */
 import React, { useState, useRef } from 'react';
 import { C } from '../styles/theme';
+import { Icon } from './ui/Icon';
 
 const ONBOARDING_KEY = 'polisroad_onboarding_done';
 
 export function isOnboardingDone() {
   return localStorage.getItem(ONBOARDING_KEY) === 'true';
 }
-
 export function markOnboardingDone() {
   localStorage.setItem(ONBOARDING_KEY, 'true');
 }
 
-// ─── Contenuto schermate ─────────────────────────────────────────────────────
 const SLIDES = [
   {
-    icon: '🚔',
+    iconName: 'shield-check',
+    iconBg: '#dbeafe', iconColor: '#1e40af',
     title: 'Benvenuto in PolisRoad',
     body: 'Lo strumento digitale pensato per le Forze dell\'Ordine italiane. Accedi al Codice della Strada, al Prontuario delle sanzioni e alle ultime notizie normative — sempre con te, anche offline.',
-    accent: '#1a3a5c',
   },
   {
-    icon: '📋',
+    iconName: 'clipboard-list',
+    iconBg: '#dcfce7', iconColor: '#15803d',
     title: 'Prontuario & Normativa',
-    body: 'Cerca qualsiasi articolo del Codice della Strada o voce del Prontuario sanzioni. La ricerca intelligente tolera errori di battitura. Salva gli articoli che usi più spesso tra i ⭐ Preferiti.',
-    accent: '#1e5a8a',
+    body: 'Cerca qualsiasi articolo del Codice della Strada o voce del Prontuario sanzioni. La ricerca globale trova in simultanea su entrambi gli archivi. Salva le voci che usi di più tra i ⭐ Preferiti.',
   },
   {
-    icon: '🛡️',
+    iconName: 'shield-alert',
+    iconBg: '#fee2e2', iconColor: '#dc2626',
     title: 'Modalità Operatore',
-    body: 'Un\'interfaccia semplificata pensata per l\'uso sul campo: meno distrazioni, accesso rapido alle voci essenziali. Attivala dal menu principale quando sei in servizio.',
-    accent: '#1a3a5c',
+    body: 'Un\'interfaccia semplificata pensata per l\'uso sul campo: meno distrazioni, accesso rapido alle voci essenziali. Attivala dalla schermata principale quando sei in servizio.',
   },
   {
-    icon: '🏆',
-    title: 'Punti & Traguardi',
-    body: 'Ogni articolo consultato, ogni contestazione registrata ti porta nuovi punti XP. Sali di livello, sblocca badge e mantieni la tua serie quotidiana. Imparare il Codice non è mai stato così coinvolgente.',
-    accent: '#1e5a8a',
+    iconName: 'wifi-off',
+    iconBg: '#fef3c7', iconColor: '#d97706',
+    title: 'Funziona anche offline',
+    body: 'Prontuario e Normativa sono disponibili senza connessione dopo il primo caricamento. Le modifiche (preferiti, note) vengono sincronizzate automaticamente al rientro online.',
   },
 ];
 
@@ -54,16 +47,16 @@ export const Onboarding = ({ onDone }) => {
     onDone?.();
   };
 
-  const next = () => step < SLIDES.length - 1 ? setStep(s => s + 1) : handleDone();
-  const prev = () => step > 0 && setStep(s => s - 1);
+  const goNext = () => step < SLIDES.length - 1 ? setStep(s => s + 1) : handleDone();
+  const goPrev = () => step > 0 && setStep(s => s - 1);
 
   const handleTouchStart = (e) => { touchStartX.current = e.touches[0].clientX; };
   const handleTouchEnd = (e) => {
-    if (touchStartX.current === null) return;
+    if (!touchStartX.current) return;
     const dx = e.changedTouches[0].clientX - touchStartX.current;
+    if (dx < -50) goNext();
+    if (dx > 50) goPrev();
     touchStartX.current = null;
-    if (dx < -50) next();
-    else if (dx > 50) prev();
   };
 
   const slide = SLIDES[step];
@@ -74,78 +67,85 @@ export const Onboarding = ({ onDone }) => {
       onTouchStart={handleTouchStart}
       onTouchEnd={handleTouchEnd}
       style={{
-        position: 'fixed', inset: 0, zIndex: 10000,
-        backgroundColor: slide.accent,
+        minHeight: '100vh',
+        background: 'linear-gradient(160deg, var(--color-primary) 0%, var(--color-accent) 100%)',
         display: 'flex', flexDirection: 'column',
-        alignItems: 'center', justifyContent: 'space-between',
-        padding: '48px 28px 40px',
-        transition: 'background-color 0.4s ease',
-        color: '#fff',
+        alignItems: 'center', justifyContent: 'center',
+        padding: '32px 24px',
+        userSelect: 'none',
       }}
     >
-      {/* Tasto Salta */}
-      <div style={{ alignSelf: 'flex-end' }}>
+      {/* Indicatori step */}
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '48px' }}>
+        {SLIDES.map((_, i) => (
+          <div
+            key={i}
+            onClick={() => setStep(i)}
+            style={{
+              width: i === step ? '24px' : '8px',
+              height: '8px',
+              borderRadius: '4px',
+              backgroundColor: i === step ? '#fff' : 'rgba(255,255,255,0.35)',
+              transition: 'all 0.3s ease',
+              cursor: 'pointer',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Icona centrale */}
+      <div style={{
+        width: '96px', height: '96px',
+        backgroundColor: slide.iconBg,
+        borderRadius: '28px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginBottom: '32px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+      }}>
+        <Icon name={slide.iconName} size={44} color={slide.iconColor} strokeWidth={1.5} />
+      </div>
+
+      {/* Testo */}
+      <h2 style={{
+        color: '#fff', fontSize: '1.6rem', fontWeight: '800',
+        textAlign: 'center', marginBottom: '16px', lineHeight: '1.25',
+        letterSpacing: '-0.3px',
+      }}>
+        {slide.title}
+      </h2>
+      <p style={{
+        color: 'rgba(255,255,255,0.75)', fontSize: '1rem',
+        textAlign: 'center', lineHeight: '1.65', maxWidth: '320px',
+        marginBottom: '64px',
+      }}>
+        {slide.body}
+      </p>
+
+      {/* Pulsanti */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', width: '100%', maxWidth: '320px' }}>
+        <button
+          onClick={goNext}
+          style={{
+            padding: '15px', borderRadius: '999px',
+            backgroundColor: '#fff', color: 'var(--color-primary)',
+            fontWeight: '800', fontSize: '1rem',
+            border: 'none', cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+          }}
+        >
+          {isLast ? 'Inizia a usare PolisRoad →' : 'Continua →'}
+        </button>
         <button
           onClick={handleDone}
           style={{
-            background: 'rgba(255,255,255,0.15)', border: 'none',
-            color: '#fff', padding: '8px 16px', borderRadius: '20px',
-            fontSize: '0.85rem', fontWeight: '600', cursor: 'pointer',
-          }}
-        >
-          Salta
-        </button>
-      </div>
-
-      {/* Contenuto centrale */}
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '24px', maxWidth: '360px', textAlign: 'center' }}>
-        <img
-          src="/icons/icon-192.png"
-          alt="PolisRoad"
-          style={{ width: '80px', height: '80px', borderRadius: '20px', boxShadow: '0 4px 16px rgba(0,0,0,0.25)' }}
-        />
-        <div style={{ fontSize: '4rem', lineHeight: 1 }}>{slide.icon}</div>
-        <h2 style={{ fontSize: '1.6rem', fontWeight: '800', margin: 0, lineHeight: 1.3 }}>
-          {slide.title}
-        </h2>
-        <p style={{ fontSize: '1rem', lineHeight: 1.6, margin: 0, opacity: 0.9 }}>
-          {slide.body}
-        </p>
-      </div>
-
-      {/* Footer: dots + bottone */}
-      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
-        {/* Indicatori step */}
-        <div style={{ display: 'flex', gap: '8px' }}>
-          {SLIDES.map((_, i) => (
-            <div
-              key={i}
-              onClick={() => setStep(i)}
-              style={{
-                width: i === step ? 24 : 8, height: 8,
-                borderRadius: '4px',
-                backgroundColor: i === step ? '#fff' : 'rgba(255,255,255,0.35)',
-                transition: 'width 0.3s ease, background-color 0.3s ease',
-                cursor: 'pointer',
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Bottone principale */}
-        <button
-          onClick={next}
-          style={{
-            width: '100%', maxWidth: '320px',
-            padding: '16px', borderRadius: '14px',
-            backgroundColor: '#fff',
-            color: slide.accent,
-            fontWeight: '800', fontSize: '1rem',
+            padding: '12px',
+            backgroundColor: 'transparent',
+            color: 'rgba(255,255,255,0.6)',
+            fontWeight: '600', fontSize: '0.88rem',
             border: 'none', cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.2)',
           }}
         >
-          {isLast ? 'Inizia a usare PolisRoad →' : 'Continua'}
+          Salta introduzione
         </button>
       </div>
     </div>

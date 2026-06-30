@@ -1,77 +1,43 @@
-/**
- * OfflineBanner.jsx
- * Banner persistente mostrato quando il dispositivo è offline.
- * L'app funziona comunque grazie a React Query + IndexedDB,
- * ma l'utente deve saperlo.
- */
 import React, { useState, useEffect } from 'react';
-import { Icon } from './Icon';
 import { C } from '../../styles/theme';
+import { Icon } from './Icon';
 
 export const OfflineBanner = () => {
-  const [isOnline, setIsOnline] = useState(() => navigator.onLine);
-  const [wasOffline, setWasOffline] = useState(false);
-  const [showBackOnline, setShowBackOnline] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
+  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    const handleOffline = () => {
-      setIsOnline(false);
-      setWasOffline(true);
-      setShowBackOnline(false);
-    };
+    const on = () => { setIsOnline(true); setShow(true); setTimeout(() => setShow(false), 3000); };
+    const off = () => { setIsOnline(false); setShow(true); };
+    window.addEventListener('online', on);
+    window.addEventListener('offline', off);
+    return () => { window.removeEventListener('online', on); window.removeEventListener('offline', off); };
+  }, []);
 
-    const handleOnline = () => {
-      setIsOnline(true);
-      if (wasOffline) {
-        setShowBackOnline(true);
-        // Nascondi il messaggio "di nuovo online" dopo 3s
-        setTimeout(() => setShowBackOnline(false), 3000);
-      }
-    };
-
-    window.addEventListener('offline', handleOffline);
-    window.addEventListener('online', handleOnline);
-    return () => {
-      window.removeEventListener('offline', handleOffline);
-      window.removeEventListener('online', handleOnline);
-    };
-  }, [wasOffline]);
-
-  if (isOnline && !showBackOnline) return null;
-
-  const isBackOnline = isOnline && showBackOnline;
+  if (!show) return null;
 
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        zIndex: 9999,
-        padding: '10px 16px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        gap: '8px',
-        fontSize: '0.85rem',
-        fontWeight: '600',
-        backgroundColor: isBackOnline ? C.success : C.primary,
-        color: '#fff',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-        transition: 'background-color 0.3s ease',
-      }}
-    >
+    <div style={{
+      position: 'fixed', top: '60px', left: '50%', transform: 'translateX(-50%)',
+      zIndex: 9998,
+      backgroundColor: isOnline ? '#f0fdf4' : '#fff1f2',
+      border: `1px solid ${isOnline ? '#86efac' : '#fda4af'}`,
+      color: isOnline ? '#15803d' : '#be123c',
+      padding: '10px 16px',
+      borderRadius: '999px',
+      fontSize: '0.82rem', fontWeight: '700',
+      display: 'flex', alignItems: 'center', gap: '7px',
+      boxShadow: '0 4px 16px rgba(0,0,0,0.1)',
+      animation: 'fadeInUp 0.2s ease',
+      whiteSpace: 'nowrap',
+    }}>
       <Icon
-        name={isBackOnline ? 'circle-check' : 'octagon-alert'}
-        size={16}
-        color="#fff"
+        name={isOnline ? 'wifi' : 'wifi-off'}
+        size={15}
+        color={isOnline ? '#16a34a' : '#dc2626'}
+        strokeWidth={2}
       />
-      {isBackOnline
-        ? 'Connessione ripristinata'
-        : 'Sei offline — stai usando i dati in cache'}
+      {isOnline ? 'Connessione ripristinata' : 'Sei offline — modalità locale attiva'}
     </div>
   );
 };

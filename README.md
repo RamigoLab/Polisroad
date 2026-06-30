@@ -5,68 +5,52 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 ## Stack Tecnico
 
 - **Frontend**: React 19 + Vite 5 (pinato a ^5.4.19 per compatibilità vite-plugin-pwa)
+- **Icone**: lucide-react v0.383 — set unificato via `Icon.jsx`, strokeWidth 1.75, colori da tema
 - **PWA**: vite-plugin-pwa con strategia `injectManifest` e custom `src/sw.js`
-- **Backend**: Supabase (Auth, Database PostgreSQL, Edge Functions, RLS)
+- **Backend**: Supabase (Auth PKCE, Database PostgreSQL, Edge Functions, RLS)
 - **Data Fetching**: TanStack Query v5 con persistenza IndexedDB
 - **Deployment**: Vercel + GitHub Desktop
-- **Analytics**: PostHog EU cloud (`https://eu.i.posthog.com`)
+- **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
 
 ## Novità 1.9.5
 
-- Fix: `useSyncQueue` non scrive più su `xp_history` (tabella rimossa con gamification)
-- Fix: popup Home si chiude cliccando il backdrop (click-outside)
-- Fix: label `NavCard` usa `C.text` per rispettare dark mode
-- Fix: rimosso state `reportOpen` inutilizzato in Profilo
-- Fix: rimosso `dataLoading` inutilizzato in App.jsx
-- Fix: `flowType: 'pkce'` al posto di `'implicit'` (più sicuro, standard moderno)
-- Fix: `storage.js` sostituisce `escape()`/`unescape()` deprecate con `TextEncoder`/`TextDecoder`
-- Fix: CORS `send-push` Edge Function ristretto alle origini autorizzate (come `delete-user`)
-- Fix: CSP Vercel aggiornata con `*.sentry.io`, `*.ingest.sentry.io` e `worker-src 'self'`
-- Fix: AdminDashboard ping Supabase gestisce eccezioni di rete (`.catch()`)
-- Aggiunto: migration `20260629_drop_gamification_tables.sql` per rimuovere `gamification` e `xp_history`
+**Redesign grafico**
+- Sistema di colori aggiornato via CSS custom properties (light/dark mode)
+- Header con gradient `primary → accent` su tutte le pagine
+- Card con `box-shadow` leggera e `border` sottile — aspetto moderno senza 3D
+- Palette icone coerente: ogni sezione ha bg+color dedicati definiti in `C.icon*`
 
-## Migrazioni da eseguire su Supabase (v1.9.5)
+**Profilo ridisegnato**
+- Struttura a gruppi iOS-style con label di sezione
+- Statistiche di utilizzo reali (preferiti, note, segnalazioni)
+- Blocco Help Desk con azioni dirette
+- Zona pericolosa separata con margine deliberato
 
-### ⚠️ IMPORTANTE — Eseguire in ordine
+**Bug fix**
+- `useSyncQueue` non scrive più su `xp_history` (rimossa con gamification)
+- Auth PKCE flow, CSP Sentry, CORS send-push, storage.js TextEncoder
+- Popup backdrop click-outside, NavCard dark mode, codice morto rimosso
 
-1. **`20260629_drop_gamification_tables.sql`** — Rimuove le tabelle `gamification` e `xp_history` ora inutilizzate.
-   - Sicura: usa `IF EXISTS` su tutto.
-   - Da eseguire via SQL Editor in Supabase Dashboard.
+## Migrazioni Supabase (v1.9.5)
 
-2. **`20260629_notify_admin_on_new_user.sql`** (da v1.9.4, se non già eseguita) — Trigger push all'admin su nuova registrazione.
+1. **`20260629_drop_gamification_tables.sql`** — rimuove `gamification` e `xp_history`
+2. **`20260629_notify_admin_on_new_user.sql`** (da v1.9.4) — trigger push admin
 
-   **Prerequisito: estensione `pg_net`**
-   > `pg_net` è disponibile **solo su piani Supabase Pro e superiori**. Su piano Free, la migration viene eseguita senza errori ma il trigger fallirà silenziosamente (il RAISE WARNING interno non blocca l'insert del profilo).
-   >
-   > Per abilitarla: Dashboard → Database → Extensions → pg_net → Enable.
+   ⚠️ `pg_net` richiede piano Supabase **Pro o superiore**. Su Free tier il trigger viene creato ma non può inviare richieste HTTP — fallirà silenziosamente senza bloccare l'insert del profilo.
 
-   Dopo aver eseguito la migration, configurare le variabili DB:
-   ```sql
-   ALTER DATABASE postgres SET app.supabase_url = 'https://<YOUR_PROJECT_REF>.supabase.co';
-   ALTER DATABASE postgres SET app.service_role_key = '<YOUR_SERVICE_ROLE_KEY>';
-   SELECT pg_reload_conf();
-   ```
-
-### Redeployare le Edge Functions
-
-Dopo il deploy dell'app, redeployare le Edge Functions aggiornate:
-- `delete-user` (aggiornata in v1.9.4 — check ruolo admin)
-- `send-push` (aggiornata in v1.9.5 — CORS ristretto)
+## Edge Functions da redeployare
 
 ```bash
-supabase functions deploy delete-user
-supabase functions deploy send-push
+supabase functions deploy delete-user   # check admin + self (v1.9.4)
+supabase functions deploy send-push     # CORS ristretto (v1.9.5)
 ```
 
-### Supabase Auth — migrazione a PKCE flow
+## Auth PKCE — configurazione Supabase
 
-In v1.9.5 il client Supabase usa `flowType: 'pkce'` invece di `'implicit'`.
-Verificare in Supabase Dashboard → Authentication → URL Configuration:
+In Dashboard → Authentication → URL Configuration verificare:
 - **Site URL**: `https://polisroad.vercel.app`
-- **Redirect URLs**: aggiungere `https://polisroad.vercel.app/**`
-
-Il PKCE flow è compatibile con lo stesso redirect URL già configurato.
+- **Redirect URLs**: `https://polisroad.vercel.app/**`
 
 ## Variabili d'Ambiente
 

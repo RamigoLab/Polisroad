@@ -1,77 +1,55 @@
-/**
- * EmptyState.jsx — Stato vuoto illustrato con icona, titolo, sottotitolo e CTA opzionale.
- * Sostituisce i semplici testi "Nessun risultato" in tutta l'app.
- */
 import React from 'react';
-import { Icon } from './Icon';
 import { C } from '../../styles/theme';
+import { Icon } from './Icon';
 
 export const EmptyState = ({
-  icon = 'search',
-  title,
-  subtitle,
-  action,       // { label: string, onClick: fn }
-  compact = false,
-}) => (
-  <div style={{
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    textAlign: 'center',
-    padding: compact ? '24px 16px' : '48px 24px',
-    gap: '12px',
-  }}>
+  icon = 'layers', title, subtitle, action, actionLabel, compact = false,
+}) => {
+  if (compact) {
+    return (
+      <div style={{
+        textAlign: 'center', padding: '24px 16px',
+        color: C.textLight, display: 'flex',
+        flexDirection: 'column', alignItems: 'center', gap: '8px',
+      }}>
+        <Icon name={icon} size={28} color={C.surfaceContainerHigh} strokeWidth={1.5} />
+        <div>
+          <p style={{ fontSize: '0.88rem', fontWeight: '600', color: C.textLight }}>{title}</p>
+          {subtitle && <p style={{ fontSize: '0.78rem', color: C.textLight, marginTop: '3px', opacity: 0.8 }}>{subtitle}</p>}
+        </div>
+      </div>
+    );
+  }
+
+  return (
     <div style={{
-      width: compact ? 52 : 72,
-      height: compact ? 52 : 72,
-      borderRadius: '50%',
-      backgroundColor: C.surfaceContainer,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      marginBottom: '4px',
+      textAlign: 'center', padding: '48px 24px',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '12px',
     }}>
-      <Icon name={icon} size={compact ? 26 : 36} color={C.textLight} />
+      <div style={{
+        width: '72px', height: '72px',
+        backgroundColor: C.surfaceContainer,
+        borderRadius: '20px',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        marginBottom: '4px',
+      }}>
+        <Icon name={icon} size={32} color={C.textLight} strokeWidth={1.5} style={{ opacity: 0.5 }} />
+      </div>
+      {title && <p style={{ fontSize: '1rem', fontWeight: '700', color: C.text }}>{title}</p>}
+      {subtitle && <p style={{ fontSize: '0.85rem', color: C.textLight, lineHeight: '1.5', maxWidth: '260px' }}>{subtitle}</p>}
+      {action && actionLabel && (
+        <button
+          onClick={action}
+          style={{
+            marginTop: '8px', padding: '10px 20px',
+            backgroundColor: C.accent, color: '#fff',
+            borderRadius: '999px', border: 'none',
+            fontWeight: '700', fontSize: '0.88rem', cursor: 'pointer',
+          }}
+        >
+          {actionLabel}
+        </button>
+      )}
     </div>
-    {title && (
-      <p style={{
-        fontWeight: '700',
-        fontSize: compact ? '0.95rem' : '1.05rem',
-        color: C.text,
-        margin: 0,
-      }}>
-        {title}
-      </p>
-    )}
-    {subtitle && (
-      <p style={{
-        fontSize: '0.85rem',
-        color: C.textLight,
-        margin: 0,
-        lineHeight: 1.5,
-        maxWidth: '280px',
-      }}>
-        {subtitle}
-      </p>
-    )}
-    {action && (
-      <button
-        onClick={action.onClick}
-        style={{
-          marginTop: '8px',
-          padding: '10px 20px',
-          borderRadius: '10px',
-          backgroundColor: C.accent,
-          color: C.white,
-          fontWeight: '600',
-          fontSize: '0.9rem',
-          border: 'none',
-          cursor: 'pointer',
-        }}
-      >
-        {action.label}
-      </button>
-    )}
-  </div>
-);
+  );
+};

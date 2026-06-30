@@ -1,136 +1,79 @@
-/**
- * SearchBar.jsx — Barra di ricerca con dropdown autocomplete.
- *
- * Props:
- *  - value, onChange     — controllato dall'esterno
- *  - placeholder
- *  - suggestions         — array di stringhe da mostrare nel dropdown
- *  - onSuggestionClick   — callback quando l'utente seleziona un suggerimento
- *  - id
- */
-import React, { useState, useRef, useEffect } from 'react';
-import { UIS } from '../../styles/ui';
+import React from 'react';
 import { C } from '../../styles/theme';
 import { Icon } from './Icon';
 
 export const SearchBar = ({
-  value,
-  onChange,
-  placeholder = 'Cerca...',
-  id = 'search-input',
-  suggestions = [],
-  onSuggestionClick,
+  value, onChange, placeholder = 'Cerca...',
+  suggestions = [], onSuggestionClick,
 }) => {
-  const [open, setOpen] = useState(false);
-  const wrapperRef = useRef(null);
-
-  const showDropdown = open && suggestions.length > 0;
-
-  // Chiudi dropdown cliccando fuori
-  useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
-        setOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  const handleSelect = (term) => {
-    onSuggestionClick?.(term);
-    setOpen(false);
-  };
+  const showSuggestions = suggestions.length > 0 && !value;
 
   return (
-    <div ref={wrapperRef} style={{ ...UIS.searchWrapper, position: 'relative' }} role="search">
-      <label
-        htmlFor={id}
-        style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0,0,0,0)' }}
-      >
-        {placeholder}
-      </label>
-      <span style={UIS.searchIcon} aria-hidden="true">
-        <Icon name="search" size={18} />
-      </span>
-      <input
-        id={id}
-        type="search"
-        value={value}
-        onChange={onChange}
-        onFocus={() => setOpen(true)}
-        placeholder={placeholder}
-        style={UIS.searchInput}
-        aria-label={placeholder}
-        aria-autocomplete="list"
-        aria-expanded={showDropdown}
-        autoComplete="off"
-      />
-      {value && (
-        <button
-          onClick={() => { onChange({ target: { value: '' } }); setOpen(false); }}
+    <div style={{ position: 'relative' }}>
+      <div style={{
+        display: 'flex', alignItems: 'center', gap: '10px',
+        backgroundColor: C.card,
+        border: `1.5px solid ${value ? C.accent : C.border}`,
+        borderRadius: '999px',
+        padding: '11px 16px',
+        boxShadow: value ? `0 0 0 3px ${C.accentLight}` : 'var(--shadow-sm)',
+        transition: 'all 0.15s ease',
+      }}>
+        <Icon name="search" size={17} color={value ? C.accent : C.textLight} strokeWidth={2} />
+        <input
+          type="text"
+          value={value}
+          onChange={onChange}
+          placeholder={placeholder}
           style={{
-            position: 'absolute',
-            right: '12px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            color: C.textLight,
-            padding: '4px',
-            display: 'flex',
-            alignItems: 'center',
+            flex: 1, border: 'none', outline: 'none',
+            fontSize: '0.95rem', backgroundColor: 'transparent',
+            color: C.text,
           }}
-          aria-label="Cancella ricerca"
-        >
-          <Icon name="close" size={16} />
-        </button>
-      )}
+        />
+        {value && (
+          <button
+            onClick={() => onChange({ target: { value: '' } })}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '20px', height: '20px', borderRadius: '50%',
+              backgroundColor: C.surfaceContainer,
+              border: 'none', cursor: 'pointer',
+              flexShrink: 0,
+            }}
+          >
+            <Icon name="x" size={12} color={C.textLight} strokeWidth={2.5} />
+          </button>
+        )}
+      </div>
 
-      {/* Dropdown suggerimenti */}
-      {showDropdown && (
-        <ul
-          role="listbox"
-          style={{
-            position: 'absolute',
-            top: 'calc(100% + 4px)',
-            left: 0,
-            right: 0,
-            backgroundColor: C.card,
-            border: `1px solid ${C.border}`,
-            borderRadius: '12px',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
-            zIndex: 1000,
-            listStyle: 'none',
-            margin: 0,
-            padding: '6px 0',
-            overflow: 'hidden',
-          }}
-        >
-          {suggestions.map((term, i) => (
-            <li
+      {showSuggestions && (
+        <div style={{
+          position: 'absolute', top: 'calc(100% + 6px)',
+          left: 0, right: 0, zIndex: 50,
+          backgroundColor: C.card,
+          border: `1px solid ${C.border}`,
+          borderRadius: '14px',
+          overflow: 'hidden',
+          boxShadow: 'var(--shadow-md)',
+        }}>
+          {suggestions.map((s, i) => (
+            <div
               key={i}
-              role="option"
-              onClick={() => handleSelect(term)}
+              onClick={() => onSuggestionClick?.(s)}
               style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '10px',
-                padding: '10px 14px',
+                display: 'flex', alignItems: 'center', gap: '10px',
+                padding: '11px 14px',
+                borderBottom: i < suggestions.length - 1 ? `0.5px solid ${C.border}` : 'none',
                 cursor: 'pointer',
-                fontSize: '0.9rem',
-                color: C.text,
-                borderBottom: i < suggestions.length - 1 ? `1px solid ${C.border}` : 'none',
+                fontSize: '0.88rem', color: C.text,
               }}
-              onMouseEnter={e => e.currentTarget.style.backgroundColor = C.surfaceContainer}
-              onMouseLeave={e => e.currentTarget.style.backgroundColor = 'transparent'}
             >
-              <Icon name="clock" size={14} color={C.textLight} />
-              <span>{term}</span>
-            </li>
+              <Icon name="clock" size={14} color={C.textLight} strokeWidth={1.75} />
+              {s}
+            </div>
           ))}
-        </ul>
+        </div>
       )}
     </div>
   );

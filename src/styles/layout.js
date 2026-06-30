@@ -1,31 +1,27 @@
-/**
- * layout.js – PolisRoad
- * Stili per i componenti di layout (PageWrapper, BottomNav, Splash, AdminLayout).
- * Importare con: import { LS } from '../styles/layout';
- */
 import { C } from './theme';
 
 export const LS = {
 
-  // ─────────────────────────────────────────────
-  // PAGE WRAPPER
-  // ─────────────────────────────────────────────
+  // ── PAGE WRAPPER ──────────────────────────────
   wrapper: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    padding: '16px 16px 80px 16px',
     overflowY: 'auto',
     position: 'relative',
+    animation: 'fadeInUp 0.2s ease',
   },
   pageContent: {
-    padding: '16px 16px 80px 16px',
+    padding: '16px 16px 90px 16px',
     display: 'flex',
     flexDirection: 'column',
     flex: 1,
+    gap: '0px',
   },
+
+  // ── APP HEADER ────────────────────────────────
   appHeader: {
-    backgroundColor: C.primary,
+    background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
     color: '#fff',
     padding: '20px 16px 28px 16px',
     borderBottomLeftRadius: '24px',
@@ -44,22 +40,27 @@ export const LS = {
     cursor: isClickable ? 'pointer' : 'default',
   }),
   appHeaderSubtitle: {
-    fontSize: '0.95rem',
-    color: C.accentLight,
-    marginBottom: '8px',
+    fontSize: '0.82rem',
+    color: 'rgba(255,255,255,0.65)',
+    marginBottom: '4px',
     fontWeight: '500',
+    letterSpacing: '0.02em',
   },
   appHeaderTitle: {
-    fontSize: '1.45rem',
-    marginBottom: '6px',
-    lineHeight: 1.3,
+    fontSize: '1.35rem',
+    marginBottom: '4px',
+    lineHeight: 1.25,
     fontWeight: '700',
     overflowWrap: 'anywhere',
+    color: '#fff',
   },
   appHeaderMeta: {
-    fontSize: '0.9rem',
-    opacity: 0.85,
+    fontSize: '0.82rem',
+    color: 'rgba(255,255,255,0.7)',
     fontWeight: '500',
+  },
+  appHeaderLeftAction: {
+    flexShrink: 0,
   },
   appHeaderLogoWrapper: {
     flexShrink: 0,
@@ -70,126 +71,83 @@ export const LS = {
     background: 'transparent',
   },
   appHeaderLogo: {
-    width: '56px',
-    height: '56px',
+    width: '48px',
+    height: '48px',
     borderRadius: '12px',
-    backgroundColor: C.card,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    border: '1.5px solid rgba(255,255,255,0.3)',
     padding: '2px',
-    boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
     display: 'block',
+    objectFit: 'contain',
   },
   appHeaderActions: {
-    marginTop: '16px',
-    display: 'flex',
-    gap: '12px',
-    width: '100%',
-  },
-  appHeaderLeftAction: {
-    flexShrink: 0,
-    paddingTop: '2px',
-  },
-  logoWrapper: {
-    position: 'absolute',
-    top: '16px',
-    right: '16px',
-    zIndex: 50,
-    cursor: 'pointer',
-  },
-  logoImg: {
-    width: '44px',
-    height: '44px',
-    borderRadius: '10px',
-    backgroundColor: 'rgba(255,255,255,0.8)',
-    backdropFilter: 'blur(4px)',
-    padding: '2px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-    border: 'solid 1px rgba(0,0,0,0.05)',
+    marginTop: '14px',
   },
 
-  // ─────────────────────────────────────────────
-  // BOTTOM NAV
-  // ─────────────────────────────────────────────
+  // ── BOTTOM NAV ────────────────────────────────
   navContainer: {
-    position: 'sticky',
-    bottom: 0,
-    zIndex: 100,
-    width: '100%',
     backgroundColor: C.card,
     borderTop: `1px solid ${C.border}`,
-    boxShadow: '0 -2px 10px rgba(0,0,0,0.05)',
   },
   navScroll: {
     display: 'flex',
-    alignItems: 'center',
     justifyContent: 'space-around',
-    padding: '8px 8px calc(env(safe-area-inset-bottom, 8px) + 8px) 8px',
-    gap: '4px',
+    padding: '6px 0 8px',
   },
   navTab: (isActive) => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
+    gap: '3px',
+    padding: '6px 14px',
     cursor: 'pointer',
-    padding: '2px',
-    color: isActive ? C.primary : C.textLight,
-    transition: 'color 0.2s ease',
+    borderRadius: '12px',
+    transition: 'all 0.15s ease',
+    minWidth: '56px',
+    backgroundColor: isActive ? C.accentLight : 'transparent',
   }),
   navTabIndicator: (isActive) => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'center',
-    padding: '6px 14px',
-    borderRadius: C.radiusPill,
-    backgroundColor: isActive ? C.surfaceContainerHigh : 'transparent',
-    marginBottom: '4px',
-    transition: 'background-color 0.2s ease',
   }),
   navTabLabel: (isActive) => ({
-    fontSize: '0.7rem',
+    fontSize: '0.65rem',
     fontWeight: isActive ? '700' : '500',
+    color: isActive ? C.accent : C.textLight,
+    letterSpacing: '0.01em',
   }),
 
-  // ─────────────────────────────────────────────
-  // SPLASH
-  // ─────────────────────────────────────────────
+  // ── SPLASH ────────────────────────────────────
   splashContainer: {
+    minHeight: '100vh',
+    background: 'linear-gradient(135deg, var(--color-primary) 0%, var(--color-accent) 100%)',
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'center',
     alignItems: 'center',
-    height: '100vh',
-    backgroundColor: C.primary,
-    color: '#fff',
-    animation: 'fadeIn 0.5s ease-in',
+    justifyContent: 'center',
+    position: 'relative',
   },
-  splashLogoWrapper: {
-    width: '120px',
-    height: '120px',
-    backgroundColor: C.card,
+  splashLogo: {
+    width: '100px',
+    height: '100px',
     borderRadius: '24px',
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: '24px',
-    boxShadow: '0 8px 24px rgba(0,0,0,0.2)',
-    animation: 'pulse 2s infinite',
-    overflow: 'hidden',
-  },
-  splashLogoImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    border: '2px solid rgba(255,255,255,0.3)',
+    padding: '8px',
+    marginBottom: '20px',
   },
   splashTitle: {
-    fontSize: '2.5rem',
-    marginBottom: '8px',
+    color: '#fff',
+    fontSize: '2.2rem',
     fontWeight: '800',
-    letterSpacing: '1px',
+    letterSpacing: '-0.5px',
   },
   splashSubtitle: {
-    color: C.accentLight,
-    fontSize: '1.1rem',
+    color: 'rgba(255,255,255,0.65)',
+    fontSize: '1rem',
     fontWeight: '500',
+    marginTop: '4px',
   },
   splashProgressWrapper: {
     position: 'absolute',
@@ -202,7 +160,7 @@ export const LS = {
   },
   splashProgressTrack: {
     width: '100%',
-    height: '4px',
+    height: '3px',
     backgroundColor: 'rgba(255,255,255,0.2)',
     borderRadius: '2px',
     overflow: 'hidden',
@@ -210,19 +168,17 @@ export const LS = {
   },
   splashProgressBar: {
     height: '100%',
-    backgroundColor: C.card,
+    backgroundColor: 'rgba(255,255,255,0.8)',
     animation: 'progress 3s ease-in-out forwards',
   },
   splashVersion: {
-    fontSize: '0.8rem',
-    color: 'rgba(255,255,255,0.6)',
+    fontSize: '0.75rem',
+    color: 'rgba(255,255,255,0.5)',
     letterSpacing: '1px',
-    fontWeight: 'bold',
+    fontWeight: '600',
   },
 
-  // ─────────────────────────────────────────────
-  // ADMIN LAYOUT
-  // ─────────────────────────────────────────────
+  // ── ADMIN LAYOUT ──────────────────────────────
   adminContainer: (textColor) => ({
     flex: 1,
     display: 'flex',
@@ -233,7 +189,7 @@ export const LS = {
   }),
   adminHeader: {
     padding: '16px',
-    borderBottom: '1px solid #444',
+    borderBottom: '1px solid rgba(255,255,255,0.12)',
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
@@ -246,13 +202,14 @@ export const LS = {
   adminHeaderTitle: {
     fontSize: '1.2rem',
     margin: 0,
+    fontWeight: '700',
   },
   adminCloseBtn: () => ({
     color: '#fff',
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: 'rgba(255,255,255,0.12)',
     padding: '6px 14px',
-    borderRadius: '8px',
-    border: '1.5px solid rgba(255,255,255,0.5)',
+    borderRadius: '10px',
+    border: '1px solid rgba(255,255,255,0.25)',
     fontWeight: '600',
     fontSize: '0.85rem',
     cursor: 'pointer',
@@ -261,18 +218,21 @@ export const LS = {
     display: 'flex',
     overflowX: 'auto',
     padding: '12px 16px',
-    borderBottom: '1px solid #444',
-    gap: '12px',
+    borderBottom: '1px solid rgba(255,255,255,0.1)',
+    gap: '8px',
     scrollbarWidth: 'none',
   },
   adminTab: (isActive, accent) => ({
-    padding: '8px 16px',
-    backgroundColor: isActive ? accent : 'transparent',
-    color: isActive ? '#fff' : '#aaa',
+    padding: '7px 14px',
+    backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : 'transparent',
+    color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',
     borderRadius: '20px',
-    border: `1px solid ${isActive ? accent : '#666'}`,
+    border: `1px solid ${isActive ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.15)'}`,
     textTransform: 'capitalize',
     whiteSpace: 'nowrap',
+    fontWeight: isActive ? '700' : '500',
+    fontSize: '0.85rem',
+    cursor: 'pointer',
   }),
   adminContent: {
     flex: 1,

@@ -1,51 +1,52 @@
 # Changelog PolisRoad
 
-## [1.9.5] — 29 Giugno 2026
-
-### Corretto
-- **`useSyncQueue`**: rimosso blocco `SAVE_CONTESTAZIONE` che tentava di scrivere su `xp_history` (tabella eliminata con la gamification in v1.9.4) — le contestazioni offline non crashavano silenziosamente al rientro online
-- **Home — popup modale**: aggiunto `onClick={handleDismissPopup}` al backdrop e `stopPropagation` sul contenuto — click-outside ora chiude il popup
-- **Home — NavCard**: label usa `C.text` invece di `'#333'` hardcoded — rispetta correttamente la dark mode
-- **Profilo**: rimosso state `reportOpen` dichiarato ma mai utilizzato nel render (codice morto residuo)
-- **App.jsx**: rimosso `dataLoading` estratto da `useData()` ma mai referenziato
-- **Auth — PKCE flow**: `flowType: 'pkce'` invece di `'implicit'`; il flow implicit espone i token nel hash fragment dell'URL, PKCE è lo standard OAuth2 moderno raccomandato da Supabase
-- **`storage.js`**: sostituite le funzioni deprecate `escape()`/`unescape()` con `TextEncoder`/`TextDecoder` per l'encoding base64 UTF-8
-- **`send-push` Edge Function**: CORS ristretto alle origini autorizzate (`polisroad.vercel.app`, `polisroad.it`) invece del wildcard `*`
-- **`vercel.json` CSP**: aggiunti `https://*.sentry.io` e `https://*.ingest.sentry.io` a `connect-src`; aggiunto `worker-src 'self'` per Service Worker
-- **AdminDashboard**: ping Supabase ora gestisce eccezioni di rete tramite `.catch()` separato
+## [1.9.5] — 30 Giugno 2026
 
 ### Aggiunto
-- **Migration `20260629_drop_gamification_tables.sql`**: rimuove le tabelle `gamification` e `xp_history` ormai inutilizzate (con `IF EXISTS` per sicurezza)
+- **Redesign grafico completo**: nuovo sistema di colori più saturo e vivace, header con sfumatura lineare `primary → accent`, card con ombra leggera e bordo sottile, radius consistenti via CSS custom properties
+- **Profilo ridisegnato** (struttura iOS-style a gruppi con label superiore):
+  - **Account**: Modifica profilo, Esporta dati GDPR
+  - **Preferenze**: Dark mode, Analytics (toggle visivo)
+  - **Notifiche e app**: Push, Installa app
+  - **Informazioni**: Novità, Info di sistema, Privacy, Termini
+  - **Pannello admin** (solo admin)
+  - **Supporto**: Segnala problema, Supporta PolisRoad
+  - **Help Desk**: link email admin + link News
+  - **Zona pericolosa**: separata con margine deliberato di 32px
+- **Statistiche utilizzo** nel Profilo: preferiti salvati, note, segnalazioni inviate (dati reali da Supabase)
+- **Profilo header**: iniziali utente, pills con stato approvazione ed email, design gradient
+- **Icone**: set completo e coerente — tutti i file usano `lucide-react` via `Icon.jsx`, stesso `strokeWidth: 1.75`, colori da `C.icon*` del tema
+- **Onboarding**: rimossa slide gamification → sostituita con slide "Funziona offline"; usa `Icon` al posto di emoji
+- **EmptyState**: icona con sfondo colorato al posto delle emoji
+- **Toast**: design pill con colori semantici (verde/rosso/giallo/blu), icone lucide-react
+- **OfflineBanner**: stile pill coerente, usa `wifi`/`wifi-off` da lucide-react
+- **SearchBar**: bordo accent con glow ring al focus, pulsante clear con icona `x`
+- **PendingApprovalScreen**: ridisegnata con gradient + glassmorphism leggero
+
+### Corretto (da audit)
+- `useSyncQueue`: rimosso blocco `SAVE_CONTESTAZIONE` che tentava di scrivere su `xp_history` (rimossa con v1.9.4)
+- Home popup: `onClick={handleDismissPopup}` sul backdrop + `stopPropagation` sul contenuto
+- NavCard label: usa `C.text` invece di `'#333'` hardcoded (dark mode)
+- App.jsx: rimosso `dataLoading` non utilizzato
+- Profilo: rimosso state `reportOpen` dichiarato ma mai usato
+- Auth PKCE flow: `flowType: 'pkce'` invece di `'implicit'` (token non più esposti nell'URL)
+- CSP Vercel: aggiunti `*.sentry.io`, `*.ingest.sentry.io`, `worker-src 'self'`
+- CORS `send-push`: ristretto alle origini autorizzate (come `delete-user`)
+- `storage.js`: sostituisce `escape()`/`unescape()` con `TextEncoder`/`TextDecoder`
+- AdminDashboard ping: `.catch()` separato per errori di rete
+- Migration `drop_gamification_tables.sql`: rimuove `gamification` e `xp_history`
 
 ## [1.9.4] — 29 Giugno 2026
-- Rimossa gamification (XP, badge, streak)
-- Fix critico: delete-user Edge Function consentiva solo auto-eliminazione (403 per admin)
-- Fix: race condition eliminazione account in Profilo
-- Notifica push admin su nuova registrazione (`pg_net` trigger)
-- SW bypass cache per chiamate Supabase
-- Profilo a sezioni collassabili
-- Home: footer unificato, NavCard con feedback touch
-- Ricerca: filtri per tipo
-- Calcolatore: persistenza sessionStorage
-- AdminUtenti: data registrazione, fix pendingCount
-- Dashboard: stato Supabase in tempo reale
+- Rimossa gamification, fix delete-user, race condition, notifiche admin, SW cache bypass
 
 ## [1.9.3] — 28 Giugno 2026
-- Fix crash Home (null guard featuredBadge)
-- Fix recupero password
+- Fix crash Home, fix recupero password
 
 ## [1.9.2] — 28 Giugno 2026
-- Fix blocco login utenti non-admin
-- Fix flash iOS schermata approvazione
-- Fix build Vite
+- Fix login utenti, flash iOS, build Vite
 
 ## [1.9.1] — 27 Giugno 2026
-- Fix RLS deadlock profiles
-- Fix push subscriptions RLS
+- Fix RLS deadlock, push subscriptions RLS
 
 ## [1.9.0] — 26 Giugno 2026
-- Wizard onboarding
-- AdminNotifiche broadcast push
-- AdminUtenti con delete
-- PWA install prompt
-- Ricerca globale
+- Onboarding, AdminNotifiche, AdminUtenti, PWA install, Ricerca globale
