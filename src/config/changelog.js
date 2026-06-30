@@ -33,7 +33,7 @@ const CHANGELOG_DATA = [
   {
     version: '1.9.5',
     date: '30 Giugno 2026',
-    isNew: true,
+    isNew: false,
     items: [
       'Redesign grafico completo — nuovo sistema di colori più vivace, header con sfumatura, card con ombra sottile',
       'Profilo completamente ridisegnato — struttura a gruppi iOS-style (Account, Preferenze, Notifiche, Info, Supporto)',
