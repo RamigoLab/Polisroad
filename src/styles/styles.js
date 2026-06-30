@@ -133,7 +133,6 @@ export const S = {
     display: 'flex',
     alignItems: 'center',
     gap: '6px',
-  }33`,
   },
   btnCancel: {
     color: C.textLight,
