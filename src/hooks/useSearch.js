@@ -46,6 +46,10 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
 
   const isSearching = debouncedSearch.length > 0 && debouncedSearch.length < minChars;
 
+  // true tra la digitazione e l'arrivo del valore "debounced" — usato per
+  // mostrare uno spinner nella SearchBar mentre l'utente sta ancora scrivendo.
+  const isPending = search.trim().length >= minChars && search !== debouncedSearch;
+
   const fuseProntuario = useMemo(
     () => new Fuse(prontuarioList, FUSE_PRONTUARIO_OPTIONS),
     [prontuarioList]
@@ -223,5 +227,6 @@ export const useSearch = (prontuarioList = [], normativaList = [], minChars = 3)
     risultatiNormativa,
     total,
     isSearching,
+    isPending,
   };
 };

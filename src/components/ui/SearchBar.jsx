@@ -5,6 +5,7 @@ import { Icon } from './Icon';
 export const SearchBar = ({
   value, onChange, placeholder = 'Cerca...',
   suggestions = [], onSuggestionClick,
+  loading = false,
 }) => {
   const showSuggestions = suggestions.length > 0 && !value;
 
@@ -19,7 +20,17 @@ export const SearchBar = ({
         boxShadow: value ? `0 0 0 3px ${C.accentLight}` : 'var(--shadow-sm)',
         transition: 'all 0.15s ease',
       }}>
-        <Icon name="search" size={17} color={value ? C.accent : C.textLight} strokeWidth={2} />
+        {loading ? (
+          <Icon
+            name="rotate-cw"
+            size={17}
+            color={C.accent}
+            strokeWidth={2}
+            style={{ animation: 'spin 0.8s linear infinite', flexShrink: 0 }}
+          />
+        ) : (
+          <Icon name="search" size={17} color={value ? C.accent : C.textLight} strokeWidth={2} />
+        )}
         <input
           type="text"
           value={value}

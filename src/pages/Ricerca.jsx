@@ -33,7 +33,7 @@ const FILTER_NORMATIVA  = 'normativa';
 export const Ricerca = ({ onNavigate }) => {
   const { list: prontuarioList } = useProntuario();
   const { list: normativaList } = useNormativa();
-  const { search, setSearch, risultatiProntuario, risultatiNormativa } = useSearch(prontuarioList, normativaList, 3);
+  const { search, setSearch, risultatiProntuario, risultatiNormativa, isPending } = useSearch(prontuarioList, normativaList, 3);
   const { history, addSearch, removeSearch, clearHistory } = useSearchHistory();
 
   const [expandedProntuario, setExpandedProntuario] = useState(null);
@@ -91,6 +91,9 @@ export const Ricerca = ({ onNavigate }) => {
     return (
       <div
         key={`pron_${group.articolo_numero}`}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
         style={{
           ...S.card,
           backgroundColor: isExact ? C.accentLight : C.card,
@@ -100,6 +103,12 @@ export const Ricerca = ({ onNavigate }) => {
           marginBottom: 0,
         }}
         onClick={() => setExpandedProntuario(isExpanded ? null : group.articolo_numero)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpandedProntuario(isExpanded ? null : group.articolo_numero);
+          }
+        }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -127,9 +136,18 @@ export const Ricerca = ({ onNavigate }) => {
             {group.voci.map(item => (
               <div
                 key={item.id}
+                role="button"
+                tabIndex={0}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleProntuarioItemClick(item);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleProntuarioItemClick(item);
+                  }
                 }}
                 style={{ ...PS.ricercaResultItem, margin: 0 }}
               >
@@ -155,6 +173,9 @@ export const Ricerca = ({ onNavigate }) => {
     return (
       <div
         key={`norm_${group.articolo_num}`}
+        role="button"
+        tabIndex={0}
+        aria-expanded={isExpanded}
         style={{
           ...S.card,
           backgroundColor: isExact ? `${C.success}18` : C.card,
@@ -164,6 +185,12 @@ export const Ricerca = ({ onNavigate }) => {
           marginBottom: 0,
         }}
         onClick={() => setExpandedNormativa(isExpanded ? null : group.articolo_num)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setExpandedNormativa(isExpanded ? null : group.articolo_num);
+          }
+        }}
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -191,9 +218,18 @@ export const Ricerca = ({ onNavigate }) => {
             {group.commi.map(item => (
               <div
                 key={item.id}
+                role="button"
+                tabIndex={0}
                 onClick={(e) => {
                   e.stopPropagation();
                   handleNormativaItemClick(item);
+                }}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleNormativaItemClick(item);
+                  }
                 }}
                 style={{ ...PS.ricercaResultItem, margin: 0 }}
               >
@@ -233,6 +269,7 @@ export const Ricerca = ({ onNavigate }) => {
           placeholder="Cerca in tutto PolisRoad..."
           suggestions={autoSuggestions}
           onSuggestionClick={(term) => setSearch(term)}
+          loading={isPending}
         />
         {search.length > 0 && search.length <= 2 && (
           <p style={{ fontSize: '0.8rem', color: C.textLight, textAlign: 'center', marginTop: '8px' }}>
@@ -255,7 +292,7 @@ export const Ricerca = ({ onNavigate }) => {
               style={{
                 padding: '6px 14px', borderRadius: '20px',
                 fontSize: '0.8rem', fontWeight: '600',
-                border: 'none', cursor: 'pointer',
+                cursor: 'pointer',
                 backgroundColor: filter === f.key ? C.primary : C.card,
                 color: filter === f.key ? '#fff' : C.textLight,
                 border: `1px solid ${filter === f.key ? C.primary : C.border}`,

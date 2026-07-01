@@ -11,9 +11,20 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '1.9.7',
+    date: '1 Luglio 2026',
+    isNew: true,
+    items: [
+      'Ricerca: aggiunto indicatore "ricerca in corso" (Ricerca Globale, Prontuario, Normativa)',
+      'Accessibilità: risultati espandibili in Ricerca Globale ora navigabili da tastiera',
+      'Pulizia: rimosso codice della gamification non più in uso (componenti, hook, servizio)',
+      'Fix: rimossa una regola di stile duplicata nei filtri della Ricerca Globale',
+    ],
+  },
+  {
     version: '1.9.6',
     date: '30 Giugno 2026',
-    isNew: true,
+    isNew: false,
     items: [
       'Fix: AdminUtenti carica correttamente la lista utenti (errore 400 su colonna mancante)',
       'Fix: rimossa colonna created_at dalla query profiles (non presente nel DB)',

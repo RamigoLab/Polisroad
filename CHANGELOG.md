@@ -1,5 +1,21 @@
 # Changelog PolisRoad
 
+## [1.9.7] — 1 Luglio 2026
+
+### Aggiunto
+- Indicatore "ricerca in corso" nella SearchBar (spinner tra la digitazione e la comparsa dei risultati), applicato a Ricerca Globale, Prontuario e Normativa
+- `useSearch`: nuovo flag `isPending` per distinguere lo stato "sotto soglia minima" da "in attesa del debounce"
+
+### Corretto
+- Ricerca Globale: i gruppi di risultati espandibili (Prontuario/Normativa) e le relative voci sono ora navigabili e attivabili da tastiera (`role="button"`, `tabIndex`, `onKeyDown` su Invio/Spazio), coerente con il comportamento già presente in Prontuario.jsx
+- Ricerca Globale: rimossa una dichiarazione `border` duplicata nei pulsanti filtro (la prima veniva silenziosamente sovrascritta)
+
+### Rimosso
+- Codice della gamification non più utilizzato: componenti (`BadgeShowcase`, `LevelProgress`, `StreakCounter`), hook (`useGamification`, `useInitializeGamification`), `GamificationContext` e `gamificationService` — nessun riferimento residuo nell'app (le tabelle DB erano già state rimosse in 1.9.4/dropgamification)
+
+### Note
+- Primo intervento a valle dell'audit di usabilità completo (vedi documento allegato). La revisione della logica di ricerca (unificazione motore + sinonimi) è pianificata per una release successiva.
+
 ## [1.9.6] — 30 Giugno 2026
 
 ### Corretto

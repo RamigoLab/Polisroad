@@ -434,7 +434,12 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
       enablePullToRefresh
     >
       <div style={{ marginBottom: '16px' }}>
-        <SearchBar value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Cerca n° articolo o parola..." />
+        <SearchBar
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Cerca n° articolo o parola..."
+          loading={search.trim().length > 0 && search !== debouncedSearch}
+        />
       </div>
 
       {viewContent}

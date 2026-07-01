@@ -1,4 +1,4 @@
-# PolisRoad v1.9.6
+# PolisRoad v1.9.7
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -13,6 +13,14 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
 
+## Novità 1.9.7
+
+- Primo giro di interventi a valle dell'audit di usabilità (vedi `PolisRoad-Audit-Usabilita.md`)
+- Indicatore "ricerca in corso" nella SearchBar (Ricerca Globale, Prontuario, Normativa)
+- Ricerca Globale: risultati espandibili navigabili da tastiera
+- Rimosso codice gamification non più utilizzato (nessuna dipendenza attiva)
+- La revisione della logica di ricerca (motore unificato + sinonimi) è rimandata a una release successiva
+
 ## Novità 1.9.6
 
 - Fix errore 400 in AdminUtenti: colonna `created_at` non presente in `profiles`
@@ -22,6 +30,8 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - Audit RLS completo su tutte le tabelle Supabase
 
 ## Azioni richieste su Supabase dopo il deploy
+
+Nessuna azione richiesta per la 1.9.7 (nessuna modifica al database).
 
 ### 1. Aggiungi colonna created_at a profiles
 
