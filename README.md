@@ -1,4 +1,4 @@
-# PolisRoad v1.9.7
+# PolisRoad v1.9.8
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -13,13 +13,19 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
 
+## Novità 1.9.8
+
+- Ricerca unificata: Ricerca Globale, Prontuario e Normativa usano lo stesso motore (`src/utils/searchEngine.js`), stessa soglia (3 caratteri), fuzzy matching ovunque
+- Ricerca con sinonimi: frasi colloquiali (es. "senza assicurazione") suggeriscono subito la violazione giusta (es. Art. 193 CDS) con badge "risultato suggerito"
+- Nuova sezione Admin > Sinonimi per gestire i sinonimi senza deploy
+- Seed iniziale di 477 sinonimi su 172 violazioni del Prontuario
+
 ## Novità 1.9.7
 
 - Primo giro di interventi a valle dell'audit di usabilità (vedi `PolisRoad-Audit-Usabilita.md`)
 - Indicatore "ricerca in corso" nella SearchBar (Ricerca Globale, Prontuario, Normativa)
 - Ricerca Globale: risultati espandibili navigabili da tastiera
 - Rimosso codice gamification non più utilizzato (nessuna dipendenza attiva)
-- La revisione della logica di ricerca (motore unificato + sinonimi) è rimandata a una release successiva
 
 ## Novità 1.9.6
 
@@ -31,7 +37,9 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 
 ## Azioni richieste su Supabase dopo il deploy
 
-Nessuna azione richiesta per la 1.9.7 (nessuna modifica al database).
+**1.9.8 — azione richiesta:** eseguire la migration `supabase/migrations/20260702_create_search_synonyms.sql`
+sull'SQL editor di Supabase (o via CLI). Crea la tabella `search_synonyms`, le relative policy RLS,
+e popola 477 sinonimi iniziali. Nessun'altra azione necessaria.
 
 ### 1. Aggiungi colonna created_at a profiles
 

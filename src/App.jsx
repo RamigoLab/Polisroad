@@ -40,6 +40,7 @@ const AdminDashboard = lazy(() => import('./pages/admin/AdminDashboard').then(m 
 const AdminNews = lazy(() => import('./pages/admin/AdminNews').then(m => ({ default: m.AdminNews })));
 const AdminProntuario = lazy(() => import('./pages/admin/AdminProntuario').then(m => ({ default: m.AdminProntuario })));
 const AdminNormativa = lazy(() => import('./pages/admin/AdminNormativa').then(m => ({ default: m.AdminNormativa })));
+const AdminSinonimi = lazy(() => import('./pages/admin/AdminSinonimi').then(m => ({ default: m.AdminSinonimi })));
 const AdminSegnalazioni = lazy(() => import('./pages/admin/AdminSegnalazioni').then(m => ({ default: m.AdminSegnalazioni })));
 const AdminUtenti = lazy(() => import('./pages/admin/AdminUtenti').then(m => ({ default: m.AdminUtenti })));
 const AdminNotifiche = lazy(() => import('./pages/admin/AdminNotifiche').then(m => ({ default: m.AdminNotifiche })));
@@ -208,6 +209,11 @@ function AppInner() {
       case 'admin_normativa': return (
         <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
           <AdminLayout currentTab="normativa" {...props}><AdminNormativa /></AdminLayout>
+        </ProtectedRoute>
+      );
+      case 'admin_sinonimi': return (
+        <ProtectedRoute requiredRole="admin" onNavigate={navigate}>
+          <AdminLayout currentTab="sinonimi" {...props}><AdminSinonimi /></AdminLayout>
         </ProtectedRoute>
       );
       case 'admin_notifiche': return (

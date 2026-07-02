@@ -10,6 +10,7 @@ import { isSupabaseConfigured } from '../config/supabase';
 import { getProntuario } from '../services/prontuarioService';
 import { getNormativa } from '../services/normativaService';
 import { getNews } from '../services/newsService';
+import { getSearchSynonyms } from '../services/synonymsService';
 import { logger } from '../utils/logger';
 
 const DataContext = createContext();
@@ -19,6 +20,7 @@ export const QUERY_KEYS = {
   prontuario: ['prontuario'],
   normativa: ['normativa'],
   news: ['news'],
+  searchSynonyms: ['searchSynonyms'],
 };
 
 export const DataProvider = ({ children }) => {
@@ -63,6 +65,18 @@ export const DataProvider = ({ children }) => {
     retry: 2,
   });
 
+  // ─── SINONIMI DI RICERCA ─────────────────────────────────────────────────
+  const {
+    data: searchSynonyms = [],
+    isLoading: synonymsLoading,
+  } = useQuery({
+    queryKey: QUERY_KEYS.searchSynonyms,
+    queryFn: getSearchSynonyms,
+    staleTime: 1000 * 60 * 30,   // 30 min: cambiano raramente
+    gcTime: 1000 * 60 * 60 * 24, // 24 ore in cache, disponibili offline
+    retry: 2,
+  });
+
   const loading = prontuarioLoading || normativaLoading || newsLoading;
 
   // Genera un messaggio di errore user-friendly dal primo errore disponibile
@@ -86,12 +100,15 @@ export const DataProvider = ({ children }) => {
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.prontuario });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.normativa });
     queryClient.invalidateQueries({ queryKey: QUERY_KEYS.news });
+    queryClient.invalidateQueries({ queryKey: QUERY_KEYS.searchSynonyms });
   };
 
   const value = {
     prontuario,
     normativa,
     news,
+    searchSynonyms,
+    synonymsLoading,
     loading,
     error,
     refresh,

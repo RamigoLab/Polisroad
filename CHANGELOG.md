@@ -1,5 +1,24 @@
 # Changelog PolisRoad
 
+## [1.9.8] — 2 Luglio 2026
+
+### Aggiunto
+- **Motore di ricerca unificato** (`src/utils/searchEngine.js`): Ricerca Globale, Prontuario e Normativa usano ora la stessa logica — stessa soglia minima (3 caratteri), stesso ordine (esatto → sinonimi → testo → fuzzy), fuzzy matching (Fuse.js) esteso anche a Prontuario e Normativa (prima solo nella Ricerca Globale)
+- **Ricerca con sinonimi ("risultato suggerito")**: nuova tabella Supabase `search_synonyms` che mappa frasi colloquiali usate sul campo (es. "senza assicurazione", "manca revisione") alla violazione corrispondente del Prontuario, mostrata in cima ai risultati con badge dedicato
+- **Nuova sezione Admin > Sinonimi** (`AdminSinonimi.jsx`): CRUD completo per aggiungere, correggere, disattivare i sinonimi senza deploy
+- `synonymsService.js` + `useSearchSynonyms.js`: integrazione nel `DataContext` con cache React Query (offline-friendly, come prontuario/normativa)
+- Normalizzazione accenti/diacritici nella ricerca testuale (es. "perché" e "perche" ora equivalenti)
+- Seed iniziale: 477 sinonimi generati per 172 violazioni (54 curate a mano sulle violazioni più frequenti nei controlli stradali + 118 generate da regole automatiche sulle forme negative del testo — es. "sprovvisto di X" → "senza X"). Copertura parziale e volutamente conservativa: meglio niente suggerimento che uno fuorviante. Ampliabile nel tempo dalla pagina Admin > Sinonimi
+
+### Corretto
+- Prontuario e Normativa: prima cercavano con soglie diverse (2 e 0 caratteri) e senza fuzzy matching; ora identiche alla Ricerca Globale
+- `target_ref` dei sinonimi punta a `prontuario.codice_caso` (non `codice_violazione`, vuoto nel 52% delle righe della tabella prontuario)
+
+### Note tecniche
+- Migration: `supabase/migrations/20260702_create_search_synonyms.sql` (tabella + RLS + seed) — **da eseguire manualmente su Supabase dopo il deploy**
+- RLS `search_synonyms`: lettura aperta (authenticated + anon), scrittura riservata al ruolo admin — stesso pattern di `prontuario`
+- Schema pronto anche per sinonimi su `normativa` (`target_type = 'normativa'`), nessun dato ancora seedato
+
 ## [1.9.7] — 1 Luglio 2026
 
 ### Aggiunto

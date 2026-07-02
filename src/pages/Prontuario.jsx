@@ -3,6 +3,8 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { SkeletonList } from '../components/ui/Skeleton';
 import { EmptyState } from '../components/ui/EmptyState';
 import { SearchBar } from '../components/ui/SearchBar';
+import { Badge } from '../components/ui/Badge';
+import { Icon } from '../components/ui/Icon';
 import { ProntuarioItem } from '../components/ProntuarioItem';
 import { ProntuarioDetail } from '../components/ProntuarioDetail';
 import { C } from '../styles/theme';
@@ -12,30 +14,10 @@ import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
 import { useToast } from '../components/ui/ToastManager';
 import { useDebounce } from '../hooks/useDebounce';
-import { sortItems, groupByArticolo } from '../utils/prontuarioUtils';
+import { useData } from '../context/DataContext';
+import { groupByArticolo } from '../utils/prontuarioUtils';
+import { createProntuarioSearchIndex, MIN_SEARCH_CHARS } from '../utils/searchEngine';
 import posthog from 'posthog-js';
-
-// Ricerca con priorità: esatta sul numero articolo > rif_normativo > testo libero
-const smartSearch = (list, raw) => {
-  const s = raw.trim().toLowerCase();
-  if (s.length < 2) return { exact: [], partial: [], text: [] };
-  const isNumeric = /^\d+$/.test(s);
-  const exact = [], partial = [], text = [];
-  list.forEach(item => {
-    const artNum = (item.articolo_numero || '').toLowerCase();
-    const rifNorm = (item.rif_normativo || '').toLowerCase();
-    const titolo = (item.titolo || '').toLowerCase();
-    const codice = (item.codice_violazione || '').toLowerCase();
-    if (isNumeric) {
-      if (artNum === s) exact.push(item);
-      else if (rifNorm.startsWith(`art. ${s}`) || rifNorm.startsWith(`art.${s}`)) partial.push(item);
-      else if (titolo.includes(s) || rifNorm.includes(s) || codice.includes(s)) text.push(item);
-    } else {
-      if (titolo.includes(s) || rifNorm.includes(s) || codice.includes(s)) text.push(item);
-    }
-  });
-  return { exact, partial, text };
-};
 
 const backBtnStyle = {
   fontSize: '0.85rem', padding: '6px 12px', color: '#fff',
@@ -55,6 +37,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   const { preferiti, toggle } = usePreferiti();
   const { note, save } = useNote();
   const { showToast } = useToast();
+  const { searchSynonyms = [] } = useData();
 
   const [search, setSearch] = useState('');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -76,11 +59,15 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
 
   const groups = useMemo(() => groupByArticolo(list), [list]);
 
+  const searchIndex = useMemo(
+    () => createProntuarioSearchIndex(list, searchSynonyms),
+    [list, searchSynonyms]
+  );
+
   const searchResults = useMemo(() => {
-    if (debouncedSearch.trim().length < 2) return null;
-    const { exact, partial, text } = smartSearch(list, debouncedSearch);
-    return { exactGroups: groupByArticolo(exact), partial: sortItems(partial), text: sortItems(text) };
-  }, [list, debouncedSearch]);
+    if (debouncedSearch.trim().length < MIN_SEARCH_CHARS) return null;
+    return searchIndex.search(debouncedSearch, MIN_SEARCH_CHARS);
+  }, [searchIndex, debouncedSearch]);
 
   const handleSelectItem = async (item) => {
     setSelectedItem(item);
@@ -175,21 +162,30 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   }
 
   // ── LISTA PRINCIPALE ──────────────────────────────────────────────────────
-  const renderGroupRow = (group) => (
+  const renderGroupRow = (group, isSuggested = false) => (
     <div
       key={group.articolo_numero}
       onClick={() => setSelectedGroup(group)}
-      style={{ ...S.cardClickable, display: 'flex', alignItems: 'center', gap: '12px' }}
+      style={{
+        ...S.cardClickable,
+        display: 'flex', alignItems: 'center', gap: '12px',
+        ...(isSuggested ? { backgroundColor: `${C.warning}18`, borderLeft: `4px solid ${C.warning}` } : {}),
+      }}
       role="button"
       aria-label={`${group.label} - ${group.titolo || ''} - ${group.count} voci`}
       tabIndex={0}
       onKeyDown={(e) => e.key === 'Enter' && setSelectedGroup(group)}
     >
-      <div style={{ minWidth: '56px', height: '56px', borderRadius: '12px', backgroundColor: C.accentLight, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: '0.6rem', color: C.accent, fontWeight: '700', textTransform: 'uppercase' }}>Art.</span>
-        <span style={{ fontSize: '1rem', color: C.accent, fontWeight: '800', lineHeight: 1 }}>{group.articolo_numero}</span>
+      <div style={{ minWidth: '56px', height: '56px', borderRadius: '12px', backgroundColor: isSuggested ? `${C.warning}30` : C.accentLight, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+        <span style={{ fontSize: '0.6rem', color: isSuggested ? C.warning : C.accent, fontWeight: '700', textTransform: 'uppercase' }}>Art.</span>
+        <span style={{ fontSize: '1rem', color: isSuggested ? C.warning : C.accent, fontWeight: '800', lineHeight: 1 }}>{group.articolo_numero}</span>
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
+        {isSuggested && (
+          <Badge type="warning" style={{ fontSize: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+            <Icon name="zap" size={10} strokeWidth={2.5} /> Risultato suggerito
+          </Badge>
+        )}
         <h3 style={{ fontSize: '0.95rem', color: C.text, lineHeight: 1.3, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {group.titolo || `Articolo ${group.articolo_numero}`}
         </h3>
@@ -203,27 +199,27 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   if (loading) {
     content = <SkeletonList count={5} />;
   } else if (searchResults) {
-    const { exactGroups, partial, text } = searchResults;
-    const hasResults = exactGroups.length > 0 || partial.length > 0 || text.length > 0;
+    const { exact, suggested, other } = searchResults;
+    const hasResults = exact.length > 0 || suggested.length > 0 || other.length > 0;
     if (!hasResults) {
       content = <EmptyState compact icon="clipboard-list" title="Nessun risultato" subtitle="Prova con un termine diverso o il numero dell'articolo." />;
     } else {
       content = (
         <div style={S.list}>
-          {exactGroups.length > 0 && (
-            <><SectionHeader label={`Articolo ${debouncedSearch.trim()} (corrispondenza esatta)`} />{exactGroups.map(renderGroupRow)}</>
+          {suggested.length > 0 && (
+            <><SectionHeader label="Risultato suggerito" />{suggested.map(g => renderGroupRow(g, true))}</>
           )}
-          {partial.length > 0 && (
-            <><SectionHeader label="Voci correlate" />{partial.map(item => <ProntuarioItem key={item.id} item={item} isFavorite={preferiti.includes(item.id)} onClick={() => handleSelectItem(item)} />)}</>
+          {exact.length > 0 && (
+            <><SectionHeader label={`Articolo ${debouncedSearch.trim()} (corrispondenza esatta)`} />{exact.map(g => renderGroupRow(g))}</>
           )}
-          {text.length > 0 && (
-            <><SectionHeader label="Altri risultati" />{text.map(item => <ProntuarioItem key={item.id} item={item} isFavorite={preferiti.includes(item.id)} onClick={() => handleSelectItem(item)} />)}</>
+          {other.length > 0 && (
+            <><SectionHeader label={(suggested.length > 0 || exact.length > 0) ? 'Altri risultati' : 'Risultati'} />{other.map(g => renderGroupRow(g))}</>
           )}
         </div>
       );
     }
   } else {
-    content = <div style={S.list}>{groups.map(renderGroupRow)}</div>;
+    content = <div style={S.list}>{groups.map(g => renderGroupRow(g))}</div>;
   }
 
   return (
@@ -233,7 +229,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Cerca articolo, titolo o codice..."
-          loading={search.trim().length >= 2 && search !== debouncedSearch}
+          loading={search.trim().length >= MIN_SEARCH_CHARS && search !== debouncedSearch}
         />
       </div>
       {content}

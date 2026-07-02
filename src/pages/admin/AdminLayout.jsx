@@ -11,6 +11,7 @@ const ADMIN_TABS = [
   { id: 'news', label: 'News', page: 'admin_news' },
   { id: 'prontuario', label: 'Prontuario', page: 'admin_prontuario' },
   { id: 'normativa', label: 'Normativa', page: 'admin_normativa' },
+  { id: 'sinonimi', label: 'Sinonimi', page: 'admin_sinonimi', icon: 'zap' },
 ];
 
 export const AdminLayout = ({ children, currentTab, onNavigate }) => {

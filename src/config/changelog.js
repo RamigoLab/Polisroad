@@ -11,9 +11,21 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '1.9.8',
+    date: '2 Luglio 2026',
+    isNew: true,
+    items: [
+      'Ricerca unificata: Ricerca Globale, Prontuario e Normativa usano ora lo stesso motore (stessa soglia di 3 caratteri, stesso algoritmo, ricerca fuzzy anche in Prontuario e Normativa)',
+      'Nuovo: "risultato suggerito" — la ricerca riconosce frasi colloquiali (es. "senza assicurazione") e propone subito la violazione giusta (es. Art. 193 CDS), grazie a una tabella di sinonimi',
+      'Nuova sezione Admin > Sinonimi per aggiungere, correggere o disattivare i sinonimi senza deploy',
+      'Ricerca: normalizzazione degli accenti, i risultati non dipendono più da come si digitano',
+      'Popolati 477 sinonimi per le violazioni più comuni del Prontuario',
+    ],
+  },
+  {
     version: '1.9.7',
     date: '1 Luglio 2026',
-    isNew: true,
+    isNew: false,
     items: [
       'Ricerca: aggiunto indicatore "ricerca in corso" (Ricerca Globale, Prontuario, Normativa)',
       'Accessibilità: risultati espandibili in Ricerca Globale ora navigabili da tastiera',

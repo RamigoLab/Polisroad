@@ -88,16 +88,18 @@ export const Ricerca = ({ onNavigate }) => {
 
   const renderProntuarioGroup = (group, isExact = false) => {
     const isExpanded = expandedProntuario === group.articolo_numero;
+    const isSuggested = !!group.isSuggested;
+    const highlightColor = isSuggested ? C.warning : (isExact ? C.accent : C.border);
     return (
       <div
-        key={`pron_${group.articolo_numero}`}
+        key={`pron_${group.articolo_numero}_${isSuggested ? 'sug' : 'std'}`}
         role="button"
         tabIndex={0}
         aria-expanded={isExpanded}
         style={{
           ...S.card,
-          backgroundColor: isExact ? C.accentLight : C.card,
-          borderLeft: `4px solid ${isExact ? C.accent : C.border}`,
+          backgroundColor: isSuggested ? `${C.warning}18` : (isExact ? C.accentLight : C.card),
+          borderLeft: `4px solid ${highlightColor}`,
           padding: '12px 16px',
           cursor: 'pointer',
           marginBottom: 0,
@@ -112,7 +114,14 @@ export const Ricerca = ({ onNavigate }) => {
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ fontWeight: '800', color: isExact ? C.accent : C.primary, fontSize: '1rem' }}>
+            {isSuggested && (
+              <div style={{ marginBottom: '4px' }}>
+                <Badge type="warning" style={{ fontSize: '0.62rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Icon name="zap" size={11} strokeWidth={2.5} /> Risultato suggerito
+                </Badge>
+              </div>
+            )}
+            <span style={{ fontWeight: '800', color: isSuggested ? C.warning : (isExact ? C.accent : C.primary), fontSize: '1rem' }}>
               {group.label}
             </span>
             {group.titolo ? (
@@ -123,7 +132,7 @@ export const Ricerca = ({ onNavigate }) => {
               {isExact && <span style={{ marginLeft: '6px', color: C.accent, fontWeight: '700' }}>— corrispondenza esatta</span>}
             </div>
           </div>
-          <span style={{ color: isExact ? C.accent : C.textLight, marginLeft: '8px' }}>
+          <span style={{ color: isSuggested ? C.warning : (isExact ? C.accent : C.textLight), marginLeft: '8px' }}>
             {isExpanded ? '▲' : '▼'}
           </span>
         </div>
@@ -170,16 +179,18 @@ export const Ricerca = ({ onNavigate }) => {
 
   const renderNormativaGroup = (group, isExact = false) => {
     const isExpanded = expandedNormativa === group.articolo_num;
+    const isSuggested = !!group.isSuggested;
+    const highlightColor = isSuggested ? C.warning : (isExact ? C.success : C.border);
     return (
       <div
-        key={`norm_${group.articolo_num}`}
+        key={`norm_${group.articolo_num}_${isSuggested ? 'sug' : 'std'}`}
         role="button"
         tabIndex={0}
         aria-expanded={isExpanded}
         style={{
           ...S.card,
-          backgroundColor: isExact ? `${C.success}18` : C.card,
-          borderLeft: `4px solid ${isExact ? C.success : C.border}`,
+          backgroundColor: isSuggested ? `${C.warning}18` : (isExact ? `${C.success}18` : C.card),
+          borderLeft: `4px solid ${highlightColor}`,
           padding: '12px 16px',
           cursor: 'pointer',
           marginBottom: 0,
@@ -194,7 +205,14 @@ export const Ricerca = ({ onNavigate }) => {
       >
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <span style={{ fontWeight: '800', color: isExact ? C.success : C.primary, fontSize: '1rem' }}>
+            {isSuggested && (
+              <div style={{ marginBottom: '4px' }}>
+                <Badge type="warning" style={{ fontSize: '0.62rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                  <Icon name="zap" size={11} strokeWidth={2.5} /> Risultato suggerito
+                </Badge>
+              </div>
+            )}
+            <span style={{ fontWeight: '800', color: isSuggested ? C.warning : (isExact ? C.success : C.primary), fontSize: '1rem' }}>
               {group.articolo || `Art. ${group.articolo_num}`}
             </span>
             {group.titolo_articolo ? (
@@ -205,7 +223,7 @@ export const Ricerca = ({ onNavigate }) => {
               {isExact && <span style={{ marginLeft: '6px', color: C.success, fontWeight: '700' }}>— corrispondenza esatta</span>}
             </div>
           </div>
-          <span style={{ color: isExact ? C.success : C.textLight, marginLeft: '8px' }}>
+          <span style={{ color: isSuggested ? C.warning : (isExact ? C.success : C.textLight), marginLeft: '8px' }}>
             {isExpanded ? '▲' : '▼'}
           </span>
         </div>
@@ -255,8 +273,8 @@ export const Ricerca = ({ onNavigate }) => {
     );
   };
 
-  const pronTot = risultatiProntuario.exact.length + risultatiProntuario.other.length;
-  const normTot = risultatiNormativa.exact.length + risultatiNormativa.other.length;
+  const pronTot = risultatiProntuario.suggested.length + risultatiProntuario.exact.length + risultatiProntuario.other.length;
+  const normTot = risultatiNormativa.suggested.length + risultatiNormativa.exact.length + risultatiNormativa.other.length;
   const hasPron = filter === FILTER_ALL || filter === FILTER_PRONTUARIO;
   const hasNorm = filter === FILTER_ALL || filter === FILTER_NORMATIVA;
 
@@ -367,6 +385,7 @@ export const Ricerca = ({ onNavigate }) => {
                 <EmptyState compact icon="clipboard-list" title="Nessun risultato nel Prontuario" subtitle="Prova con un termine diverso o il numero dell'articolo." />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {risultatiProntuario.suggested.map(g => renderProntuarioGroup(g, false))}
                   {risultatiProntuario.exact.map(g => renderProntuarioGroup(g, true))}
                   {risultatiProntuario.other.length > 0 && (
                     <>
@@ -398,6 +417,7 @@ export const Ricerca = ({ onNavigate }) => {
                 <EmptyState compact icon="book-open" title="Nessun risultato nella Normativa" subtitle="Prova con un termine diverso o il numero dell'articolo." />
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  {risultatiNormativa.suggested.map(g => renderNormativaGroup(g, false))}
                   {risultatiNormativa.exact.map(g => renderNormativaGroup(g, true))}
                   {risultatiNormativa.other.length > 0 && (
                     <>

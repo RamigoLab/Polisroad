@@ -11,9 +11,12 @@ import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useNormativa } from '../hooks/useNormativa';
 import { useDebounce } from '../hooks/useDebounce';
+import { useData } from '../context/DataContext';
+import { createNormativaSearchIndex, MIN_SEARCH_CHARS } from '../utils/searchEngine';
 
 export const Normativa = ({ onNavigate, navigationParams }) => {
   const { list, loading, refresh } = useNormativa();
+  const { searchSynonyms = [] } = useData();
   const [search, setSearch] = useState('');
   
   const [selectedCategory, setSelectedCategory] = useState(null);
@@ -144,42 +147,27 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
 
   const debouncedSearch = useDebounce(search, 300);
 
+  const searchIndex = useMemo(
+    () => createNormativaSearchIndex(list, searchSynonyms),
+    [list, searchSynonyms]
+  );
+
+  // Il motore lavora sulla lista piatta (un item per comma) e restituisce gruppi
+  // articolo minimi: li "idratiamo" con l'oggetto articolo completo già costruito
+  // in hierarchy (titolo_numero, capo_numero, id, ecc.) per non perdere il breadcrumb.
   const filteredArticoli = useMemo(() => {
-    const s = debouncedSearch.trim().toLowerCase();
-    if (!s) return null;
-
-    const isNumeric = /^\d+$/.test(s);
-
-    const exact = [];
-    const partial = [];
-    const text = [];
-
-    hierarchy.articoliMap.forEach(art => {
-      const artNum = (art.articolo_num?.toString() || '').toLowerCase();
-      const artLabel = (art.articolo || '').toLowerCase(); // es. "art. 142"
-      const titolo = (art.titolo_articolo || '').toLowerCase();
-      const hasCommaMatch = art.commi.some(c =>
-        (c.testo?.toLowerCase() || '').includes(s) ||
-        (c.comma?.toLowerCase() || '').includes(s)
-      );
-
-      if (isNumeric) {
-        if (artNum === s) {
-          exact.push(art);
-        } else if (artLabel.startsWith(`art. ${s}`) || artLabel.startsWith(`art.${s}`)) {
-          partial.push(art);
-        } else if (titolo.includes(s) || hasCommaMatch) {
-          text.push(art);
-        }
-      } else {
-        if (titolo.includes(s) || artLabel.includes(s) || hasCommaMatch) {
-          text.push(art);
-        }
-      }
-    });
-
-    return { exact, partial, text, isNumeric };
-  }, [hierarchy, debouncedSearch]);
+    if (debouncedSearch.trim().length < MIN_SEARCH_CHARS) return null;
+    const raw = searchIndex.search(debouncedSearch, MIN_SEARCH_CHARS);
+    const byNum = new Map(hierarchy.articoliMap.map(a => [String(a.articolo_num), a]));
+    const hydrate = (groups) =>
+      groups
+        .map(g => {
+          const full = byNum.get(String(g.articolo_num));
+          return full ? { ...full, isSuggested: !!g.isSuggested } : null;
+        })
+        .filter(Boolean);
+    return { exact: hydrate(raw.exact), suggested: hydrate(raw.suggested), other: hydrate(raw.other) };
+  }, [searchIndex, debouncedSearch, hierarchy]);
 
   const handleBack = () => {
     if (selectedArticolo) {
@@ -216,12 +204,20 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
         titolo: art.titolo_articolo,
       });
       setSelectedArticolo(art);
-    }} style={{...PS.normativaItemRow, marginBottom: '12px'}}>
+    }} style={{
+      ...PS.normativaItemRow, marginBottom: '12px',
+      ...(art.isSuggested ? { backgroundColor: `${C.warning}18`, borderLeft: `4px solid ${C.warning}` } : {}),
+    }}>
       <div style={PS.normativaItemNum}>
         <span style={PS.normativaItemNumPrefix}>{(art.articolo || 'Art.').split('.')[0].toUpperCase()}</span>
         <span style={PS.normativaItemNumValue}>{art.articolo_num || '?'}</span>
       </div>
       <div style={{ flex: 1 }}>
+        {art.isSuggested && (
+          <Badge type="warning" style={{ fontSize: '0.6rem', display: 'inline-flex', alignItems: 'center', gap: '4px', marginBottom: '4px' }}>
+            <Icon name="zap" size={10} strokeWidth={2.5} /> Risultato suggerito
+          </Badge>
+        )}
         <h3 style={PS.normativaItemTitle}>{cleanTitle(art.titolo_articolo || 'Senza Titolo')}</h3>
         <p style={PS.normativaItemPreview}>{(art.commi || []).length} commi</p>
       </div>
@@ -307,8 +303,8 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   if (loading) {
     viewContent = <SkeletonList count={6} />;
   } else if (filteredArticoli) {
-    const { exact, partial, text } = filteredArticoli;
-    const hasResults = exact.length > 0 || partial.length > 0 || text.length > 0;
+    const { exact, suggested, other } = filteredArticoli;
+    const hasResults = exact.length > 0 || suggested.length > 0 || other.length > 0;
 
     const sectionLabel = (label) => (
       <div style={{ padding: '8px 4px 2px', fontSize: '0.72rem', fontWeight: '700', color: '#999', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
@@ -319,22 +315,22 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
     viewContent = (
       <div style={S.list}>
         {!hasResults && <EmptyState compact icon="book-open" title="Nessun risultato" subtitle="Prova con un termine diverso o il numero dell'articolo." />}
+        {suggested.length > 0 && (
+          <>
+            {sectionLabel('Risultato suggerito')}
+            {suggested.map(renderArticleRow)}
+          </>
+        )}
         {exact.length > 0 && (
           <>
             {sectionLabel(`Art. ${debouncedSearch.trim()} — corrispondenza esatta`)}
             {exact.map(renderArticleRow)}
           </>
         )}
-        {partial.length > 0 && (
+        {other.length > 0 && (
           <>
-            {sectionLabel('Articoli correlati')}
-            {partial.map(renderArticleRow)}
-          </>
-        )}
-        {text.length > 0 && (
-          <>
-            {sectionLabel('Altri risultati')}
-            {text.map(renderArticleRow)}
+            {sectionLabel((suggested.length > 0 || exact.length > 0) ? 'Altri risultati' : 'Risultati')}
+            {other.map(renderArticleRow)}
           </>
         )}
       </div>
@@ -438,7 +434,7 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cerca n° articolo o parola..."
-          loading={search.trim().length > 0 && search !== debouncedSearch}
+          loading={search.trim().length >= MIN_SEARCH_CHARS && search !== debouncedSearch}
         />
       </div>
 
