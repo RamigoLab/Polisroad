@@ -1,4 +1,4 @@
-# PolisRoad v2.0.0
+# PolisRoad v2.0.1
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -59,6 +59,8 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 - Audit RLS completo su tutte le tabelle Supabase
 
 ## Azioni richieste su Supabase dopo il deploy
+
+**2.0.1:** nessuna azione richiesta (nessuna modifica al database).
 
 **2.0.0:** nessuna azione richiesta (nessuna modifica al database).
 

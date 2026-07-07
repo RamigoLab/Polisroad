@@ -105,13 +105,20 @@ export function createProntuarioSearchIndex(list = [], synonyms = []) {
       }
       const suggestedIds = new Set(suggested.flatMap(g => g.voci.map(v => v.id)));
 
+      // Precompute haystack per item to avoid normalizing on every search
+      if (!list._normalizedForSearch) {
+        list._normalizedForSearch = list.map(item => ({
+          id: item.id,
+          haystack: normalize(
+            `${item.titolo || ''} ${item.descrizione || ''} ${item.rif_normativo || ''} ${item.codice_violazione || ''} ${item.codice_caso || ''}`
+          )
+        }));
+      }
+
       // 3. Testo esatto (accenti normalizzati)
       const textMatchIds = new Set();
-      list.forEach(item => {
-        const haystack = normalize(
-          `${item.titolo || ''} ${item.descrizione || ''} ${item.rif_normativo || ''} ${item.codice_violazione || ''} ${item.codice_caso || ''}`
-        );
-        if (haystack.includes(q)) textMatchIds.add(item.id);
+      list._normalizedForSearch.forEach(item => {
+        if (item.haystack.includes(q)) textMatchIds.add(item.id);
       });
 
       // 4. Fuzzy sui rimanenti
@@ -175,12 +182,18 @@ export function createNormativaSearchIndex(list = [], synonyms = []) {
       }
       const suggestedIds = new Set(suggested.flatMap(g => g.commi.map(v => v.id)));
 
+      if (!list._normalizedForSearch) {
+        list._normalizedForSearch = list.map(item => ({
+          id: item.id,
+          haystack: normalize(
+            `${item.titolo_articolo || item.titolo || ''} ${item.testo || ''} ${item.articolo || ''} ${item.comma || ''}`
+          )
+        }));
+      }
+
       const textMatchIds = new Set();
-      list.forEach(item => {
-        const haystack = normalize(
-          `${item.titolo_articolo || item.titolo || ''} ${item.testo || ''} ${item.articolo || ''} ${item.comma || ''}`
-        );
-        if (haystack.includes(q)) textMatchIds.add(item.id);
+      list._normalizedForSearch.forEach(item => {
+        if (item.haystack.includes(q)) textMatchIds.add(item.id);
       });
 
       const fuseResults = fuse.search(q);

@@ -14,16 +14,24 @@ export const sortSuffix = (str) => {
 };
 
 // Ordina voci per numero articolo → suffisso → codice_caso
-export const sortItems = (items) =>
-  [...items].sort((a, b) => {
-    const nA = parseArticoloNum(a.articolo_numero);
-    const nB = parseArticoloNum(b.articolo_numero);
-    if (nA !== nB) return nA - nB;
-    const sA = sortSuffix(a.articolo_numero);
-    const sB = sortSuffix(b.articolo_numero);
-    if (sA !== sB) return sA - sB;
-    return (a.codice_caso || '').localeCompare(b.codice_caso || '', undefined, { numeric: true });
+export const sortItems = (items) => {
+  // Ottimizzazione: precalcola le chiavi di ordinamento per evitare di 
+  // rieseguire regex e conversioni ad ogni confronto (Schwartzian transform).
+  const mapped = items.map(item => ({
+    item,
+    num: parseArticoloNum(item.articolo_numero),
+    suf: sortSuffix(item.articolo_numero),
+    cod: item.codice_caso || ''
+  }));
+
+  mapped.sort((a, b) => {
+    if (a.num !== b.num) return a.num - b.num;
+    if (a.suf !== b.suf) return a.suf - b.suf;
+    return a.cod.localeCompare(b.cod, undefined, { numeric: true });
   });
+
+  return mapped.map(m => m.item);
+};
 
 // Raggruppa voci ordinate per articolo_numero
 export const groupByArticolo = (items) => {

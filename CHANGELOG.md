@@ -1,5 +1,11 @@
 # Changelog PolisRoad
 
+## [2.0.1] — 7 Luglio 2026
+
+### Ottimizzazione Performance
+- **Risolto timeout in Lighthouse su pagina Prontuario (PROTOCOL_TIMEOUT)**: Ottimizzato l'algoritmo di ordinamento `sortItems` per le voci del prontuario, introducendo una Schwartzian transform. L'operazione `replace(/\D/g, '')` non viene più eseguita migliaia di volte all'interno del loop di confronto O(N log N), azzerando i blocchi del thread principale durante il raggruppamento degli articoli.
+- **Ricerca ottimizzata**: Precalcolate le stringhe di ricerca normalizzate (rimozione diacritici) per Prontuario e Normativa, evitando di eseguire la normalizzazione `normalize()` per tutti gli elementi a ogni singola digitazione dell'utente.
+
 ## [2.0.0] — 6 Luglio 2026
 
 Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 (usabilità, ricerca, bug generali, config deploy, accessibilità, performance). Vedi le sezioni 1.9.7–1.9.9 sotto per il dettaglio di ogni singolo intervento.
