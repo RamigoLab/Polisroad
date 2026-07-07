@@ -107,8 +107,11 @@ export const AdminDashboard = ({ onNavigate }) => {
 };
 
 const StatCard = ({ title, count, color, icon, onClick }) => (
-  <div 
+  <div
     onClick={onClick}
+    role={onClick ? 'button' : undefined}
+    tabIndex={onClick ? 0 : undefined}
+    onKeyDown={onClick ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } } : undefined}
     style={{ ...S.card, borderLeft: `4px solid ${color}`, boxShadow: '0 2px 8px rgba(0,0,0,0.05)', cursor: onClick ? 'pointer' : 'default', transition: 'transform 0.2s ease', ':hover': { transform: 'translateY(-2px)' } }}
   >
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>

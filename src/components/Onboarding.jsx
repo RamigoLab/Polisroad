@@ -1,5 +1,4 @@
 import React, { useState, useRef } from 'react';
-import { C } from '../styles/theme';
 import { Icon } from './ui/Icon';
 
 const ONBOARDING_KEY = 'polisroad_onboarding_done';

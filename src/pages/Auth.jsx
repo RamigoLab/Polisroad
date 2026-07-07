@@ -42,6 +42,7 @@ const DocModal = ({ title, children, onClose }) => (
         <span style={{ fontWeight: '700', fontSize: '1rem', color: 'var(--color-text)' }}>{title}</span>
         <button
           onClick={onClose}
+          aria-label="Chiudi"
           style={{
             background: 'none', border: 'none', fontSize: '1.4rem',
             cursor: 'pointer', color: 'var(--color-text-light)', lineHeight: 1,

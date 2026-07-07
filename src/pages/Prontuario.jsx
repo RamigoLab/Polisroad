@@ -90,7 +90,6 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
   };
 
   const handleToggleFavorite = async (itemId) => {
-    const isFav = preferiti.includes(itemId);
     await toggle(itemId);
   };
 
@@ -153,6 +152,7 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
               key={item.id}
               item={item}
               isFavorite={preferiti.includes(item.id)}
+              hasNota={!!note[item.id]}
               onClick={() => handleSelectItem(item)}
             />
           ))}
@@ -189,7 +189,10 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
         <h3 style={{ fontSize: '0.95rem', color: C.text, lineHeight: 1.3, marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {group.titolo || `Articolo ${group.articolo_numero}`}
         </h3>
-        <span style={{ fontSize: '0.8rem', color: C.textLight }}>{group.count} {group.count === 1 ? 'voce' : 'voci'}</span>
+        <span style={{ fontSize: '0.8rem', color: C.textLight, display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+          {group.count} {group.count === 1 ? 'voce' : 'voci'}
+          {group.voci.some(v => note[v.id]) && <Icon name="file-text" size={12} color={C.accent} aria-label="Nota presente" />}
+        </span>
       </div>
       <span style={{ color: C.textLight }}>›</span>
     </div>

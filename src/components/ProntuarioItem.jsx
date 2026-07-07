@@ -9,7 +9,7 @@ import { PS } from '../styles/pages';
  * Optimised and Memoised List Item for Prontuario page.
  * Order: titolo → rif_normativo badge → sanzione
  */
-export const ProntuarioItem = React.memo(({ item, onClick, isFavorite }) => {
+export const ProntuarioItem = React.memo(({ item, onClick, isFavorite, hasNota }) => {
   return (
     <div onClick={onClick} style={S.cardClickable}>
       {/* Titolo prima */}
@@ -23,6 +23,7 @@ export const ProntuarioItem = React.memo(({ item, onClick, isFavorite }) => {
           {item.rif_normativo}
         </Badge>
         {item.punti_patente > 0 && <Badge type="danger">-{item.punti_patente} pt</Badge>}
+        {hasNota && <Icon name="file-text" size={15} color={C.accent} aria-label="Nota presente" />}
         {isFavorite && <Icon name="star" size={16} color="#f1c40f" />}
       </div>
 
@@ -35,6 +36,7 @@ export const ProntuarioItem = React.memo(({ item, onClick, isFavorite }) => {
 }, (prevProps, nextProps) => {
   return (
     prevProps.isFavorite === nextProps.isFavorite &&
+    prevProps.hasNota === nextProps.hasNota &&
     prevProps.item.id === nextProps.item.id &&
     prevProps.item.titolo === nextProps.item.titolo &&
     prevProps.item.rif_normativo === nextProps.item.rif_normativo &&

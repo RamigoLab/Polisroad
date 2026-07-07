@@ -1,9 +1,8 @@
 import React from 'react';
-import { C } from '../styles/theme';
 import { Icon } from './ui/Icon';
 
 const PendingApprovalScreen = ({
-  email, profileError, profileLoading, profile, refreshProfile, signOut,
+  email, profileError, profileLoading, refreshProfile, signOut,
 }) => {
   if (profileLoading) {
     return (

@@ -26,7 +26,11 @@
   --bg-card:                  #ffffff;
 
   --color-text:       #1a1a2e;
-  --color-text-light: #6b7280;
+  /* Era #6b7280 (contrasto 4.83:1 su sfondo bianco — passa l'AA per un pelo).
+     Per un'app usata all'aperto, spesso in pieno sole, un margine più ampio
+     aiuta parecchio: #4b5563 dà 7.55:1, superando anche l'AAA, restando
+     nella stessa famiglia di grigi (nessun cambio di palette percepibile). */
+  --color-text-light: #4b5563;
   --color-border:     rgba(0,0,0,0.08);
   --color-white:      #ffffff;
 

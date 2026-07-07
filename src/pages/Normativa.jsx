@@ -198,13 +198,23 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   };
 
   const renderArticleRow = (art) => (
-    <div key={art.id} onClick={async () => {
-      posthog.capture('normativa_article_opened', {
-        articolo_num: art.articolo_num,
-        titolo: art.titolo_articolo,
-      });
-      setSelectedArticolo(art);
-    }} style={{
+    <div key={art.id} role="button" tabIndex={0}
+      aria-label={`${art.articolo || 'Articolo'} ${art.articolo_num || ''} - ${cleanTitle(art.titolo_articolo || 'Senza Titolo')}`}
+      onClick={async () => {
+        posthog.capture('normativa_article_opened', {
+          articolo_num: art.articolo_num,
+          titolo: art.titolo_articolo,
+        });
+        setSelectedArticolo(art);
+      }}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          posthog.capture('normativa_article_opened', { articolo_num: art.articolo_num, titolo: art.titolo_articolo });
+          setSelectedArticolo(art);
+        }
+      }}
+      style={{
       ...PS.normativaItemRow, marginBottom: '12px',
       ...(art.isSuggested ? { backgroundColor: `${C.warning}18`, borderLeft: `4px solid ${C.warning}` } : {}),
     }}>
@@ -226,7 +236,11 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   );
 
   const renderTitoloRow = (titolo) => (
-    <div key={titolo.id} onClick={() => setSelectedTitolo(titolo)} style={{...PS.normativaItemRow, marginBottom: '12px'}}>
+    <div key={titolo.id} role="button" tabIndex={0}
+      aria-label={`${titolo.numero} - ${cleanTitle(titolo.nome) || 'Senza Nome'}`}
+      onClick={() => setSelectedTitolo(titolo)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedTitolo(titolo); } }}
+      style={{...PS.normativaItemRow, marginBottom: '12px'}}>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: '0.85rem', color: C.primary, fontWeight: 'bold', marginBottom: '4px' }}>{titolo.numero}</div>
         <h3 style={{...PS.normativaItemTitle, fontSize: '1.05rem'}}>{cleanTitle(titolo.nome) || 'Senza Nome'}</h3>
@@ -236,7 +250,11 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   );
 
   const renderCapoRow = (capo) => (
-    <div key={capo.id} onClick={() => setSelectedCapo(capo)} style={{...PS.normativaItemRow, marginBottom: '12px', borderLeft: `4px solid ${C.accent}`}}>
+    <div key={capo.id} role="button" tabIndex={0}
+      aria-label={`${capo.numero} - ${cleanTitle(capo.nome) || 'Senza Nome'}`}
+      onClick={() => setSelectedCapo(capo)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCapo(capo); } }}
+      style={{...PS.normativaItemRow, marginBottom: '12px', borderLeft: `4px solid ${C.accent}`}}>
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: '0.8rem', color: C.accent, fontWeight: 'bold', marginBottom: '4px' }}>{capo.numero}</div>
         <h3 style={{...PS.normativaItemTitle, fontSize: '0.95rem'}}>{cleanTitle(capo.nome) || 'Senza Nome'}</h3>
@@ -246,7 +264,11 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   );
 
   const renderCategoryRow = (id, title, desc) => (
-    <div key={id} onClick={() => setSelectedCategory(id)} style={{...PS.normativaItemRow, marginBottom: '12px', padding: '16px'}}>
+    <div key={id} role="button" tabIndex={0}
+      aria-label={`${title}${desc ? ' - ' + desc : ''}`}
+      onClick={() => setSelectedCategory(id)}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedCategory(id); } }}
+      style={{...PS.normativaItemRow, marginBottom: '12px', padding: '16px'}}>
       <div style={{ flex: 1 }}>
         <h3 style={{...PS.normativaItemTitle, fontSize: '1.1rem', color: C.primary}}>{title}</h3>
         {desc && <p style={{ fontSize: '0.85rem', color: C.textLight, marginTop: '4px' }}>{desc}</p>}

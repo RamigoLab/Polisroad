@@ -1,7 +1,7 @@
 import {
   Home, BookOpen, ClipboardList, Star, Search, Calculator, GraduationCap,
   Newspaper, Link2, User, UserCheck, Bell, BellOff, ShieldAlert, ShieldCheck,
-  Settings, X, Check, Clock, Lightbulb, PenLine, FileText, OctagonAlert,
+  Settings, X, Check, Lightbulb, PenLine, FileText, OctagonAlert,
   RotateCw, Rocket, CircleCheck, CircleX, TriangleAlert, Info, Medal, Building2,
   Mail, Smartphone, Download, Palette, Moon, Sun, Package, Megaphone,
   ScrollText, Trash2, Zap, ChevronLeft, ChevronRight, ChevronDown, ChevronUp,

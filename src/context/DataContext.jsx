@@ -6,12 +6,10 @@
  */
 import React, { createContext, useContext } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { isSupabaseConfigured } from '../config/supabase';
 import { getProntuario } from '../services/prontuarioService';
 import { getNormativa } from '../services/normativaService';
 import { getNews } from '../services/newsService';
 import { getSearchSynonyms } from '../services/synonymsService';
-import { logger } from '../utils/logger';
 
 const DataContext = createContext();
 

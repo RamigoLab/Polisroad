@@ -1,11 +1,12 @@
 {
   "name": "polisroad",
   "private": true,
-  "version": "1.9.8",
+  "version": "2.0.0",
   "type": "module",
   "scripts": {
     "prebuild": "node scripts/update-version.js",
     "build": "vite build",
+    "postbuild": "find dist -name '*.map' -delete",
     "predev": "node scripts/update-version.js",
     "dev": "vite",
     "lint": "eslint .",

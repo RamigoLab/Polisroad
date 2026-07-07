@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { C } from '../../styles/theme';
 import { Icon } from './Icon';
 
 export const OfflineBanner = () => {

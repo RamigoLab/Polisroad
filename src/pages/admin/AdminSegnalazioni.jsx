@@ -3,6 +3,7 @@ import { C } from '../../styles/theme';
 import { Icon } from '../../components/ui/Icon';
 import { S } from '../../styles/styles';
 import { useToast } from '../../components/ui/ToastManager';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { supabase, isSupabaseConfigured } from '../../config/supabase';
 
 import { logger } from '../../utils/logger';
@@ -12,6 +13,7 @@ export const AdminSegnalazioni = () => {
   const [filter, setFilter] = useState('tutte'); // tutte, pendenza, risolte
   const [dbError, setDbError] = useState(false);
   const { showToast } = useToast();
+  const confirmDialog = useConfirm();
 
   const fetchSegnalazioni = async () => {
     setLoading(true);
@@ -112,7 +114,11 @@ export const AdminSegnalazioni = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Sei sicuro di voler eliminare questa segnalazione?')) return;
+    const ok = await confirmDialog({
+      title: 'Eliminare la segnalazione?',
+      message: 'Questa azione non è reversibile.',
+    });
+    if (!ok) return;
     let success = false;
     let shouldUseLocalFallback = !isSupabaseConfigured || !supabase || dbError || isLocalReport(id);
 

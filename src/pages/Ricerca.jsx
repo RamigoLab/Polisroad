@@ -9,6 +9,7 @@ import { PS } from '../styles/pages';
 import { useProntuario } from '../hooks/useProntuario';
 import { useNormativa } from '../hooks/useNormativa';
 import { useSearch } from '../hooks/useSearch';
+import { MIN_SEARCH_CHARS } from '../utils/searchEngine';
 import { useSearchHistory } from '../hooks/useSearchHistory';
 import { EmptyState } from '../components/ui/EmptyState';
 import posthog from 'posthog-js';
@@ -33,7 +34,7 @@ const FILTER_NORMATIVA  = 'normativa';
 export const Ricerca = ({ onNavigate }) => {
   const { list: prontuarioList } = useProntuario();
   const { list: normativaList } = useNormativa();
-  const { search, setSearch, risultatiProntuario, risultatiNormativa, isPending } = useSearch(prontuarioList, normativaList, 3);
+  const { search, setSearch, risultatiProntuario, risultatiNormativa, isPending } = useSearch(prontuarioList, normativaList, MIN_SEARCH_CHARS);
   const { history, addSearch, removeSearch, clearHistory } = useSearchHistory();
 
   const [expandedProntuario, setExpandedProntuario] = useState(null);
@@ -337,6 +338,9 @@ export const Ricerca = ({ onNavigate }) => {
             {history.map((term, index) => (
               <div
                 key={index}
+                role="button"
+                tabIndex={0}
+                aria-label={`Cerca di nuovo "${term}"`}
                 style={{
                   display: 'inline-flex', alignItems: 'center', gap: '6px',
                   backgroundColor: C.card, border: `1px solid ${C.border}`,
@@ -345,10 +349,26 @@ export const Ricerca = ({ onNavigate }) => {
                   boxShadow: 'var(--shadow-sm)',
                 }}
                 onClick={() => setSearch(term)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    setSearch(term);
+                  }
+                }}
               >
                 <span style={{ color: C.text }}>{term}</span>
                 <span
+                  role="button"
+                  tabIndex={0}
+                  aria-label={`Rimuovi "${term}" dalla cronologia`}
                   onClick={e => { e.stopPropagation(); removeSearch(term); }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      removeSearch(term);
+                    }
+                  }}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     width: '18px', height: '18px', borderRadius: '50%',

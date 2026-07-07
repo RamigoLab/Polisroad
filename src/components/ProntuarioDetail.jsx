@@ -5,7 +5,6 @@ import { PS } from '../styles/pages';
 import { Badge } from './ui/Badge';
 import { Icon } from './ui/Icon';
 import { useSyncQueue } from '../hooks/useSyncQueue';
-import { hapticMedium, hapticSuccess } from '../utils/haptics';
 
 /**
  * Vista dettaglio di una singola voce del Prontuario.
@@ -32,7 +31,6 @@ function extractArticoloNum(rifNormativo) {
 
 export const ProntuarioDetail = ({
   item,
-  isFavorite,
   nota,
   onSaveNota,
   onContestazione,
@@ -44,12 +42,10 @@ export const ProntuarioDetail = ({
 
   const handleSave = async () => {
     await onSaveNota(tempNote);
-    hapticMedium();
     setEditNote(false);
   };
 
   const handleContestazione = () => {
-    hapticSuccess();
     if (!navigator.onLine) {
       addToQueue('SAVE_CONTESTAZIONE', { prontuarioId: item.id, xp: 20 });
     } else {

@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { Icon } from './Icon';
+import { hapticSuccess, hapticError, hapticMedium } from '../../utils/haptics';
 
 const ToastContext = createContext(null);
 
@@ -10,6 +11,20 @@ const TOAST_CONFIG = {
   info:    { icon: 'info',         bg: '#eff6ff', border: '#bfdbfe', text: '#1e40af', iconColor: '#2563a8' },
 };
 
+// Un solo pattern aptico per tipo di toast, applicato automaticamente ovunque
+// nell'app usi showToast — prima i pattern in haptics.js esistevano ma erano
+// collegati manualmente solo in un paio di punti (preferiti, contestazione),
+// quindi la maggior parte delle azioni non vibrava mai in modo distinto tra
+// successo ed errore. Centralizzando qui, ogni showToast(msg, 'success'|'error')
+// nell'app ottiene il feedback tattile giusto senza dover toccare ogni chiamata.
+const HAPTIC_BY_TYPE = {
+  success: hapticSuccess,
+  error: hapticError,
+  warning: hapticMedium,
+  // 'info' non vibra: è puramente informativo, vibrare anche qui
+  // renderebbe il feedback tattile meno distintivo per le azioni che contano.
+};
+
 export const ToastProvider = ({ children }) => {
   const [toasts, setToasts] = useState([]);
 
@@ -17,6 +32,7 @@ export const ToastProvider = ({ children }) => {
     const id = Date.now() + Math.random();
     setToasts(prev => [...prev.slice(-2), { id, message, type }]);
     setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), duration);
+    HAPTIC_BY_TYPE[type]?.();
   }, []);
 
   return (

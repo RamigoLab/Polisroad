@@ -7,10 +7,12 @@ import { TextArea } from '../../components/ui/TextArea';
 import { Icon } from '../../components/ui/Icon';
 import { useNormativa } from '../../hooks/useNormativa';
 import { useToast } from '../../components/ui/ToastManager';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 
 export const AdminNormativa = () => {
   const { list, add, update, remove } = useNormativa();
   const { showToast } = useToast();
+  const confirmDialog = useConfirm();
 
   const [expandedGroupId, setExpandedGroupId] = useState(null); // id del gruppo articolo espanso (es. "art_186")
   const [editingId, setEditingId] = useState(null); // 'new' per aggiungere un nuovo articolo
@@ -150,7 +152,11 @@ export const AdminNormativa = () => {
 
   // Elimina un singolo comma
   const handleDeleteComma = async (commaId, commaLabel) => {
-    if (!window.confirm(`Sei sicuro di voler eliminare definitivamente il Comma ${commaLabel}?`)) return;
+    const ok = await confirmDialog({
+      title: 'Eliminare il comma?',
+      message: `Il Comma ${commaLabel} sarà eliminato definitivamente.`,
+    });
+    if (!ok) return;
 
     setLoading(true);
     const { error } = await remove(commaId);
@@ -197,7 +203,11 @@ export const AdminNormativa = () => {
   // Elimina un intero articolo (tutti i suoi commi)
   const handleDeleteArticle = async (group) => {
     const commiCount = group.commi.length;
-    if (!window.confirm(`Sei sicuro di voler eliminare interamente l'Articolo ${group.articolo_num} e tutti i suoi ${commiCount} commi? Questa azione è irreversibile.`)) return;
+    const ok = await confirmDialog({
+      title: 'Eliminare l\'intero articolo?',
+      message: `L'Articolo ${group.articolo_num} e tutti i suoi ${commiCount} commi saranno eliminati. Questa azione è irreversibile.`,
+    });
+    if (!ok) return;
 
     setLoading(true);
     try {
@@ -307,11 +317,22 @@ export const AdminNormativa = () => {
           return (
             <div
               key={group.id}
+              role="button"
+              tabIndex={0}
+              aria-expanded={isExpanded}
               onClick={() => {
                 const expanding = !isExpanded;
                 setExpandedGroupId(expanding ? group.id : null);
                 if (expanding) {
                   handleExpandArticle(group);
+                }
+              }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  const expanding = !isExpanded;
+                  setExpandedGroupId(expanding ? group.id : null);
+                  if (expanding) handleExpandArticle(group);
                 }
               }}
               style={{

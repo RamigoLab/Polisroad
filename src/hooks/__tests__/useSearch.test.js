@@ -7,6 +7,13 @@ vi.mock('../useDebounce', () => ({
   useDebounce: (value) => value,
 }));
 
+// useSearch ora legge i sinonimi da DataContext (per il motore di ricerca
+// unificato con searchEngine.js) — mock isolato, nessun sinonimo nei test
+// di questo file dato che riguardano solo la logica esatto/testo/fuzzy.
+vi.mock('../../context/DataContext', () => ({
+  useData: () => ({ searchSynonyms: [] }),
+}));
+
 describe('useSearch Hook', () => {
   const mockProntuario = [
     { id: 1, articolo_numero: '186', titolo: 'Guida in stato di ebbrezza', descrizione: 'Sotto l influenza dell alcool', rif_normativo: 'Art. 186, comma 2' },
@@ -23,8 +30,8 @@ describe('useSearch Hook', () => {
   it('dovrebbe restituire risultati vuoti inizialmente', () => {
     const { result } = renderHook(() => useSearch(mockProntuario, mockNormativa));
     expect(result.current.search).toBe('');
-    expect(result.current.risultatiProntuario).toEqual({ exact: [], other: [] });
-    expect(result.current.risultatiNormativa).toEqual({ exact: [], other: [] });
+    expect(result.current.risultatiProntuario).toEqual({ exact: [], suggested: [], other: [] });
+    expect(result.current.risultatiNormativa).toEqual({ exact: [], suggested: [], other: [] });
     expect(result.current.total).toBe(0);
     expect(result.current.isSearching).toBe(false);
   });
@@ -32,8 +39,8 @@ describe('useSearch Hook', () => {
   it('non dovrebbe cercare con meno di minChars caratteri', () => {
     const { result } = renderHook(() => useSearch(mockProntuario, mockNormativa, 3));
     act(() => { result.current.setSearch('gu'); });
-    expect(result.current.risultatiProntuario).toEqual({ exact: [], other: [] });
-    expect(result.current.risultatiNormativa).toEqual({ exact: [], other: [] });
+    expect(result.current.risultatiProntuario).toEqual({ exact: [], suggested: [], other: [] });
+    expect(result.current.risultatiNormativa).toEqual({ exact: [], suggested: [], other: [] });
     expect(result.current.total).toBe(0);
     expect(result.current.isSearching).toBe(true);
   });

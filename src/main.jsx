@@ -9,6 +9,7 @@ import App from './App';
 import { AuthProvider } from './hooks/useAuth';
 import { DataProvider } from './context/DataContext';
 import { ToastProvider } from './components/ui/ToastManager';
+import { ConfirmProvider } from './components/ui/ConfirmDialog';
 import { clearIdbIfFlagged } from './components/ErrorBoundary';
 import * as Sentry from '@sentry/react';
 import posthog from 'posthog-js';
@@ -23,6 +24,10 @@ if (sentryDsn && import.meta.env.PROD) {
   Sentry.init({
     dsn: sentryDsn,
     environment: 'production',
+    // Senza `release`, tutti gli errori di ogni deploy finiscono nello stesso
+    // bucket in Sentry: impossibile capire "da quale versione è iniziato
+    // questo errore". Ora ogni errore è taggato con la versione dell'app.
+    release: `polisroad@${APP_VERSION}`,
     tracesSampleRate: 0.1,
     beforeSend(event) {
       if (event.user) {
@@ -95,7 +100,9 @@ createRoot(document.getElementById('root')).render(
       <AuthProvider>
         <DataProvider>
           <ToastProvider>
-            <App />
+            <ConfirmProvider>
+              <App />
+            </ConfirmProvider>
           </ToastProvider>
         </DataProvider>
       </AuthProvider>

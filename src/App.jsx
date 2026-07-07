@@ -1,4 +1,4 @@
-import React, { useState, useEffect, Suspense, lazy } from 'react';
+import React, { useState, useEffect, useCallback, useRef, Suspense, lazy } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useData, QUERY_KEYS } from './context/DataContext';
 import { useQueryClient } from '@tanstack/react-query';
@@ -79,6 +79,38 @@ function AppInner() {
     }
   });
 
+  // navigate è definita qui, PRIMA degli effect che la usano, e resa stabile
+  // con useCallback + ref: prima era una funzione ricreata ad ogni render,
+  // catturata "stale" (con currentPage/navigationParams del primo render)
+  // dall'effect di navigazione da notifica push qui sotto, che aveva deps []
+  // apposta per girare una sola volta — risultato: il confronto
+  // page !== currentPage usava per sempre i valori iniziali, con possibili
+  // voci di history sbagliate quando si naviga da una notifica push.
+  // Il ref tiene sempre il valore corrente senza dover ricreare navigate
+  // (e quindi senza far ri-renderizzare Sidebar/BottomNav che la ricevono
+  // come prop) ad ogni cambio pagina.
+  const currentPageRef = useRef(currentPage);
+  const navigationParamsRef = useRef(navigationParams);
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+    navigationParamsRef.current = navigationParams;
+  }, [currentPage, navigationParams]);
+
+  const navigate = useCallback((page, params = null) => {
+    if (page !== currentPageRef.current || JSON.stringify(params) !== JSON.stringify(navigationParamsRef.current)) {
+      window.history.pushState({ page, params }, '', `?page=${page}`);
+    }
+    setCurrentPage(page);
+    setNavigationParams(params);
+    setItem('polisroad_current_page', page);
+    if (params) {
+      setItem('polisroad_navigation_params', JSON.stringify(params));
+    } else {
+      removeItem('polisroad_navigation_params');
+    }
+    posthog.capture('page_view', { page, has_params: !!params });
+  }, []);
+
   useEffect(() => {
     if (dataError) showToast(dataError, 'error');
   }, [dataError, showToast]);
@@ -91,7 +123,7 @@ function AppInner() {
     };
     window.addEventListener('polisroad:navigate', handler);
     return () => window.removeEventListener('polisroad:navigate', handler);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [navigate]);
 
   useEffect(() => {
     const hash = window.location.hash;
@@ -107,21 +139,6 @@ function AppInner() {
     window.addEventListener('popstate', handlePopState);
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
-
-  const navigate = (page, params = null) => {
-    if (page !== currentPage || JSON.stringify(params) !== JSON.stringify(navigationParams)) {
-      window.history.pushState({ page, params }, '', `?page=${page}`);
-    }
-    setCurrentPage(page);
-    setNavigationParams(params);
-    setItem('polisroad_current_page', page);
-    if (params) {
-      setItem('polisroad_navigation_params', JSON.stringify(params));
-    } else {
-      removeItem('polisroad_navigation_params');
-    }
-    posthog.capture('page_view', { page, has_params: !!params });
-  };
 
   const [onboardingDone, setOnboardingDone] = useState(() => isOnboardingDone());
 

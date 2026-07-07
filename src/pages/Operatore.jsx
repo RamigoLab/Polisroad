@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { SearchBar } from '../components/ui/SearchBar';
+import { Badge } from '../components/ui/Badge';
 import { PS } from '../styles/pages';
 import { C } from '../styles/theme';
 import { Icon } from '../components/ui/Icon';
@@ -8,6 +9,9 @@ import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
 import { useAuth } from '../hooks/useAuth';
 import { useToast } from '../components/ui/ToastManager';
+import { useDebounce } from '../hooks/useDebounce';
+import { useData } from '../context/DataContext';
+import { createProntuarioSearchIndex, MIN_SEARCH_CHARS } from '../utils/searchEngine';
 
 // Componente orologio isolato: si aggiorna ogni secondo senza
 // causare re-render dell'intera pagina Operatore.
@@ -27,22 +31,37 @@ export const Operatore = ({ onNavigate }) => {
   const { preferiti } = usePreferiti();
   const { note } = useNote();
   const { profile } = useAuth();
+  const { searchSynonyms = [] } = useData();
 
   const { showToast } = useToast();
 
   const [search, setSearch] = useState('');
+  const debouncedSearch = useDebounce(search, 300);
   const [expandedGroupId, setExpandedGroupId] = useState(null); // id gruppo articolo (es. "grp_6")
   const [expandedItemId, setExpandedItemId] = useState(null);   // id voce prontuario (numerico)
   const [registering, setRegistering] = useState(false);
+  const [sessionContestazioni, setSessionContestazioni] = useState([]);
+  const [showRiepilogo, setShowRiepilogo] = useState(false);
+
+  const isPending = search.trim().length >= MIN_SEARCH_CHARS && search !== debouncedSearch;
 
   const handleRegistraContestazione = async (item) => {
     setRegistering(true);
     showToast(`Contestazione registrata: ${item.rif_normativo}`, 'success');
+    setSessionContestazioni(prev => [
+      { id: `${item.id}_${Date.now()}`, rif_normativo: item.rif_normativo, titolo: item.titolo || item.articolo_nome || '', time: new Date() },
+      ...prev,
+    ].slice(0, 20)); // basta l'ultimo turno, non serve accumulare all'infinito
     setRegistering(false);
   };
 
+  const searchIndex = useMemo(
+    () => createProntuarioSearchIndex(list, searchSynonyms),
+    [list, searchSynonyms]
+  );
+
   const displayList = useMemo(() => {
-    if (search.trim().length === 0) {
+    if (debouncedSearch.trim().length === 0) {
       // Senza ricerca: mostra solo i preferiti ordinati
       return {
         mode: 'preferiti',
@@ -54,52 +73,13 @@ export const Operatore = ({ onNavigate }) => {
       };
     }
 
-    const s = search.trim().toLowerCase();
-    const isNumeric = /^\d+$/.test(s);
-    const exact = [], partial = [], text = [];
+    if (debouncedSearch.trim().length < MIN_SEARCH_CHARS) {
+      return { mode: 'sotto_soglia' };
+    }
 
-    list.forEach(item => {
-      const artNum = (item.articolo_numero || '').toLowerCase();
-      const rifNorm = (item.rif_normativo || '').toLowerCase();
-      const titolo = (item.titolo || '').toLowerCase();
-
-      if (isNumeric) {
-        if (artNum === s) exact.push(item);
-        else if (rifNorm.startsWith(`art. ${s}`) || rifNorm.startsWith(`art.${s}`)) partial.push(item);
-        else if (titolo.includes(s) || rifNorm.includes(s)) text.push(item);
-      } else {
-        if (titolo.includes(s) || rifNorm.includes(s)) text.push(item);
-      }
-    });
-
-    // Raggruppa i risultati esatti per articolo
-    const sortFn = (a, b) => {
-      const nA = parseInt((a.articolo_numero || '').replace(/[^0-9]/g, ''), 10) || 0;
-      const nB = parseInt((b.articolo_numero || '').replace(/[^0-9]/g, ''), 10) || 0;
-      return nA - nB;
-    };
-
-    const exactMap = new Map();
-    exact.sort(sortFn).forEach(item => {
-      const key = (item.articolo_numero || 'N.D.').trim();
-      if (!exactMap.has(key)) exactMap.set(key, []);
-      exactMap.get(key).push(item);
-    });
-    const exactGroups = Array.from(exactMap.entries()).map(([num, voci]) => ({
-      articolo_numero: num,
-      label: `Art. ${num}`,
-      titolo: voci[0]?.articolo_nome || voci[0]?.titolo || '',
-      count: voci.length,
-      voci,
-    }));
-
-    return {
-      mode: 'search',
-      exactGroups,
-      partial: partial.sort(sortFn),
-      text: text.sort(sortFn),
-    };
-  }, [list, search, preferiti]);
+    const { exact, suggested, other } = searchIndex.search(debouncedSearch, MIN_SEARCH_CHARS);
+    return { mode: 'search', exactGroups: exact, suggestedGroups: suggested, otherGroups: other };
+  }, [list, debouncedSearch, preferiti, searchIndex]);
 
   return (
     <div style={PS.operatoreContainer}>
@@ -116,7 +96,42 @@ export const Operatore = ({ onNavigate }) => {
       </div>
 
       <div style={PS.operatoreBody}>
-        <SearchBar value={search} onChange={e => setSearch(e.target.value)} placeholder="Cerca violazione o n° articolo..." />
+        <SearchBar value={search} onChange={e => setSearch(e.target.value)} placeholder="Cerca violazione o n° articolo..." loading={isPending} />
+
+        {sessionContestazioni.length > 0 && (
+          <div style={{ ...PS.operatoreItemCard, marginTop: '10px', marginBottom: '4px' }}>
+            <div
+              onClick={() => setShowRiepilogo(v => !v)}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && setShowRiepilogo(v => !v)}
+              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', cursor: 'pointer' }}
+            >
+              <span style={{ fontSize: '0.82rem', fontWeight: '700', color: C.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Icon name="pen-line" size={14} color={C.accent} />
+                {sessionContestazioni.length} {sessionContestazioni.length === 1 ? 'contestazione registrata' : 'contestazioni registrate'} in questo turno
+              </span>
+              <span style={{ color: C.textLight }}>{showRiepilogo ? '▲' : '▼'}</span>
+            </div>
+            {showRiepilogo && (
+              <div style={{ padding: '0 14px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                {sessionContestazioni.map(c => (
+                  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', fontSize: '0.8rem', borderTop: `1px solid ${C.border}`, paddingTop: '6px' }}>
+                    <span style={{ color: C.text }}>
+                      <strong>{c.rif_normativo}</strong>{c.titolo ? ` — ${c.titolo}` : ''}
+                    </span>
+                    <span style={{ color: C.textLight, whiteSpace: 'nowrap' }}>
+                      {c.time.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
+                    </span>
+                  </div>
+                ))}
+                <p style={{ fontSize: '0.7rem', color: C.textLight, marginTop: '4px' }}>
+                  Elenco valido solo per questa sessione — si azzera chiudendo l'app.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
 
         {displayList.mode === 'preferiti' && (
           <p style={PS.operatoreFavLabel}>⭐ I TUOI PREFERITI</p>
@@ -130,9 +145,24 @@ export const Operatore = ({ onNavigate }) => {
               const itemNote = note[item.id];
               return (
                 <div key={item.id} style={PS.operatoreItemCard} onClick={(e) => e.stopPropagation()}>
-                  <div onClick={() => setExpandedItemId(isExpanded ? null : item.id)} style={PS.operatoreItemHeader}>
+                  <div
+                    onClick={() => setExpandedItemId(isExpanded ? null : item.id)}
+                    role="button"
+                    tabIndex={0}
+                    aria-expanded={isExpanded}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        setExpandedItemId(isExpanded ? null : item.id);
+                      }
+                    }}
+                    style={PS.operatoreItemHeader}
+                  >
                     <div>
-                      <span style={PS.operatoreItemRef}>{item.rif_normativo} (Sanzione: €{item.pmr})</span>
+                      <span style={PS.operatoreItemRef}>
+                        {item.rif_normativo} (Sanzione: €{item.pmr})
+                        {itemNote && <Icon name="file-text" size={13} color={C.accent} style={{ marginLeft: '6px', verticalAlign: 'middle' }} aria-label="Nota presente" />}
+                      </span>
                       <span style={PS.operatoreItemTitle}>{item.titolo || item.articolo_nome || (item.descrizione ? (item.descrizione.substring(0, 80) + '...') : 'Voce prontuario')}</span>
                     </div>
                     <span>{isExpanded ? '▲' : '▼'}</span>
@@ -217,31 +247,49 @@ export const Operatore = ({ onNavigate }) => {
               </div>
             );
 
-            const renderGroupHeader = (group) => (
-              <div
-                key={`grp_${group.articolo_numero}`}
-                onClick={() => {
-                  const gid = `grp_${group.articolo_numero}`;
-                  setExpandedGroupId(expandedGroupId === gid ? null : gid);
-                  setExpandedItemId(null); // chiudi eventuale voce aperta quando si chiude il gruppo
-                }}
-                style={{ ...PS.operatoreItemCard, backgroundColor: C.accentLight, borderLeft: `4px solid ${C.accent}`, cursor: 'pointer' }}
-              >
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
-                  <div>
-                    <span style={{ fontWeight: '800', color: C.accent, fontSize: '1rem' }}>{group.label}</span>
-                    {group.titolo && <span style={{ fontSize: '0.82rem', color: C.text, marginLeft: '8px' }}>{group.titolo}</span>}
-                    <div style={{ fontSize: '0.78rem', color: C.textLight, marginTop: '2px' }}>{group.count} {group.count === 1 ? 'voce' : 'voci'}</div>
+            const renderGroupHeader = (group) => {
+              const isSuggested = !!group.isSuggested;
+              const gid = `grp_${group.articolo_numero}_${isSuggested ? 'sug' : 'std'}`;
+              return (
+                <div
+                  key={gid}
+                  onClick={() => {
+                    setExpandedGroupId(expandedGroupId === gid ? null : gid);
+                    setExpandedItemId(null); // chiudi eventuale voce aperta quando si chiude il gruppo
+                  }}
+                  style={{
+                    ...PS.operatoreItemCard,
+                    backgroundColor: isSuggested ? `${C.warning}18` : C.accentLight,
+                    borderLeft: `4px solid ${isSuggested ? C.warning : C.accent}`,
+                    cursor: 'pointer',
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px' }}>
+                    <div>
+                      {isSuggested && (
+                        <div style={{ marginBottom: '4px' }}>
+                          <Badge type="warning" style={{ fontSize: '0.62rem', display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                            <Icon name="zap" size={11} strokeWidth={2.5} /> Risultato suggerito
+                          </Badge>
+                        </div>
+                      )}
+                      <span style={{ fontWeight: '800', color: isSuggested ? C.warning : C.accent, fontSize: '1rem' }}>{group.label}</span>
+                      {group.titolo && <span style={{ fontSize: '0.82rem', color: C.text, marginLeft: '8px' }}>{group.titolo}</span>}
+                      <div style={{ fontSize: '0.78rem', color: C.textLight, marginTop: '2px', display: 'flex', alignItems: 'center', gap: '5px' }}>
+                        {group.count} {group.count === 1 ? 'voce' : 'voci'}
+                        {group.voci.some(v => note[v.id]) && <Icon name="file-text" size={12} color={C.accent} aria-label="Nota presente" />}
+                      </div>
+                    </div>
+                    <span style={{ color: isSuggested ? C.warning : C.accent }}>{expandedGroupId === gid ? '▲' : '▼'}</span>
                   </div>
-                  <span style={{ color: C.accent }}>{expandedGroupId === `grp_${group.articolo_numero}` ? '▲' : '▼'}</span>
+                  {expandedGroupId === gid && (
+                    <div style={{ padding: '0 8px 8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                      {group.voci.map(renderItem)}
+                    </div>
+                  )}
                 </div>
-                {expandedGroupId === `grp_${group.articolo_numero}` && (
-                  <div style={{ padding: '0 8px 8px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                    {group.voci.map(renderItem)}
-                  </div>
-                )}
-              </div>
-            );
+              );
+            };
 
             if (displayList.mode === 'preferiti') {
               if (displayList.items.length === 0) {
@@ -255,31 +303,39 @@ export const Operatore = ({ onNavigate }) => {
               return displayList.items.map(renderItem);
             }
 
+            if (displayList.mode === 'sotto_soglia') {
+              return (
+                <div style={{ textAlign: 'center', padding: '40px 16px', color: '#999' }}>
+                  Digita almeno {MIN_SEARCH_CHARS} caratteri per cercare.
+                </div>
+              );
+            }
+
             // Modalità ricerca
-            const { exactGroups, partial, text } = displayList;
-            const hasResults = exactGroups.length > 0 || partial.length > 0 || text.length > 0;
+            const { exactGroups, suggestedGroups, otherGroups } = displayList;
+            const hasResults = exactGroups.length > 0 || suggestedGroups.length > 0 || otherGroups.length > 0;
             if (!hasResults) {
               return <div style={{ textAlign: 'center', padding: '40px 16px', color: '#999' }}>Nessun risultato trovato.</div>;
             }
 
             return (
               <>
+                {suggestedGroups.length > 0 && (
+                  <>
+                    {renderSectionLabel('Risultato suggerito')}
+                    {suggestedGroups.map(renderGroupHeader)}
+                  </>
+                )}
                 {exactGroups.length > 0 && (
                   <>
                     {renderSectionLabel(`Art. ${search.trim()} — corrispondenza esatta`)}
                     {exactGroups.map(renderGroupHeader)}
                   </>
                 )}
-                {partial.length > 0 && (
+                {otherGroups.length > 0 && (
                   <>
-                    {renderSectionLabel('Voci correlate')}
-                    {partial.map(renderItem)}
-                  </>
-                )}
-                {text.length > 0 && (
-                  <>
-                    {renderSectionLabel('Altri risultati')}
-                    {text.map(renderItem)}
+                    {renderSectionLabel((suggestedGroups.length > 0 || exactGroups.length > 0) ? 'Altri risultati' : 'Risultati')}
+                    {otherGroups.map(renderGroupHeader)}
                   </>
                 )}
               </>

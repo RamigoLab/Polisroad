@@ -57,7 +57,7 @@ export const useNote = () => {
         queryClient.setQueryData(queryKey(userId), context.previous);
       }
     },
-    onSettled: (_data, _err, vars) => {
+    onSettled: () => {
       // Invalida solo se non era offline (l'offline è già in coda)
       if (navigator.onLine) {
         queryClient.invalidateQueries({ queryKey: queryKey(userId) });

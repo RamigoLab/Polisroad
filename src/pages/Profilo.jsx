@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { TextInput } from '../components/ui/TextInput';
 import { useToast } from '../components/ui/ToastManager';
+import { useConfirm } from '../components/ui/ConfirmDialog';
 import { C } from '../styles/theme';
 import { Icon } from '../components/ui/Icon';
 import { S } from '../styles/styles';
@@ -34,6 +35,9 @@ const ProfileItem = ({
 }) => (
   <div
     onClick={onPress}
+    role={onPress ? 'button' : undefined}
+    tabIndex={onPress ? 0 : undefined}
+    onKeyDown={onPress ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onPress(); } } : undefined}
     style={isLast ? PS.profileItemLast : PS.profileItem}
   >
     <div style={{ ...PS.profileItemIcon, backgroundColor: iconBg || C.surfaceContainer }}>
@@ -61,11 +65,22 @@ const Group = ({ label, children }) => (
 );
 
 /** Pannello espandibile (per changelog, modifica profilo, ecc.) */
-const Expandable = ({ iconName, iconBg, iconColor, label, sub, children }) => {
-  const [open, setOpen] = useState(false);
+const Expandable = ({ iconName, iconBg, iconColor, label, sub, children, isOpen, onToggle }) => {
+  const [internalOpen, setInternalOpen] = useState(false);
+  // Controllato se il chiamante passa isOpen; altrimenti gestisce da sé lo stato (comportamento originale)
+  const isControlled = isOpen !== undefined;
+  const open = isControlled ? isOpen : internalOpen;
+  const handleToggle = () => (isControlled ? onToggle?.(!open) : setInternalOpen(v => !v));
   return (
     <>
-      <div onClick={() => setOpen(v => !v)} style={PS.profileItem}>
+      <div
+        onClick={handleToggle}
+        role="button"
+        tabIndex={0}
+        aria-expanded={open}
+        onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleToggle(); } }}
+        style={PS.profileItem}
+      >
         <div style={{ ...PS.profileItemIcon, backgroundColor: iconBg || C.surfaceContainer }}>
           <Icon name={iconName} size={16} color={iconColor || C.textLight} strokeWidth={1.75} />
         </div>
@@ -108,6 +123,7 @@ export const Profilo = ({ onNavigate }) => {
   });
   const [saveLoading, setSaveLoading] = useState(false);
   const { showToast } = useToast();
+  const confirmDialog = useConfirm();
 
   const { isDarkMode, toggleTheme } = useTheme();
 
@@ -342,6 +358,8 @@ export const Profilo = ({ onNavigate }) => {
           iconName="pen-line" iconBg="#dbeafe" iconColor="#1e40af"
           label="Modifica profilo"
           sub="Nome, grado, ente, contatti"
+          isOpen={editOpen}
+          onToggle={setEditOpen}
         >
           <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
             <TextInput label="Grado" value={formData.grado} onChange={e => setFormData({ ...formData, grado: e.target.value })} />
@@ -351,7 +369,20 @@ export const Profilo = ({ onNavigate }) => {
             <TextInput label="Email" type="email" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
             <TextInput label="Telefono" type="tel" value={formData.telefono} onChange={e => setFormData({ ...formData, telefono: e.target.value })} />
             <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
-              <button onClick={() => setEditOpen(false)} style={{ ...S.btnSecondary, flex: 1 }}>Annulla</button>
+              <button
+                onClick={() => {
+                  // Ripristina i valori originali del profilo, non solo chiude il pannello
+                  setFormData({
+                    grado: profile?.grado || '', nome: profile?.nome || '',
+                    cognome: profile?.cognome || '', forza: profile?.forza || '',
+                    email: profile?.email || '', telefono: profile?.telefono || '',
+                  });
+                  setEditOpen(false);
+                }}
+                style={{ ...S.btnSecondary, flex: 1 }}
+              >
+                Annulla
+              </button>
               <button onClick={handleSave} disabled={saveLoading} style={{ ...S.btnPrimary, flex: 2, border: 'none' }}>
                 {saveLoading ? 'Salvataggio...' : 'Salva modifiche'}
               </button>
@@ -426,7 +457,14 @@ export const Profilo = ({ onNavigate }) => {
             iconName="wifi-off" iconBg="#fee2e2" iconColor="#dc2626"
             label="Disattiva su tutti i dispositivi"
             sub={`${pushDeviceCount} dispositivi registrati`}
-            onPress={pushUnsubscribe}
+            onPress={async () => {
+              const ok = await confirmDialog({
+                title: 'Disattivare ovunque?',
+                message: `Le notifiche push verranno disattivate su tutti i ${pushDeviceCount} dispositivi registrati.`,
+                confirmLabel: 'Disattiva',
+              });
+              if (ok) pushUnsubscribeAll();
+            }}
           />
         )}
         {!isInstalled && isInstallable && (
@@ -609,6 +647,9 @@ export const Profilo = ({ onNavigate }) => {
         <div style={{ ...PS.profileGroupLabel, color: C.danger }}>Zona pericolosa</div>
         <div style={PS.profileDangerSection}>
           <div onClick={() => { setDeleteModal(true); setDeleteConfirmText(''); }}
+            role="button" tabIndex={0}
+            aria-label="Elimina account"
+            onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setDeleteModal(true); setDeleteConfirmText(''); } }}
             style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '13px 14px', cursor: 'pointer' }}
           >
             <div style={{ width: '30px', height: '30px', borderRadius: '9px', backgroundColor: '#fee2e2', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
@@ -659,7 +700,7 @@ export const Profilo = ({ onNavigate }) => {
                 width: '100%', padding: '10px 12px', borderRadius: C.radiusSm,
                 border: `1.5px solid ${deleteConfirmText === 'ELIMINA' ? C.danger : C.border}`,
                 fontSize: '0.95rem', marginBottom: '20px', boxSizing: 'border-box',
-                backgroundColor: C.surfaceContainer, color: C.text, outline: 'none',
+                backgroundColor: C.surfaceContainer, color: C.text,
               }}
             />
             <div style={{ display: 'flex', gap: '10px' }}>

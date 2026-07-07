@@ -8,6 +8,7 @@ import { C } from '../styles/theme';
 import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { useProntuario } from '../hooks/useProntuario';
+import { useToast } from '../components/ui/ToastManager';
 import { calcolaSanzione, generaTestoCalcolo } from '../utils/calcolatoreUtils';
 
 // Chiave sessionStorage per persistere l'ultimo calcolo nella sessione
@@ -83,6 +84,7 @@ const Toggle = ({ label, sublabel, checked, onChange, icon }) => (
 // ─── Pagina principale ────────────────────────────────────────────────────────
 export const Calcolatore = ({ onNavigate }) => {
   const { list } = useProntuario();
+  const { showToast } = useToast();
 
   // Inizializza da sessionStorage se disponibile
   const _saved = loadSessionState();
@@ -130,6 +132,8 @@ export const Calcolatore = ({ onNavigate }) => {
     navigator.clipboard.writeText(testo).then(() => {
       setCopied(true);
       setTimeout(() => setCopied(false), 2500);
+    }).catch(() => {
+      showToast('Impossibile copiare negli appunti. Riprova o copia il testo manualmente.', 'error');
     });
   };
 

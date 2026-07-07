@@ -8,7 +8,7 @@ const mockGetQueryData = vi.fn(() => []);
 const mockInvalidateQueries = vi.fn();
 
 vi.mock('@tanstack/react-query', () => ({
-  useQuery: ({ queryFn, enabled }) => {
+  useQuery: ({ enabled }) => {
     if (!enabled) return { data: [], error: null };
     return { data: ['pron-1', 'pron-2'], error: null };
   },

@@ -1,5 +1,4 @@
 import React from 'react';
-import { C } from '../styles/theme';
 import { Icon } from './ui/Icon';
 
 export class SectionErrorBoundary extends React.Component {

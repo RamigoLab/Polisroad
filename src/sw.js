@@ -52,11 +52,35 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Cache-first per tutti gli altri asset (JS, CSS, icone, HTML)
+  // Richieste di NAVIGAZIONE (apertura o reload della pagina): il browser
+  // richiede sempre l'URL esatto digitato/aperto (es. "/", "/?page=prontuario",
+  // un deep-link da notifica push...), ma l'unica risorsa precachata è
+  // "index.html" — chiavi diverse, "cache.match(event.request)" non trova
+  // mai una corrispondenza. Prima di questo fix: online funzionava (la rete
+  // rispondeva comunque), ma un cold-start (app chiusa/refresh) mentre offline
+  // falliva sempre con "nessuna connessione", senza mostrare nulla — esattamente
+  // il caso di un'app SPA che deve sempre servire la stessa index.html per
+  // qualunque path, gestito qui esplicitamente invece di affidarsi al match
+  // esatto sull'URL richiesto.
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() =>
+        caches.match('index.html').then((cached) => cached || caches.match('/'))
+      )
+    );
+    return;
+  }
+
+  // Cache-first per tutti gli altri asset (JS, CSS, icone, HTML).
+  // Caso raro ma possibile: un asset non precachato (es. un chunk nuovo non
+  // ancora nella cache di questo Service Worker) richiesto mentre offline —
+  // senza rete e senza voce in cache, "cached" è undefined: rispondere con
+  // undefined è un errore per il Fetch API (TypeError silenzioso in console).
+  // Meglio un 504 esplicito, gestibile normalmente dal codice che ha fatto la richiesta.
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;
-      return fetch(event.request).catch(() => cached);
+      return fetch(event.request).catch(() => cached || new Response('', { status: 504, statusText: 'Offline' }));
     })
   );
 });

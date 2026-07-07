@@ -1,11 +1,11 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState } from 'react';
 import { C } from '../../styles/theme';
 import { S } from '../../styles/styles';
 import { PS } from '../../styles/pages';
-import { Icon } from '../../components/ui/Icon';
 import { TextInput } from '../../components/ui/TextInput';
 import { TextArea } from '../../components/ui/TextArea';
 import { useProntuario } from '../../hooks/useProntuario';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 
 // Estrae il numero base dell'articolo (es. "142bis" → 142)
 const parseArticoloNum = (str) => parseInt((str || '').replace(/[^0-9]/g, ''), 10) || 0;
@@ -47,6 +47,7 @@ const groupByArticolo = (items) => {
 
 export const AdminProntuario = () => {
   const { list, add, update, remove } = useProntuario();
+  const confirmDialog = useConfirm();
   const [editingId, setEditingId] = useState(null);
   const [search, setSearch] = useState('');
   const [formData, setFormData] = useState({});
@@ -77,7 +78,11 @@ export const AdminProntuario = () => {
 
   const handleDelete = async (id, e) => {
     if (e) e.stopPropagation();
-    if (window.confirm("Sei sicuro di voler eliminare questa voce dal prontuario?")) {
+    const ok = await confirmDialog({
+      title: 'Eliminare la voce?',
+      message: 'Questa voce sarà rimossa definitivamente dal prontuario.',
+    });
+    if (ok) {
       await remove(id);
     }
   };
@@ -145,7 +150,16 @@ export const AdminProntuario = () => {
           return (
             <div
               key={`grp_${group.articolo_numero}`}
+              role="button"
+              tabIndex={0}
+              aria-expanded={isExpanded}
               onClick={() => setExpandedGroupId(isExpanded ? null : group.articolo_numero)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  setExpandedGroupId(isExpanded ? null : group.articolo_numero);
+                }
+              }}
               style={{
                 ...S.card,
                 backgroundColor: C.accentLight,

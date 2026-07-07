@@ -38,7 +38,11 @@ export const PasswordInput = ({
           type={visible ? 'text' : 'password'}
           value={value}
           onChange={onChange}
-          style={{ ...UIS.input, paddingRight: '44px' }}
+          style={{
+            ...UIS.input,
+            paddingRight: '44px',
+            ...(showRequirements && value.length > 0 && allOk ? { borderColor: C.success } : {}),
+          }}
           autoComplete="new-password"
           {...rest}
         />
@@ -93,6 +97,12 @@ export const PasswordInput = ({
               {r.label}
             </div>
           ))}
+          {allOk && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.8rem', color: C.success, fontWeight: '700', marginTop: '2px' }}>
+              <Icon name="circle-check" size={14} color={C.success} />
+              Password sicura
+            </div>
+          )}
         </div>
       )}
     </div>

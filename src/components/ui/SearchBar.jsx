@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { C } from '../../styles/theme';
 import { Icon } from './Icon';
 
@@ -8,16 +8,21 @@ export const SearchBar = ({
   loading = false,
 }) => {
   const showSuggestions = suggestions.length > 0 && !value;
+  const [isFocused, setIsFocused] = useState(false);
+  // Il contorno era rimosso dall'input (outline:'none') senza alcun sostituto:
+  // chi naviga da tastiera perdeva ogni indicazione visiva del focus. Ora lo
+  // stesso "glow" già usato quando c'è del testo scatta anche solo al focus.
+  const highlighted = isFocused || !!value;
 
   return (
     <div style={{ position: 'relative' }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: '10px',
         backgroundColor: C.card,
-        border: `1.5px solid ${value ? C.accent : C.border}`,
+        border: `1.5px solid ${highlighted ? C.accent : C.border}`,
         borderRadius: '999px',
         padding: '11px 16px',
-        boxShadow: value ? `0 0 0 3px ${C.accentLight}` : 'var(--shadow-sm)',
+        boxShadow: highlighted ? `0 0 0 3px ${C.accentLight}` : 'var(--shadow-sm)',
         transition: 'all 0.15s ease',
       }}>
         {loading ? (
@@ -35,6 +40,8 @@ export const SearchBar = ({
           type="text"
           value={value}
           onChange={onChange}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
           placeholder={placeholder}
           style={{
             flex: 1, border: 'none', outline: 'none',
@@ -45,6 +52,7 @@ export const SearchBar = ({
         {value && (
           <button
             onClick={() => onChange({ target: { value: '' } })}
+            aria-label="Cancella ricerca"
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               width: '20px', height: '20px', borderRadius: '50%',

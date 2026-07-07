@@ -7,6 +7,7 @@ import { TextInput } from '../../components/ui/TextInput';
 import { TextArea } from '../../components/ui/TextArea';
 import { useNews } from '../../hooks/useNews';
 import { useToast } from '../../components/ui/ToastManager';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { validators, sanitizers } from '../../utils/validation';
 import { logger } from '../../utils/logger';
 import { supabase } from '../../config/supabase';
@@ -24,6 +25,7 @@ const RELEVANT_KEYWORDS = [
 export const AdminNews = () => {
   const { list, add, update, remove } = useNews();
   const { showToast } = useToast();
+  const confirmDialog = useConfirm();
 
   const [editingId, setEditingId] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -125,7 +127,11 @@ export const AdminNews = () => {
   };
 
   const handleDelete = async (id, title) => {
-    if (!window.confirm(`Sei sicuro di voler eliminare la notizia "${title}"?`)) return;
+    const ok = await confirmDialog({
+      title: 'Eliminare la notizia?',
+      message: `"${title}" sarà rimossa definitivamente.`,
+    });
+    if (!ok) return;
     
     setLoading(true);
     const { error } = await remove(id);

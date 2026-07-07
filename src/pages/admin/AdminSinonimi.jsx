@@ -4,6 +4,7 @@ import { SearchBar } from '../../components/ui/SearchBar';
 import { Badge } from '../../components/ui/Badge';
 import { Icon } from '../../components/ui/Icon';
 import { useToast } from '../../components/ui/ToastManager';
+import { useConfirm } from '../../components/ui/ConfirmDialog';
 import { useSearchSynonyms } from '../../hooks/useSearchSynonyms';
 import { C } from '../../styles/theme';
 import { S } from '../../styles/styles';
@@ -13,6 +14,7 @@ const emptyForm = { termine: '', target_type: 'prontuario', target_ref: '', peso
 export const AdminSinonimi = () => {
   const { list, loading, add, update, remove } = useSearchSynonyms();
   const { showToast } = useToast();
+  const confirmDialog = useConfirm();
 
   const [search, setSearch] = useState('');
   const [editingId, setEditingId] = useState(null);
@@ -74,7 +76,11 @@ export const AdminSinonimi = () => {
   };
 
   const handleDelete = async (item) => {
-    if (!window.confirm(`Eliminare il sinonimo "${item.termine}"?`)) return;
+    const ok = await confirmDialog({
+      title: 'Eliminare il sinonimo?',
+      message: `"${item.termine}" non suggerirà più il risultato associato. Questa azione non è reversibile.`,
+    });
+    if (!ok) return;
     const { error } = await remove(item.id);
     if (error) showToast('Errore durante l\'eliminazione', 'error');
     else showToast('Sinonimo eliminato', 'success');

@@ -212,6 +212,15 @@ const NavCard = ({ icon, label, bg, color, onClick }) => {
       onPointerDown={() => setPressed(true)}
       onPointerUp={() => setPressed(false)}
       onPointerLeave={() => setPressed(false)}
+      role="button"
+      tabIndex={0}
+      aria-label={label}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onClick?.();
+        }
+      }}
       style={{
         ...PS.homeNavCard,
         transform: pressed ? 'scale(0.93)' : 'scale(1)',
