@@ -57,24 +57,24 @@ DROP POLICY IF EXISTS "search_synonyms_insert_admin" ON public.search_synonyms;
 CREATE POLICY "search_synonyms_insert_admin"
   ON public.search_synonyms FOR INSERT TO authenticated
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND ruolo = 'admin')
+    public.is_admin()
   );
 
 DROP POLICY IF EXISTS "search_synonyms_update_admin" ON public.search_synonyms;
 CREATE POLICY "search_synonyms_update_admin"
   ON public.search_synonyms FOR UPDATE TO authenticated
   USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND ruolo = 'admin')
+    public.is_admin()
   )
   WITH CHECK (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND ruolo = 'admin')
+    public.is_admin()
   );
 
 DROP POLICY IF EXISTS "search_synonyms_delete_admin" ON public.search_synonyms;
 CREATE POLICY "search_synonyms_delete_admin"
   ON public.search_synonyms FOR DELETE TO authenticated
   USING (
-    EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND ruolo = 'admin')
+    public.is_admin()
   );
 
 COMMENT ON TABLE public.search_synonyms IS
