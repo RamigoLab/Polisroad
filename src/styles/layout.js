@@ -104,7 +104,12 @@ export const LS = {
     borderRadius: '10px',
     transition: 'opacity 0.15s ease',
     minWidth: '52px',
-    opacity: isActive ? 1 : 0.6,
+    // L'opacity qui era applicata anche all'etichetta di testo: un audit
+    // Lighthouse reale ha misurato un contrasto di 2.87:1 sui tab inattivi
+    // (sotto il minimo 4.5:1 WCAG) proprio a causa di questa riduzione al
+    // 60%. Il colore del testo (navTabLabel, sotto) da solo distingue già
+    // attivo/inattivo con contrasto pieno — l'opacity ridotta ora si applica
+    // solo all'icona (vedi BottomNav.jsx), non più al testo.
   }),
   navTabIndicator: (isActive) => ({
     display: 'flex',

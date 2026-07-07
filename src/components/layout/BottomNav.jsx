@@ -20,12 +20,14 @@ export const BottomNav = ({ currentPage, onNavigate }) => (
             tabIndex={0}
             onKeyDown={(e) => e.key === 'Enter' && onNavigate(tab.id)}
           >
-            <Icon
-              name={tab.icon}
-              size={22}
-              color={isActive ? C.accent : C.textLight}
-              strokeWidth={isActive ? 2.25 : 1.75}
-            />
+            <span style={{ display: 'flex', opacity: isActive ? 1 : 0.7 }}>
+              <Icon
+                name={tab.icon}
+                size={22}
+                color={isActive ? C.accent : C.textLight}
+                strokeWidth={isActive ? 2.25 : 1.75}
+              />
+            </span>
             <span style={LS.navTabLabel(isActive)}>{tab.label}</span>
           </div>
         );

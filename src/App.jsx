@@ -252,9 +252,9 @@ function AppInner() {
       <Suspense fallback={<PageLoader />}>
         <div className="app-viewport-container">
           {showNav && <Sidebar currentPage={currentPage} onNavigate={navigate} />}
-          <div className="app-main-content">
+          <main className="app-main-content">
             {renderPage()}
-          </div>
+          </main>
           {showNav && <BottomNav currentPage={currentPage} onNavigate={navigate} />}
         </div>
       </Suspense>

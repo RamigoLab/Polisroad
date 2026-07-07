@@ -15,6 +15,15 @@ Un audit esterno generico ha sollevato diversi punti già rivisti uno per uno su
 - Lazy loading: già presente su tutte le pagine, code-splitting già ottimizzato nella 1.9.9
 - PKCE auth flow: configurazione raccomandata da Supabase per le SPA, introdotta deliberatamente in passato — non va disabilitata senza un sintomo reale riscontrato
 
+### Validazione con Lighthouse reale (7 luglio 2026)
+Primo audit misurato (non dedotto dal codice) sulla build in produzione:
+- **Performance: 100/100** — FCP 0.8s, LCP 0.9s, TBT 91ms, CLS 0, TTI 1.2s
+- **Best Practices: 100/100**
+- **Accessibilità: 94/100** — 2 problemi reali trovati e corretti:
+  - I tab inattivi della barra di navigazione inferiore usavano `opacity: 0.6` su tutto il tab (icona + testo), abbassando il contrasto del testo sotto il minimo WCAG (2.87:1 misurato, richiesti 4.5:1). L'opacity ridotta ora si applica solo all'icona, il testo resta sempre a piena leggibilità
+  - Mancava un landmark `<main>` nel documento (il contenitore del contenuto era un semplice `<div>`) — ora è un `<main>` semantico
+- **SEO: 58/100** — atteso, l'app è privata e già marcata `noindex, nofollow` di proposito. Aggiunto anche un `robots.txt` esplicito (prima assente: la richiesta cadeva sul fallback SPA e restituiva `index.html`, generando 30 falsi errori nel report)
+
 ## [1.9.9] — 4 Luglio 2026
 
 ### Aggiunto
