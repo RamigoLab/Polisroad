@@ -1,11 +1,5 @@
 # Changelog PolisRoad
 
-## [2.0.1] — 7 Luglio 2026
-
-### Ottimizzazione Performance
-- **Risolto timeout in Lighthouse su pagina Prontuario (PROTOCOL_TIMEOUT)**: Ottimizzato l'algoritmo di ordinamento `sortItems` per le voci del prontuario, introducendo una Schwartzian transform. L'operazione `replace(/\D/g, '')` non viene più eseguita migliaia di volte all'interno del loop di confronto O(N log N), azzerando i blocchi del thread principale durante il raggruppamento degli articoli.
-- **Ricerca ottimizzata**: Precalcolate le stringhe di ricerca normalizzate (rimozione diacritici) per Prontuario e Normativa, evitando di eseguire la normalizzazione `normalize()` per tutti gli elementi a ogni singola digitazione dell'utente.
-
 ## [2.0.0] — 6 Luglio 2026
 
 Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 (usabilità, ricerca, bug generali, config deploy, accessibilità, performance). Vedi le sezioni 1.9.7–1.9.9 sotto per il dettaglio di ogni singolo intervento.
@@ -20,6 +14,14 @@ Un audit esterno generico ha sollevato diversi punti già rivisti uno per uno su
 - `skipWaiting()`/`clients.claim()`: già presenti
 - Lazy loading: già presente su tutte le pagine, code-splitting già ottimizzato nella 1.9.9
 - PKCE auth flow: configurazione raccomandata da Supabase per le SPA, introdotta deliberatamente in passato — non va disabilitata senza un sintomo reale riscontrato
+
+### Corretto (7 luglio 2026)
+- **Cronologia ricerche non cancellabile**: la Ricerca Globale mostrava due liste sovrapposte delle ricerche recenti — una cancellabile (sezione "Ricerche recenti", con bottone di rimozione per voce) e una interna alla barra di ricerca senza alcun modo di eliminarla, mostrata proprio quando il campo era vuoto per una condizione invertita (`!value` invece di `!!value`). Il dropdown ora compare solo mentre si digita (autocompletamento vero), il campo vuoto mostra solo la sezione cancellabile
+- Aggiunta navigazione da tastiera anche al dropdown di autocompletamento della Ricerca Globale (stesso pattern già applicato altrove)
+
+### Ottimizzato (performance ricerca e ordinamento Prontuario)
+- `sortItems`: trasformata di Schwartz — le chiavi di ordinamento si calcolano una volta per voce invece che ad ogni confronto durante il sort
+- `searchEngine.js`: gli haystack normalizzati per la ricerca testuale si precalcolano una sola volta alla creazione dell'indice (quando cambiano i dati), non ad ogni carattere digitato
 
 ### Validazione con Lighthouse reale (7 luglio 2026)
 Primo audit misurato (non dedotto dal codice) sulla build in produzione:

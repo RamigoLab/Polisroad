@@ -14,14 +14,16 @@ export const sortSuffix = (str) => {
 };
 
 // Ordina voci per numero articolo → suffisso → codice_caso
+// Trasformata di Schwartz: precalcola le chiavi di ordinamento una sola volta
+// per voce, invece di ricalcolarle (regex + parseInt) ad ogni confronto fatto
+// da sort() — con N voci, un compare naive richiama parseArticoloNum/sortSuffix
+// O(N log N) volte anziché O(N).
 export const sortItems = (items) => {
-  // Ottimizzazione: precalcola le chiavi di ordinamento per evitare di 
-  // rieseguire regex e conversioni ad ogni confronto (Schwartzian transform).
   const mapped = items.map(item => ({
     item,
     num: parseArticoloNum(item.articolo_numero),
     suf: sortSuffix(item.articolo_numero),
-    cod: item.codice_caso || ''
+    cod: item.codice_caso || '',
   }));
 
   mapped.sort((a, b) => {

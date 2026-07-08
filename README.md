@@ -1,4 +1,4 @@
-# PolisRoad v2.0.1
+# PolisRoad v2.0.0
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -19,6 +19,9 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 
 - Service Worker: fallback esplicito (504) invece di risposta `undefined` per asset non precachati offline
 - Verificati punto per punto (e confermati già corretti) i rilievi di un audit esterno generico su ENV/Supabase, race condition login, PKCE, lazy loading — dettaglio in `CHANGELOG.md`
+- Validato con Lighthouse reale: Performance 100/100, Best Practices 100/100, Accessibilità 94/100 (2 problemi reali corretti: contrasto tab inattivi, landmark `<main>` mancante)
+- Risolto: la cronologia ricerche recenti non si poteva cancellare (due liste sovrapposte, una senza bottone di rimozione)
+- Ottimizzate le performance di ordinamento e ricerca nel Prontuario
 
 ## Novità 1.9.9
 
@@ -59,8 +62,6 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 - Audit RLS completo su tutte le tabelle Supabase
 
 ## Azioni richieste su Supabase dopo il deploy
-
-**2.0.1:** nessuna azione richiesta (nessuna modifica al database).
 
 **2.0.0:** nessuna azione richiesta (nessuna modifica al database).
 

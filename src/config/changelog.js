@@ -20,6 +20,8 @@ const CHANGELOG_DATA = [
       'Accessibilità da tastiera e contrasto colori migliorati in tutta l\'app',
       'Caricamento più veloce grazie a un code-splitting più efficiente',
       'Irrobustito il funzionamento offline del Service Worker',
+      'Risolto: la cronologia delle ricerche recenti non si poteva cancellare',
+      'Ricerca più veloce grazie a un ordinamento e un motore di ricerca ottimizzati',
     ],
   },
   {

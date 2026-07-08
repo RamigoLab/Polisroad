@@ -80,6 +80,18 @@ function matchSynonymTargets(rawQuery, synonyms, targetType) {
 export function createProntuarioSearchIndex(list = [], synonyms = []) {
   const fuse = new Fuse(list, FUSE_PRONTUARIO_OPTIONS);
 
+  // Precalcola gli haystack normalizzati una sola volta qui, non ad ogni
+  // ricerca: questa funzione viene già richiamata solo quando cambiano i
+  // dati (vedi gli useMemo in useSearch.js/Prontuario.jsx/ecc.), quindi il
+  // costo di normalize() per voce si paga una volta sola, non ad ogni
+  // carattere digitato.
+  const haystacks = new Map(
+    list.map(item => [
+      item.id,
+      normalize(`${item.titolo || ''} ${item.descrizione || ''} ${item.rif_normativo || ''} ${item.codice_violazione || ''} ${item.codice_caso || ''}`),
+    ])
+  );
+
   return {
     search(rawQuery, minChars = MIN_SEARCH_CHARS) {
       const q = normalize(rawQuery);
@@ -105,20 +117,10 @@ export function createProntuarioSearchIndex(list = [], synonyms = []) {
       }
       const suggestedIds = new Set(suggested.flatMap(g => g.voci.map(v => v.id)));
 
-      // Precompute haystack per item to avoid normalizing on every search
-      if (!list._normalizedForSearch) {
-        list._normalizedForSearch = list.map(item => ({
-          id: item.id,
-          haystack: normalize(
-            `${item.titolo || ''} ${item.descrizione || ''} ${item.rif_normativo || ''} ${item.codice_violazione || ''} ${item.codice_caso || ''}`
-          )
-        }));
-      }
-
-      // 3. Testo esatto (accenti normalizzati)
+      // 3. Testo esatto (accenti normalizzati, haystack già precalcolato)
       const textMatchIds = new Set();
-      list._normalizedForSearch.forEach(item => {
-        if (item.haystack.includes(q)) textMatchIds.add(item.id);
+      list.forEach(item => {
+        if (haystacks.get(item.id)?.includes(q)) textMatchIds.add(item.id);
       });
 
       // 4. Fuzzy sui rimanenti
@@ -157,6 +159,14 @@ function buildNormativaGroups(items) {
 export function createNormativaSearchIndex(list = [], synonyms = []) {
   const fuse = new Fuse(list, FUSE_NORMATIVA_OPTIONS);
 
+  // Stesso principio del prontuario: haystack precalcolati una sola volta.
+  const haystacks = new Map(
+    list.map(item => [
+      item.id,
+      normalize(`${item.titolo_articolo || item.titolo || ''} ${item.testo || ''} ${item.articolo || ''} ${item.comma || ''}`),
+    ])
+  );
+
   return {
     search(rawQuery, minChars = MIN_SEARCH_CHARS) {
       const q = normalize(rawQuery);
@@ -182,18 +192,9 @@ export function createNormativaSearchIndex(list = [], synonyms = []) {
       }
       const suggestedIds = new Set(suggested.flatMap(g => g.commi.map(v => v.id)));
 
-      if (!list._normalizedForSearch) {
-        list._normalizedForSearch = list.map(item => ({
-          id: item.id,
-          haystack: normalize(
-            `${item.titolo_articolo || item.titolo || ''} ${item.testo || ''} ${item.articolo || ''} ${item.comma || ''}`
-          )
-        }));
-      }
-
       const textMatchIds = new Set();
-      list._normalizedForSearch.forEach(item => {
-        if (item.haystack.includes(q)) textMatchIds.add(item.id);
+      list.forEach(item => {
+        if (haystacks.get(item.id)?.includes(q)) textMatchIds.add(item.id);
       });
 
       const fuseResults = fuse.search(q);

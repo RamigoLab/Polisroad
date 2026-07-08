@@ -7,7 +7,15 @@ export const SearchBar = ({
   suggestions = [], onSuggestionClick,
   loading = false,
 }) => {
-  const showSuggestions = suggestions.length > 0 && !value;
+  // PRIMA: "!value" mostrava questo dropdown proprio quando il campo era
+  // VUOTO — cioè esattamente quando compare anche la sezione "Ricerche
+  // recenti" sotto (quella con il bottone di rimozione per ogni voce).
+  // Risultato: due liste sovrapposte della stessa cronologia, ma solo una
+  // cancellabile — l'utente vedeva "tutta la cronologia" apparire dal
+  // dropdown senza alcun modo di eliminarla. Il dropdown ora compare solo
+  // mentre si digita (autocompletamento vero), il campo vuoto mostra solo
+  // la sezione cancellabile sotto.
+  const showSuggestions = suggestions.length > 0 && !!value;
   const [isFocused, setIsFocused] = useState(false);
   // Il contorno era rimosso dall'input (outline:'none') senza alcun sostituto:
   // chi naviga da tastiera perdeva ogni indicazione visiva del focus. Ora lo
@@ -79,7 +87,15 @@ export const SearchBar = ({
           {suggestions.map((s, i) => (
             <div
               key={i}
+              role="button"
+              tabIndex={0}
               onClick={() => onSuggestionClick?.(s)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSuggestionClick?.(s);
+                }
+              }}
               style={{
                 display: 'flex', alignItems: 'center', gap: '10px',
                 padding: '11px 14px',
