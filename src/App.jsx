@@ -47,6 +47,42 @@ const AdminNotifiche = lazy(() => import('./pages/admin/AdminNotifiche').then(m 
 
 import posthog from 'posthog-js';
 
+// ─── Pre-fetching intelligente dei chunk JS ───────────────────────────────────
+// Avvia il download del bundle della pagina corrente IMMEDIATAMENTE, in parallelo
+// all'auth di Supabase. Quando l'auth termina e React monta il componente lazy,
+// il bundle è già in cache e la pagina appare senza un secondo giro di rete.
+const PAGE_PREFETCH_MAP = {
+  home:               () => import('./pages/Home'),
+  prontuario:         () => import('./pages/Prontuario'),
+  normativa:          () => import('./pages/Normativa'),
+  preferiti:          () => import('./pages/Preferiti'),
+  ricerca:            () => import('./pages/Ricerca'),
+  calcolatore:        () => import('./pages/Calcolatore'),
+  news:               () => import('./pages/News'),
+  links:              () => import('./pages/Links'),
+  profilo:            () => import('./pages/Profilo'),
+  operatore:          () => import('./pages/Operatore'),
+  guide:              () => import('./pages/GuidePratiche'),
+  privacy:            () => import('./pages/Privacy'),
+  termini:            () => import('./pages/TerminiServizio'),
+  admin_dashboard:    () => import('./pages/admin/AdminDashboard'),
+  admin_news:         () => import('./pages/admin/AdminNews'),
+  admin_prontuario:   () => import('./pages/admin/AdminProntuario'),
+  admin_normativa:    () => import('./pages/admin/AdminNormativa'),
+  admin_sinonimi:     () => import('./pages/admin/AdminSinonimi'),
+  admin_segnalazioni: () => import('./pages/admin/AdminSegnalazioni'),
+  admin_utenti:       () => import('./pages/admin/AdminUtenti'),
+  admin_notifiche:    () => import('./pages/admin/AdminNotifiche'),
+};
+
+// Determina la pagina iniziale leggendo prima ?page= dall'URL, poi localStorage.
+// Avvia subito il download del chunk corrispondente (fire-and-forget).
+const _initialPageRaw = new URLSearchParams(window.location.search).get('page')
+  || getItem('polisroad_current_page')
+  || 'home';
+(PAGE_PREFETCH_MAP[_initialPageRaw] || PAGE_PREFETCH_MAP.home)();
+// ─────────────────────────────────────────────────────────────────────────────
+
 function AppInner() {
   const {
     session,

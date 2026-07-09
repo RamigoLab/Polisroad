@@ -11,6 +11,15 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '2.0.1',
+    date: '9 Luglio 2026',
+    isNew: true,
+    items: [
+      'Performance: il bundle della pagina corrente inizia a scaricarsi in parallelo all\'autenticazione Supabase, eliminando il "waterfall" seriale (Auth → Download JS → Render) — valido per tutte le pagine dell\'app',
+      'Performance: le statistiche del Profilo (preferiti, note, segnalazioni) vengono caricate in background dopo il paint iniziale, riducendo il LCP della pagina Profilo',
+    ],
+  },
+  {
     version: '2.0.0',
     date: '6 Luglio 2026',
     isNew: true,

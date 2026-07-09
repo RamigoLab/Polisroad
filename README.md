@@ -1,4 +1,4 @@
-# PolisRoad v2.0.0
+# PolisRoad v2.0.1
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -12,6 +12,11 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - **Deployment**: Vercel + GitHub Desktop
 - **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
+
+## Novità 2.0.1
+
+- **Pre-fetching JS**: il bundle della pagina viene scaricato in parallelo all'autenticazione Supabase, eliminando il waterfall seriale `Auth + Download JS + Render` che causava LCP/FCP lenti — applicato a tutte le 21 rotte dell'app
+- **Statistiche Profilo differite**: le 3 query `COUNT` (preferiti, note, segnalazioni) vengono ora lanciate tramite `requestIdleCallback` dopo il primo paint, invece di bloccare il browser durante il render
 
 ## Novità 2.0.0
 

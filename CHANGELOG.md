@@ -1,5 +1,11 @@
 # Changelog PolisRoad
 
+## [2.0.1] — 9 Luglio 2026
+
+### Ottimizzato (performance LCP)
+- **Pre-fetching intelligente dei chunk JS**: il bundle della pagina corrente (rilevata da `?page=` o da `localStorage`) inizia a scaricarsi immediatamente, in parallelo all'autenticazione Supabase. Questo elimina il "waterfall" seriale `Auth + Download JS + Render` che causava un LCP/FCP elevato — ottimizzazione applicata a tutte le 21 rotte dell'app (`App.jsx`)
+- **Statistiche Profilo differite**: le 3 query `COUNT` di Supabase (preferiti, note, segnalazioni) vengono ora lanciate tramite `requestIdleCallback` (con fallback `setTimeout 300ms`) dopo il paint iniziale, invece che durante di esso — elimina il blocco del browser durante il rendering del Profilo (`Profilo.jsx`)
+
 ## [2.0.0] — 6 Luglio 2026
 
 Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 (usabilità, ricerca, bug generali, config deploy, accessibilità, performance). Vedi le sezioni 1.9.7–1.9.9 sotto per il dettaglio di ogni singolo intervento.
