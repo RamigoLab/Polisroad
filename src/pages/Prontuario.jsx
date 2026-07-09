@@ -74,11 +74,6 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
     posthog.capture('prontuario_item_selected', { prontuario_id: item.id });
   };
 
-  const handleContestazione = async () => {
-    showToast('Contestazione registrata con successo!', 'success');
-    posthog.capture('prontuario_contestazione', { prontuario_id: selectedItem?.id });
-  };
-
   const handleSaveNota = async (testo) => {
     try {
       await save(selectedItem.id, testo);
@@ -130,7 +125,6 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
           isFavorite={preferiti.includes(selectedItem.id)}
           nota={note[selectedItem.id] || ''}
           onSaveNota={handleSaveNota}
-          onContestazione={handleContestazione}
           onNavigate={onNavigate}
         />
       </PageWrapper>

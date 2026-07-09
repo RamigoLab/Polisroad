@@ -15,6 +15,9 @@ Un audit esterno generico ha sollevato diversi punti già rivisti uno per uno su
 - Lazy loading: già presente su tutte le pagine, code-splitting già ottimizzato nella 1.9.9
 - PKCE auth flow: configurazione raccomandata da Supabase per le SPA, introdotta deliberatamente in passato — non va disabilitata senza un sintomo reale riscontrato
 
+### Rimosso (8 luglio 2026)
+- **"Registra Contestazione"** (Prontuario e Modalità Operatore): era una funzione legata alla gamification rimossa in 1.9.4 — dava XP e sbloccava traguardi. Da allora non salvava più nulla da nessuna parte (né online né offline: solo un toast e un evento PostHog), pur suggerendo all'operatore che stesse registrando qualcosa di reale. Rimossa insieme al riepilogo "contestazioni di sessione" in Modalità Operatore (introdotto in 1.9.9, basato sulla stessa funzione ormai priva di senso) e a `src/config/badges.js`, file di configurazione badge orfano rimasto dalla gamification e mai più referenziato
+
 ### Corretto (7 luglio 2026)
 - **Cronologia ricerche non cancellabile**: la Ricerca Globale mostrava due liste sovrapposte delle ricerche recenti — una cancellabile (sezione "Ricerche recenti", con bottone di rimozione per voce) e una interna alla barra di ricerca senza alcun modo di eliminarla, mostrata proprio quando il campo era vuoto per una condizione invertita (`!value` invece di `!!value`). Il dropdown ora compare solo mentre si digita (autocompletamento vero), il campo vuoto mostra solo la sezione cancellabile
 - Aggiunta navigazione da tastiera anche al dropdown di autocompletamento della Ricerca Globale (stesso pattern già applicato altrove)

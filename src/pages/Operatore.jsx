@@ -8,7 +8,6 @@ import { useProntuario } from '../hooks/useProntuario';
 import { usePreferiti } from '../hooks/usePreferiti';
 import { useNote } from '../hooks/useNote';
 import { useAuth } from '../hooks/useAuth';
-import { useToast } from '../components/ui/ToastManager';
 import { useDebounce } from '../hooks/useDebounce';
 import { useData } from '../context/DataContext';
 import { createProntuarioSearchIndex, MIN_SEARCH_CHARS } from '../utils/searchEngine';
@@ -33,27 +32,12 @@ export const Operatore = ({ onNavigate }) => {
   const { profile } = useAuth();
   const { searchSynonyms = [] } = useData();
 
-  const { showToast } = useToast();
-
   const [search, setSearch] = useState('');
   const debouncedSearch = useDebounce(search, 300);
   const [expandedGroupId, setExpandedGroupId] = useState(null); // id gruppo articolo (es. "grp_6")
   const [expandedItemId, setExpandedItemId] = useState(null);   // id voce prontuario (numerico)
-  const [registering, setRegistering] = useState(false);
-  const [sessionContestazioni, setSessionContestazioni] = useState([]);
-  const [showRiepilogo, setShowRiepilogo] = useState(false);
 
   const isPending = search.trim().length >= MIN_SEARCH_CHARS && search !== debouncedSearch;
-
-  const handleRegistraContestazione = async (item) => {
-    setRegistering(true);
-    showToast(`Contestazione registrata: ${item.rif_normativo}`, 'success');
-    setSessionContestazioni(prev => [
-      { id: `${item.id}_${Date.now()}`, rif_normativo: item.rif_normativo, titolo: item.titolo || item.articolo_nome || '', time: new Date() },
-      ...prev,
-    ].slice(0, 20)); // basta l'ultimo turno, non serve accumulare all'infinito
-    setRegistering(false);
-  };
 
   const searchIndex = useMemo(
     () => createProntuarioSearchIndex(list, searchSynonyms),
@@ -97,41 +81,6 @@ export const Operatore = ({ onNavigate }) => {
 
       <div style={PS.operatoreBody}>
         <SearchBar value={search} onChange={e => setSearch(e.target.value)} placeholder="Cerca violazione o n° articolo..." loading={isPending} />
-
-        {sessionContestazioni.length > 0 && (
-          <div style={{ ...PS.operatoreItemCard, marginTop: '10px', marginBottom: '4px' }}>
-            <div
-              onClick={() => setShowRiepilogo(v => !v)}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => e.key === 'Enter' && setShowRiepilogo(v => !v)}
-              style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 14px', cursor: 'pointer' }}
-            >
-              <span style={{ fontSize: '0.82rem', fontWeight: '700', color: C.text, display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <Icon name="pen-line" size={14} color={C.accent} />
-                {sessionContestazioni.length} {sessionContestazioni.length === 1 ? 'contestazione registrata' : 'contestazioni registrate'} in questo turno
-              </span>
-              <span style={{ color: C.textLight }}>{showRiepilogo ? '▲' : '▼'}</span>
-            </div>
-            {showRiepilogo && (
-              <div style={{ padding: '0 14px 12px', display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                {sessionContestazioni.map(c => (
-                  <div key={c.id} style={{ display: 'flex', justifyContent: 'space-between', gap: '8px', fontSize: '0.8rem', borderTop: `1px solid ${C.border}`, paddingTop: '6px' }}>
-                    <span style={{ color: C.text }}>
-                      <strong>{c.rif_normativo}</strong>{c.titolo ? ` — ${c.titolo}` : ''}
-                    </span>
-                    <span style={{ color: C.textLight, whiteSpace: 'nowrap' }}>
-                      {c.time.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
-                ))}
-                <p style={{ fontSize: '0.7rem', color: C.textLight, marginTop: '4px' }}>
-                  Elenco valido solo per questa sessione — si azzera chiudendo l'app.
-                </p>
-              </div>
-            )}
-          </div>
-        )}
 
         {displayList.mode === 'preferiti' && (
           <p style={PS.operatoreFavLabel}>⭐ I TUOI PREFERITI</p>
@@ -219,22 +168,6 @@ export const Operatore = ({ onNavigate }) => {
                           <span style={PS.operatoreTextSm}>{itemNote}</span>
                         </div>
                       )}
-
-                      <button
-                        onClick={() => handleRegistraContestazione(item)}
-                        disabled={registering}
-                        style={{
-                          marginTop: '12px', width: '100%', padding: '12px',
-                          backgroundColor: C.danger, color: '#fff', border: 'none',
-                          borderRadius: '10px', fontWeight: 'bold', fontSize: '0.95rem',
-                          cursor: registering ? 'not-allowed' : 'pointer',
-                          opacity: registering ? 0.7 : 1,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          gap: '8px', boxShadow: `0 4px 12px ${C.danger}40`
-                        }}
-                      >
-                        {registering ? 'Registrazione...' : <><Icon name="pen-line" size={16} /> Registra Contestazione</>}
-                      </button>
                     </div>
                   )}
                 </div>

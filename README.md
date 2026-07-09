@@ -22,6 +22,7 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 - Validato con Lighthouse reale: Performance 100/100, Best Practices 100/100, Accessibilità 94/100 (2 problemi reali corretti: contrasto tab inattivi, landmark `<main>` mancante)
 - Risolto: la cronologia ricerche recenti non si poteva cancellare (due liste sovrapposte, una senza bottone di rimozione)
 - Ottimizzate le performance di ordinamento e ricerca nel Prontuario
+- Rimossa la funzione "Registra Contestazione" (Prontuario e Modalità Operatore): residuo della gamification rimossa, non salvava più nulla da nessuna parte pur suggerendo il contrario. Rimosso anche `src/config/badges.js`, file orfano mai più referenziato
 
 ## Novità 1.9.9
 

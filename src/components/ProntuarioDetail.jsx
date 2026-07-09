@@ -4,7 +4,6 @@ import { S } from '../styles/styles';
 import { PS } from '../styles/pages';
 import { Badge } from './ui/Badge';
 import { Icon } from './ui/Icon';
-import { useSyncQueue } from '../hooks/useSyncQueue';
 
 /**
  * Vista dettaglio di una singola voce del Prontuario.
@@ -17,7 +16,6 @@ import { useSyncQueue } from '../hooks/useSyncQueue';
  *  4. Card Sanzioni
  *  5. Note verbale / Note operative
  *  6. Memo personale
- *  7. Registra Contestazione
  */
 /**
  * Estrae il numero articolo da stringhe tipo "Art. 186 c. 2" o "Art. 186".
@@ -33,24 +31,14 @@ export const ProntuarioDetail = ({
   item,
   nota,
   onSaveNota,
-  onContestazione,
   onNavigate,
 }) => {
   const [editNote, setEditNote] = useState(false);
   const [tempNote, setTempNote] = useState(nota || '');
-  const { addToQueue } = useSyncQueue();
 
   const handleSave = async () => {
     await onSaveNota(tempNote);
     setEditNote(false);
-  };
-
-  const handleContestazione = () => {
-    if (!navigator.onLine) {
-      addToQueue('SAVE_CONTESTAZIONE', { prontuarioId: item.id, xp: 20 });
-    } else {
-      onContestazione();
-    }
   };
 
   const articoloNum = extractArticoloNum(item.rif_normativo || item.articolo_numero);
@@ -196,19 +184,6 @@ export const ProntuarioDetail = ({
             {nota || 'Nessuna nota salvata. Clicca su Modifica per aggiungerne una.'}
           </p>
         )}
-      </div>
-
-      {/* 7. REGISTRA CONTESTAZIONE */}
-      <div style={{ marginTop: '24px', textAlign: 'center' }}>
-        <button
-          onClick={handleContestazione}
-          style={{ ...S.btnPrimary, backgroundColor: C.danger, padding: '12px 24px', fontSize: '1.1rem', borderRadius: '12px', boxShadow: `0 4px 12px ${C.danger}40` }}
-        >
-          <Icon name="pen-line" size={16} /> Registra Contestazione
-        </button>
-        <p style={{ fontSize: '0.8rem', color: C.textLight, marginTop: '8px' }}>
-          Registra questa contestazione nel tuo profilo per sbloccare traguardi e statistiche.
-        </p>
       </div>
 
     </div>

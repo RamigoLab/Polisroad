@@ -22,6 +22,7 @@ const CHANGELOG_DATA = [
       'Irrobustito il funzionamento offline del Service Worker',
       'Risolto: la cronologia delle ricerche recenti non si poteva cancellare',
       'Ricerca più veloce grazie a un ordinamento e un motore di ricerca ottimizzati',
+      'Rimossa la funzione "Registra Contestazione" (Prontuario e Modalità Operatore): non salvava più nulla da quando è stata tolta la gamification',
     ],
   },
   {

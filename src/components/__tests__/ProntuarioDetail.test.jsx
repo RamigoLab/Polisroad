@@ -36,7 +36,6 @@ describe('ProntuarioDetail', () => {
     isFavorite: false,
     nota: '',
     onSaveNota: vi.fn(),
-    onContestazione: vi.fn(),
   };
 
   beforeEach(() => vi.clearAllMocks());
@@ -111,18 +110,5 @@ describe('ProntuarioDetail', () => {
     fireEvent.change(textarea, { target: { value: 'Nuova nota' } });
     fireEvent.click(screen.getByText('Salva'));
     expect(onSaveNota).toHaveBeenCalledWith('Nuova nota');
-  });
-
-  it('il pulsante Registra Contestazione è visibile', () => {
-    render(<ProntuarioDetail {...defaultProps} />);
-    expect(screen.getByText('Registra Contestazione')).toBeTruthy();
-  });
-
-  it('online: chiama onContestazione al click', () => {
-    vi.spyOn(navigator, 'onLine', 'get').mockReturnValue(true);
-    const onContestazione = vi.fn();
-    render(<ProntuarioDetail {...defaultProps} onContestazione={onContestazione} />);
-    fireEvent.click(screen.getByText('Registra Contestazione'));
-    expect(onContestazione).toHaveBeenCalled();
   });
 });
