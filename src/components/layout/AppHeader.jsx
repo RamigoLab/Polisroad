@@ -35,7 +35,7 @@ export const AppHeader = ({
           style={LS.appHeaderLogoWrapper}
           aria-label="Torna alla home"
         >
-          <img src="/icons/icon-192.png" alt="PolisRoad" style={LS.appHeaderLogo} />
+          <img src="/icons/logo.webp" alt="PolisRoad" style={LS.appHeaderLogo} />
         </button>
       </div>
       {children && <div style={LS.appHeaderActions}>{children}</div>}

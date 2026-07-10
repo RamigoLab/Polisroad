@@ -22,7 +22,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
   return (
     <aside className="app-sidebar">
       <div className="sidebar-logo-container" onClick={() => onNavigate('home')}>
-        <img src="/icons/icon-192.png" alt="PolisRoad Logo" className="sidebar-logo" />
+        <img src="/icons/logo.webp" alt="PolisRoad Logo" className="sidebar-logo" />
         <span className="sidebar-title">PolisRoad</span>
       </div>
 

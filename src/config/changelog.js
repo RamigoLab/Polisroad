@@ -25,6 +25,7 @@ const CHANGELOG_DATA = [
       'Rimossa la funzione "Registra Contestazione" (Prontuario e Modalità Operatore): non salvava più nulla da quando è stata tolta la gamification',
       'Logo dell\'app 5-13 volte più leggero (le icone non erano ridimensionate correttamente)',
       'Migliorato ulteriormente il contrasto colori (verde, giallo, rosso) per la piena leggibilità in ogni condizione di luce',
+      'Logo ancora più leggero (formato WebP): -85% rispetto al giro precedente',
     ],
   },
   {

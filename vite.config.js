@@ -33,7 +33,7 @@ export default defineConfig({
         globPatterns: [
           'index.html',
           'assets/**/*.{js,css}',
-          '**/*.{ico,png,svg,woff2,webmanifest}',
+          '**/*.{ico,png,svg,webp,woff2,webmanifest}',
         ],
         rollupFormat: 'iife',
       },
