@@ -143,46 +143,21 @@ export const Profilo = ({ onNavigate }) => {
   };
 
   // ── Statistiche utilizzo ──────────────────────────────────────────────────
-  // Le query vengono differite dopo il paint iniziale (idle/timeout) per evitare
-  // che le 3 chiamate Supabase in parallelo ritardino il LCP della pagina.
   const [stats, setStats] = useState({ preferiti: 0, note: 0, segnalazioni: 0 });
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase || !profile?.id) return;
     const uid = profile.id;
-    const email = profile.email || '';
-
-    let cancelled = false;
-    const fetchStats = () => {
-      if (cancelled) return;
-      Promise.all([
-        supabase.from('preferiti').select('id', { count: 'exact', head: true }).eq('user_id', uid),
-        supabase.from('note').select('id', { count: 'exact', head: true }).eq('user_id', uid),
-        supabase.from('segnalazioni').select('id', { count: 'exact', head: true }).eq('email', email),
-      ]).then(([pref, note, segn]) => {
-        if (!cancelled) setStats({
-          preferiti:    pref.count  ?? 0,
-          note:         note.count  ?? 0,
-          segnalazioni: segn.count  ?? 0,
-        });
-      }).catch(() => {});
-    };
-
-    // Defer dopo il paint: se disponibile usa requestIdleCallback, altrimenti setTimeout
-    let handle;
-    if (typeof requestIdleCallback !== 'undefined') {
-      handle = requestIdleCallback(fetchStats, { timeout: 3000 });
-    } else {
-      handle = setTimeout(fetchStats, 300);
-    }
-
-    return () => {
-      cancelled = true;
-      if (typeof cancelIdleCallback !== 'undefined') {
-        cancelIdleCallback(handle);
-      } else {
-        clearTimeout(handle);
-      }
-    };
+    Promise.all([
+      supabase.from('preferiti').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+      supabase.from('note').select('id', { count: 'exact', head: true }).eq('user_id', uid),
+      supabase.from('segnalazioni').select('id', { count: 'exact', head: true }).eq('email', profile.email || ''),
+    ]).then(([pref, note, segn]) => {
+      setStats({
+        preferiti:    pref.count  ?? 0,
+        note:         note.count  ?? 0,
+        segnalazioni: segn.count  ?? 0,
+      });
+    }).catch(() => {});
   }, [profile?.id, profile?.email]);
 
   // ── Segnalazioni ──────────────────────────────────────────────────────────

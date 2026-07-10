@@ -9,7 +9,7 @@ export const Splash = () => (
         overflow: 'hidden', marginBottom: '20px',
         boxShadow: '0 8px 32px rgba(0,0,0,0.25)',
       }}>
-        <img src="/icons/icon-192.png" alt="PolisRoad"
+        <img src="/icons/icon-192.png" alt="PolisRoad" fetchPriority="high"
           style={{ width: '100%', height: '100%', display: 'block', objectFit: 'cover' }} />
       </div>
     <h1 style={LS.splashTitle}>PolisRoad</h1>

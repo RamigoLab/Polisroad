@@ -11,15 +11,6 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
-    version: '2.0.1',
-    date: '9 Luglio 2026',
-    isNew: true,
-    items: [
-      'Performance: il bundle della pagina corrente inizia a scaricarsi in parallelo all\'autenticazione Supabase, eliminando il "waterfall" seriale (Auth → Download JS → Render) — valido per tutte le pagine dell\'app',
-      'Performance: le statistiche del Profilo (preferiti, note, segnalazioni) vengono caricate in background dopo il paint iniziale, riducendo il LCP della pagina Profilo',
-    ],
-  },
-  {
     version: '2.0.0',
     date: '6 Luglio 2026',
     isNew: true,
@@ -32,6 +23,8 @@ const CHANGELOG_DATA = [
       'Risolto: la cronologia delle ricerche recenti non si poteva cancellare',
       'Ricerca più veloce grazie a un ordinamento e un motore di ricerca ottimizzati',
       'Rimossa la funzione "Registra Contestazione" (Prontuario e Modalità Operatore): non salvava più nulla da quando è stata tolta la gamification',
+      'Logo dell\'app 5-13 volte più leggero (le icone non erano ridimensionate correttamente)',
+      'Migliorato ulteriormente il contrasto colori (verde, giallo, rosso) per la piena leggibilità in ogni condizione di luce',
     ],
   },
   {

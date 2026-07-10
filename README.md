@@ -1,4 +1,4 @@
-# PolisRoad v2.0.1
+# PolisRoad v2.0.0
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -13,11 +13,6 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
 
-## Novità 2.0.1
-
-- **Pre-fetching JS**: il bundle della pagina viene scaricato in parallelo all'autenticazione Supabase, eliminando il waterfall seriale `Auth + Download JS + Render` che causava LCP/FCP lenti — applicato a tutte le 21 rotte dell'app
-- **Statistiche Profilo differite**: le 3 query `COUNT` (preferiti, note, segnalazioni) vengono ora lanciate tramite `requestIdleCallback` dopo il primo paint, invece di bloccare il browser durante il render
-
 ## Novità 2.0.0
 
 Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `CHANGELOG.md` per il dettaglio di ogni intervento (ricerca unificata, sinonimi, bug fix, config deploy, accessibilità, performance).
@@ -28,6 +23,7 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 - Risolto: la cronologia ricerche recenti non si poteva cancellare (due liste sovrapposte, una senza bottone di rimozione)
 - Ottimizzate le performance di ordinamento e ricerca nel Prontuario
 - Rimossa la funzione "Registra Contestazione" (Prontuario e Modalità Operatore): residuo della gamification rimossa, non salvava più nulla da nessuna parte pur suggerendo il contrario. Rimosso anche `src/config/badges.js`, file orfano mai più referenziato
+- **Audit Lighthouse mobile reale**: trovate e risolte icone del logo 5-13× più pesanti del dovuto (erano il collo di bottiglia principale delle performance, ora -92% su icon-192.png), migliorato ulteriormente il contrasto colori (successo/avviso/errore)
 
 ## Novità 1.9.9
 

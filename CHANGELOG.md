@@ -1,11 +1,5 @@
 # Changelog PolisRoad
 
-## [2.0.1] — 9 Luglio 2026
-
-### Ottimizzato (performance LCP)
-- **Pre-fetching intelligente dei chunk JS**: il bundle della pagina corrente (rilevata da `?page=` o da `localStorage`) inizia a scaricarsi immediatamente, in parallelo all'autenticazione Supabase. Questo elimina il "waterfall" seriale `Auth + Download JS + Render` che causava un LCP/FCP elevato — ottimizzazione applicata a tutte le 21 rotte dell'app (`App.jsx`)
-- **Statistiche Profilo differite**: le 3 query `COUNT` di Supabase (preferiti, note, segnalazioni) vengono ora lanciate tramite `requestIdleCallback` (con fallback `setTimeout 300ms`) dopo il paint iniziale, invece che durante di esso — elimina il blocco del browser durante il rendering del Profilo (`Profilo.jsx`)
-
 ## [2.0.0] — 6 Luglio 2026
 
 Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 (usabilità, ricerca, bug generali, config deploy, accessibilità, performance). Vedi le sezioni 1.9.7–1.9.9 sotto per il dettaglio di ogni singolo intervento.
@@ -31,6 +25,15 @@ Un audit esterno generico ha sollevato diversi punti già rivisti uno per uno su
 ### Ottimizzato (performance ricerca e ordinamento Prontuario)
 - `sortItems`: trasformata di Schwartz — le chiavi di ordinamento si calcolano una volta per voce invece che ad ogni confronto durante il sort
 - `searchEngine.js`: gli haystack normalizzati per la ricerca testuale si precalcolano una sola volta alla creazione dell'indice (quando cambiano i dati), non ad ogni carattere digitato
+
+### Corretto (9 luglio 2026) — audit Lighthouse mobile (report reali, normale + incognito)
+- **Icone del logo 5-13× più pesanti del necessario**: `icon-192.png` e `icon-512.png` erano lo stesso identico file 1024×1024 (283KB), nessuno dei due effettivamente ridimensionato come dice il nome — ogni logo in header/sidebar/splash screen scaricava un'immagine enorme per mostrarla a 30-40px. Questo era anche l'elemento LCP (Largest Contentful Paint) della Home, causa principale del calo di Performance (86-78/100 invece di 100). Ridimensionate correttamente: `icon-192.png` ora è davvero 192×192 (22KB, -92%), `icon-512.png` è 512×512 (135KB, -52%)
+- Aggiunto `fetchpriority="high"` e un `<link rel="preload">` in `index.html` per il logo dello splash screen (l'elemento LCP), scopribile ora subito invece che solo dopo il render di React
+- Estesa la cache delle icone statiche da 1 a 30 giorni (cambiano raramente)
+- **Contrasto colori semantici insufficiente**: oltre al testo secondario (già corretto in precedenza), anche `--color-success` (3.30:1), `--color-warning` (3.19:1) e `--color-danger` (4.83:1, al limite) erano sotto o al limite del minimo WCAG 4.5:1 quando usati come testo — trovato da axe su un toast reale ("App pronta per funzionare offline!", verde illeggibile). Scurite tutte e tre le tonalità (tema chiaro) a un contrasto di 5-6.5:1
+
+### Da valutare (non modificato)
+- PostHog carica moduli aggiuntivi (surveys, session recording, ~48KB) anche se probabilmente non utilizzati — da confermare con l'attivazione reale di queste funzionalità sulla dashboard PostHog prima di disattivarli
 
 ### Validazione con Lighthouse reale (7 luglio 2026)
 Primo audit misurato (non dedotto dal codice) sulla build in produzione:
