@@ -26,6 +26,9 @@ const CHANGELOG_DATA = [
       'Logo dell\'app 5-13 volte più leggero (le icone non erano ridimensionate correttamente)',
       'Migliorato ulteriormente il contrasto colori (verde, giallo, rosso) per la piena leggibilità in ogni condizione di luce',
       'Logo ancora più leggero (formato WebP): -85% rispetto al giro precedente',
+      'Disattivate funzioni PostHog non utilizzate (registrazione sessioni, sondaggi): l\'app scarica meno codice inutile',
+      'Migliorata l\'accessibilità di Calcolatore, Preferiti, News e Link Istituzionali',
+      'Set di icone completo e corretto (icona app, home screen, favicon)',
     ],
   },
   {

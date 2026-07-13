@@ -49,10 +49,15 @@ export default defineConfig({
         scope: '/',
         orientation: 'portrait',
         icons: [
+          // 'any': l'icona intera, usata così com'è (home screen iOS, desktop)
           { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
           { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
-          { src: '/icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+          // 'maskable': versione con margine di sicurezza — Android ritaglia
+          // le icone maskable in cerchio/squircle a seconda del launcher; senza
+          // margine i bordi del logo venivano tagliati via (era la stessa
+          // immagine di 'any', a bordo pieno, riusata per entrambi gli usi).
+          { src: '/icons/icon-192-maskable.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: '/icons/icon-512-maskable.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
     }),

@@ -42,6 +42,7 @@ export const Preferiti = ({ onNavigate }) => {
                 <button
                   onClick={() => handleToggleFavorite(item.id)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#f0c040', padding: '4px' }}
+                  aria-label="Rimuovi dai preferiti"
                   title="Rimuovi dai preferiti"
                 >
                   <Icon name="star" size={22} color="#f0c040" />

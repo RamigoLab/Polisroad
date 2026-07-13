@@ -51,6 +51,16 @@ const RisultatoCard = ({ style, label, valore, sub, note }) => (
 const Toggle = ({ label, sublabel, checked, onChange, icon }) => (
   <div
     onClick={() => onChange(!checked)}
+    role="switch"
+    aria-checked={checked}
+    aria-label={label}
+    tabIndex={0}
+    onKeyDown={(e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        onChange(!checked);
+      }
+    }}
     style={{
       display: 'flex', alignItems: 'center', gap: '12px',
       padding: '12px 14px', borderRadius: '12px', cursor: 'pointer',

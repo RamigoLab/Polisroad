@@ -38,6 +38,7 @@ export const News = ({ onNavigate }) => {
               <button
                 key={pill.id}
                 onClick={() => setActiveFilter(pill.id)}
+                aria-pressed={isActive}
                 style={{
                   padding: '8px 16px',
                   borderRadius: '20px',

@@ -31,6 +31,19 @@ Un audit esterno generico ha sollevato diversi punti già rivisti uno per uno su
 - Aggiunto `fetchpriority="high"` e un `<link rel="preload">` in `index.html` per il logo dello splash screen (l'elemento LCP), scopribile ora subito invece che solo dopo il render di React
 - Estesa la cache delle icone statiche da 1 a 30 giorni (cambiano raramente)
 - **Ulteriore riduzione del logo** (10 luglio, secondo giro Lighthouse): creata una versione WebP dedicata per l'uso nell'interfaccia (`logo.webp`, 3.3KB contro i 22KB del PNG) usata in Splash, Header e Sidebar — i PNG restano invariati per il manifest PWA e le notifiche push, che richiedono quel formato. Aggiunto `webp` ai pattern di precache del Service Worker (mancava, il nuovo file non sarebbe stato disponibile offline)
+- **Disattivati session recording e surveys di PostHog** (terzo giro Lighthouse, non utilizzati): evitano di scaricare `posthog-recorder.js` (~36KB) e `surveys.js` (~22KB), le voci singolarmente più pesanti rimaste — non era un problema di caching ma di funzionalità caricate senza essere mai usate
+
+### Accessibilità — pagine non ancora coperte (11 luglio 2026)
+- `Calcolatore.jsx`: il toggle "Recidiva/Notturna/Sconto" era un `<div onClick>` senza semantica né tastiera — ora `role="switch"` con `aria-checked` e navigabile
+- `Preferiti.jsx`, `News.jsx`: già bottoni veri, aggiunti `aria-label`/`aria-pressed` mancanti per chiarezza screen reader
+- `Links.jsx`: i link che aprono in una nuova scheda ora lo dichiarano esplicitamente allo screen reader
+- `GuidePratiche.jsx`: nessun problema (pagina statica, nessuna interattività)
+
+### Set di icone completo (11 luglio 2026)
+- **Icone "maskable" corrette**: riusavano la stessa immagine a bordo pieno delle icone normali — su Android, che ritaglia le icone maskable in cerchio/squircle, i bordi del logo venivano tagliati via. Create versioni dedicate con margine di sicurezza (contenuto al 66%, centrato)
+- **`apple-touch-icon` corretto**: usava l'icona da 192×192, ora è la dimensione raccomandata da Apple (180×180)
+- **Aggiunto `favicon.ico`** multi-risoluzione (16/32/48px) come fallback per contesti che non supportano ancora l'SVG
+- Rimosso (di nuovo) `public/manifest.json`, file duplicato/orfano mai usato dalla PWA — il changelog storico raccontava fosse già stato tolto in passato, evidentemente era ricomparso
 - **Contrasto colori semantici insufficiente**: oltre al testo secondario (già corretto in precedenza), anche `--color-success` (3.30:1), `--color-warning` (3.19:1) e `--color-danger` (4.83:1, al limite) erano sotto o al limite del minimo WCAG 4.5:1 quando usati come testo — trovato da axe su un toast reale ("App pronta per funzionare offline!", verde illeggibile). Scurite tutte e tre le tonalità (tema chiaro) a un contrasto di 5-6.5:1
 
 ### Da valutare (non modificato)

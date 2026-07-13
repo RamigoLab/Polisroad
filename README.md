@@ -25,6 +25,9 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 - Rimossa la funzione "Registra Contestazione" (Prontuario e Modalità Operatore): residuo della gamification rimossa, non salvava più nulla da nessuna parte pur suggerendo il contrario. Rimosso anche `src/config/badges.js`, file orfano mai più referenziato
 - **Audit Lighthouse mobile reale**: trovate e risolte icone del logo 5-13× più pesanti del dovuto (erano il collo di bottiglia principale delle performance, ora -92% su icon-192.png), migliorato ulteriormente il contrasto colori (successo/avviso/errore)
 - **Secondo giro Lighthouse**: logo convertito in WebP per l'uso in interfaccia (ulteriore -85%, 22KB → 3.3KB)
+- **Terzo giro Lighthouse**: disattivati session recording e surveys di PostHog (non utilizzati) — evitano di scaricare ~58KB di script mai usati
+- Estesa l'accessibilità da tastiera a Calcolatore, Preferiti, News e Link Istituzionali (le pagine rimaste fuori dal giro precedente)
+- Set di icone completo: maskable corrette (margine di sicurezza per Android), apple-touch-icon a 180×180, favicon.ico di fallback
 
 ## Novità 1.9.9
 

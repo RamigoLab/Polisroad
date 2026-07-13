@@ -64,6 +64,12 @@ if (posthogKey) {
     person_profiles: 'identified_only',
     capture_pageview: true,
     opt_out_capturing_by_default: false,
+    // Session recording e surveys non sono utilizzati: disattivarli evita
+    // di scaricare i relativi script (posthog-recorder.js ~36KB, surveys.js
+    // ~22KB) invece di limitarsi a non usarli — la voce più pesante trovata
+    // in un audit Lighthouse reale del 10 luglio 2026.
+    disable_session_recording: true,
+    disable_surveys: true,
   });
 }
 

@@ -191,13 +191,14 @@ export const Links = ({ onNavigate }) => (
   <PageWrapper title="Link Istituzionali" subtitle="Risorse ufficiali" onNavigate={onNavigate}>
     <div style={gridStyle}>
       {LINKS.map((link) => (
-        <a key={link.url} href={link.url} target="_blank" rel="noreferrer" style={linkCardStyle}>
+        <a key={link.url} href={link.url} target="_blank" rel="noreferrer" style={linkCardStyle}
+          aria-label={`${link.title} - ${link.subtitle} (si apre in una nuova scheda)`}>
           <LinkLogo link={link} />
           <div style={{ textAlign: 'center' }}>
-            <h3 style={{ fontSize: '0.95rem', lineHeight: 1.25, color: C.text, marginBottom: '6px' }}>
+            <h3 style={{ fontSize: '0.95rem', lineHeight: 1.25, color: C.text, marginBottom: '6px' }} aria-hidden="true">
               {link.title}
             </h3>
-            <p style={{ fontSize: '0.78rem', lineHeight: 1.35, color: C.textLight }}>
+            <p style={{ fontSize: '0.78rem', lineHeight: 1.35, color: C.textLight }} aria-hidden="true">
               {link.subtitle}
             </p>
           </div>
