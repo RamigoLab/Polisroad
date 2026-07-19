@@ -16,7 +16,10 @@ function scheduleCleanAndReload() {
   try {
     // Segnala alla prossima sessione di pulire la cache IDB prima del mount
     sessionStorage.setItem('polisroad_clear_idb_on_load', '1');
-  } catch (_) {}
+  } catch {
+    // Best-effort: se sessionStorage non è disponibile (privata/quota piena),
+    // si procede comunque col reload — la pulizia cache è solo un'ottimizzazione.
+  }
   // Reload SINCRONO — compatibile con Safari iOS
   window.location.reload();
 }

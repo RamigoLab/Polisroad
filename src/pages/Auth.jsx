@@ -100,7 +100,7 @@ const authSwitchBtnStyle = {
   fontSize: '0.9rem',
 };
 
-export const Auth = ({ passwordUpdateMode = false, onNavigate }) => {
+export const Auth = ({ passwordUpdateMode = false }) => {
   const { signIn, signUp, resetPassword, updatePassword, clearPasswordRecovery } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isResettingPassword, setIsResettingPassword] = useState(false);

@@ -44,6 +44,10 @@ Un audit esterno generico ha sollevato diversi punti già rivisti uno per uno su
 - **`apple-touch-icon` corretto**: usava l'icona da 192×192, ora è la dimensione raccomandata da Apple (180×180)
 - **Aggiunto `favicon.ico`** multi-risoluzione (16/32/48px) come fallback per contesti che non supportano ancora l'SVG
 - Rimosso (di nuovo) `public/manifest.json`, file duplicato/orfano mai usato dalla PWA — il changelog storico raccontava fosse già stato tolto in passato, evidentemente era ricomparso
+
+### Pipeline CI/CD (12 luglio 2026)
+- Aggiunta `.github/workflows/ci.yml`: lint, test e build automatici su ogni push/PR verso `main`, senza bisogno di secret (l'app degrada da sola senza Supabase configurato)
+- Ripulito il lint fino a farlo passare davvero pulito (0 errori, prima ce n'erano 12 lasciati intenzionalmente ma mai risolti — inutile avere una pipeline sempre rossa): aggiunto l'ambiente Service Worker mancante alla config ESLint per `sw.js`, rimossi prop/variabili/parametri di stile ormai morti in `Auth.jsx`, `AdminNotifiche.jsx`, `layout.js` (incluso uno stile, `navTabIndicator`, completamente inutilizzato)
 - **Contrasto colori semantici insufficiente**: oltre al testo secondario (già corretto in precedenza), anche `--color-success` (3.30:1), `--color-warning` (3.19:1) e `--color-danger` (4.83:1, al limite) erano sotto o al limite del minimo WCAG 4.5:1 quando usati come testo — trovato da axe su un toast reale ("App pronta per funzionare offline!", verde illeggibile). Scurite tutte e tre le tonalità (tema chiaro) a un contrasto di 5-6.5:1
 
 ### Da valutare (non modificato)

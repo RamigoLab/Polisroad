@@ -94,7 +94,7 @@ export const LS = {
     padding: '8px 0 10px',
     alignItems: 'center',
   },
-  navTab: (isActive) => ({
+  navTab: () => ({
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
@@ -110,11 +110,6 @@ export const LS = {
     // 60%. Il colore del testo (navTabLabel, sotto) da solo distingue già
     // attivo/inattivo con contrasto pieno — l'opacity ridotta ora si applica
     // solo all'icona (vedi BottomNav.jsx), non più al testo.
-  }),
-  navTabIndicator: (isActive) => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
   }),
   navTabLabel: (isActive) => ({
     fontSize: '0.62rem',
@@ -226,7 +221,7 @@ export const LS = {
     gap: '8px',
     scrollbarWidth: 'none',
   },
-  adminTab: (isActive, accent) => ({
+  adminTab: (isActive) => ({
     padding: '7px 14px',
     backgroundColor: isActive ? 'rgba(255,255,255,0.2)' : 'transparent',
     color: isActive ? '#fff' : 'rgba(255,255,255,0.6)',

@@ -34,4 +34,18 @@ export default defineConfig([
       globals: globals.node,
     },
   },
+  {
+    // sw.js gira nello scope globale del Service Worker (self, caches,
+    // clients, ecc.), diverso da quello del browser normale — senza questo,
+    // eslint segnalava 'clients' come non definito. __BUILD_TIMESTAMP__ è
+    // iniettato a build-time da vite.config.js (vedi commento lì), non
+    // esiste finché vite non lo sostituisce nel bundle finale.
+    files: ['src/sw.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+        __BUILD_TIMESTAMP__: 'readonly',
+      },
+    },
+  },
 ])

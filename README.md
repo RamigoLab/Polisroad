@@ -130,4 +130,15 @@ npm install
 npm run dev       # sviluppo locale
 npm run build     # build produzione
 npm run preview   # anteprima build
+npm run lint      # controllo qualità codice
+npm run test:run  # suite di test
 ```
+
+## CI/CD
+
+Ogni push e ogni pull request verso `main` fanno girare automaticamente `.github/workflows/ci.yml`:
+lint → test → build, in quest'ordine, sullo stesso ambiente Node 20 usato in produzione.
+Se uno dei tre passaggi fallisce, GitHub lo segnala direttamente sul commit/PR — niente
+richiede secret o variabili d'ambiente reali, perché l'app degrada da sola in modalità
+demo/locale quando Supabase non è configurato (vedi `src/config/supabase.js`), quindi la
+pipeline gira identica su qualunque fork.

@@ -94,7 +94,7 @@ self.addEventListener('message', (event) => {
 
 // ─── Push ─────────────────────────────────────────────────────────────────────
 self.addEventListener('push', (event) => {
-  let data = {};
+  let data;
   try {
     data = event.data ? event.data.json() : {};
   } catch {
