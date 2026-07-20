@@ -9,6 +9,7 @@ import {
   Percent, Repeat, CreditCard, MapPin, Phone, Globe, BookMarked, HelpCircle,
   LifeBuoy, MessageSquare, Heart, Share2, Filter, SlidersHorizontal, Ban,
   CheckCircle2, AlertCircle, Wifi, WifiOff, FileDown, BarChart3, Layers,
+  Fingerprint, Delete, Clock,
 } from 'lucide-react';
 
 /**
@@ -47,6 +48,9 @@ const MAP = {
   eye:               Eye,
   'eye-off':         EyeOff,
   lock:              Lock,
+  fingerprint:       Fingerprint,
+  delete:            Delete,
+  clock:             Clock,
   share:             Share2,
   filter:            Filter,
   sliders:           SlidersHorizontal,

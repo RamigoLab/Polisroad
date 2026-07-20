@@ -1,4 +1,4 @@
-# PolisRoad v2.0.0
+# PolisRoad v2.0.1
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -12,6 +12,12 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - **Deployment**: Vercel + GitHub Desktop
 - **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
+
+## Novità 2.0.1
+
+**Sblocco rapido (locale)** — PIN a 4 cifre o impronta/Face ID per riaprire l'app dopo un periodo di inattività senza rifare il login completo. Blocco automatico configurabile (1/5/15 minuti) o immediato quando l'app va in background. PIN hashato (SHA-256 + salt), solo locale, mai su Supabase. Gestito da Profilo > Sicurezza.
+
+**Login con passkey** — bottone "Accedi con passkey" nella schermata di login (Face ID, impronta, Windows Hello), in aggiunta a email+password. Usa la feature Passkeys di Supabase Auth (beta). Da registrare una volta da Profilo > Sicurezza.
 
 ## Novità 2.0.0
 
@@ -68,6 +74,8 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 - Audit RLS completo su tutte le tabelle Supabase
 
 ## Azioni richieste su Supabase dopo il deploy
+
+**2.0.1:** già fatto — Passkeys attivato in Dashboard (Authentication → Passkeys) con Relying Party configurato per il dominio di produzione. Nessuna migration SQL, nessuna modifica allo schema.
 
 **2.0.0:** nessuna azione richiesta (nessuna modifica al database).
 

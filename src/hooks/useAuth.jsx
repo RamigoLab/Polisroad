@@ -5,6 +5,8 @@ import {
   upsertProfile,
   fetchUserCount as fetchUserCountService,
   signIn as signInService,
+  signInWithPasskey as signInWithPasskeyService,
+  registerPasskey as registerPasskeyService,
   signUp as signUpService,
   resetPassword as resetPasswordService,
   updatePassword as updatePasswordService,
@@ -212,6 +214,33 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Login vero senza password — richiede un passkey già registrato su questo
+  // account. Beta lato Supabase: resta sempre un'opzione in più, mai l'unica.
+  const signInWithPasskey = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: { message: 'Passkey non disponibile in modalità demo.' } };
+    }
+    try {
+      await signInWithPasskeyService();
+      return { error: null };
+    } catch (err) {
+      return { error: { message: err.message || 'Accesso con passkey non riuscito.' } };
+    }
+  };
+
+  // Registra un passkey per l'utente già loggato (da Profilo).
+  const registerPasskeyForAccount = async () => {
+    if (!isSupabaseConfigured || !supabase) {
+      return { error: { message: 'Passkey non disponibile in modalità demo.' } };
+    }
+    try {
+      await registerPasskeyService();
+      return { error: null };
+    } catch (err) {
+      return { error: { message: err.message || 'Registrazione passkey non riuscita.' } };
+    }
+  };
+
   const signUp = async (email, password, userData) => {
     if (!isSupabaseConfigured || !supabase) {
       return { error: { message: 'Registrazione non disponibile.' } };
@@ -303,6 +332,8 @@ export const AuthProvider = ({ children }) => {
         isAdmin,
         profileError,
         signIn,
+        signInWithPasskey,
+        registerPasskeyForAccount,
         signUp,
         signOut,
         resetPassword,

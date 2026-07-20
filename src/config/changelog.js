@@ -11,6 +11,15 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '2.0.1',
+    date: '18 Luglio 2026',
+    isNew: true,
+    items: [
+      'Nuovo: sblocco rapido con PIN o impronta/Face ID — riapri l\'app dopo una pausa senza rifare il login completo (in Profilo > Sicurezza)',
+      'Nuovo: login con passkey (impronta, Face ID, Windows Hello) come alternativa a email e password',
+    ],
+  },
+  {
     version: '2.0.0',
     date: '6 Luglio 2026',
     isNew: true,

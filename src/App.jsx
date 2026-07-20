@@ -17,6 +17,8 @@ import { OfflineBanner } from './components/ui/OfflineBanner';
 import { SyncIndicator } from './components/ui/SyncIndicator';
 import { Onboarding, isOnboardingDone } from './components/Onboarding';
 import PendingApprovalScreen from './components/PendingApprovalScreen';
+import { LockScreen } from './components/LockScreen';
+import { useAppLock } from './context/AppLockContext';
 import { useToast } from './components/ui/ToastManager';
 import { getItem, setItem, removeItem } from './utils/storage';
 
@@ -62,6 +64,7 @@ function AppInner() {
   const queryClient = useQueryClient();
   const { error: dataError } = useData();
   const { showToast } = useToast();
+  const { isLocked } = useAppLock();
 
   const loading = authLoading;
 
@@ -249,6 +252,7 @@ function AppInner() {
       <OfflineBanner />
       <SyncIndicator />
       <PwaUpdater />
+      {isLocked && <LockScreen />}
       <Suspense fallback={<PageLoader />}>
         <div className="app-viewport-container">
           {showNav && <Sidebar currentPage={currentPage} onNavigate={navigate} />}

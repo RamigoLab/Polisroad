@@ -11,6 +11,8 @@ import { useAuth } from '../hooks/useAuth';
 import { useTheme } from '../hooks/useTheme';
 import { usePushNotifications } from '../hooks/usePushNotifications';
 import { useInstallPrompt } from '../hooks/useInstallPrompt';
+import { useAppLock } from '../context/AppLockContext';
+import { isWebAuthnSupported } from '../utils/webauthn';
 import { DB_VERSION_CDS, DB_VERSION_PRONTUARIO, APP_VERSION } from '../config/constants';
 import { APP_CHANGELOG } from '../config/changelog';
 import { sanitizers, validators } from '../utils/validation';
@@ -57,6 +59,11 @@ const ProfileItem = ({
 );
 
 /** Gruppo di sezioni con label sopra */
+const pinInputStyle = {
+  width: '100%', padding: '10px 12px', borderRadius: 8,
+  border: `1.5px solid #e5e7eb`, fontSize: '1.1rem', letterSpacing: '0.3em',
+  textAlign: 'center', boxSizing: 'border-box',
+};
 const Group = ({ label, children }) => (
   <div>
     <div style={PS.profileGroupLabel}>{label}</div>
@@ -112,7 +119,26 @@ const Expandable = ({ iconName, iconBg, iconColor, label, sub, children, isOpen,
 // ─── Pagina Profilo ───────────────────────────────────────────────────────────
 
 export const Profilo = ({ onNavigate }) => {
-  const { profile, updateProfile, signOut, userCount } = useAuth();
+  const { profile, updateProfile, signOut, userCount, registerPasskeyForAccount } = useAuth();
+
+  // ── Sicurezza: sblocco rapido ────────────────────────────────────────────
+  const {
+    enabled: lockEnabled, timeoutMinutes, hasBiometric,
+    enable: enableLock, disable: disableLock, setTimeoutMinutes,
+    registerBiometric, removeBiometric, isPlatformAuthenticatorAvailable,
+  } = useAppLock();
+  const [pinSetupOpen, setPinSetupOpen] = useState(false);
+  const [pin1, setPin1] = useState('');
+  const [pin2, setPin2] = useState('');
+  const [pinBusy, setPinBusy] = useState(false);
+  const [bioAvailable, setBioAvailable] = useState(false);
+  const [passkeyBusy, setPasskeyBusy] = useState(false);
+
+  useEffect(() => {
+    let mounted = true;
+    isPlatformAuthenticatorAvailable().then(ok => { if (mounted) setBioAvailable(ok); });
+    return () => { mounted = false; };
+  }, [isPlatformAuthenticatorAvailable]);
 
   // ── Modifica profilo ──────────────────────────────────────────────────────
   const [editOpen, setEditOpen] = useState(false);
@@ -248,6 +274,67 @@ export const Profilo = ({ onNavigate }) => {
       URL.revokeObjectURL(url);
       showToast('Dati esportati!', 'success');
     } catch (err) { showToast("Errore: " + err.message, 'error'); }
+  };
+
+  // ── Sicurezza: sblocco rapido ────────────────────────────────────────────
+  const handleEnableLock = async () => {
+    if (pin1.length !== 4 || !/^\d{4}$/.test(pin1)) {
+      showToast('Il PIN deve avere esattamente 4 cifre', 'error');
+      return;
+    }
+    if (pin1 !== pin2) {
+      showToast('I due PIN non coincidono', 'error');
+      return;
+    }
+    setPinBusy(true);
+    try {
+      await enableLock(pin1);
+      showToast('Sblocco rapido attivato', 'success');
+      setPinSetupOpen(false);
+      setPin1(''); setPin2('');
+    } catch {
+      showToast('Errore nell\'attivazione', 'error');
+    } finally {
+      setPinBusy(false);
+    }
+  };
+
+  const handleDisableLock = async () => {
+    const ok = await confirmDialog({
+      title: 'Disattivare lo sblocco rapido?',
+      message: 'Il PIN e l\'eventuale impronta registrata su questo dispositivo verranno rimossi.',
+      confirmLabel: 'Disattiva',
+    });
+    if (ok) {
+      disableLock();
+      showToast('Sblocco rapido disattivato', 'success');
+    }
+  };
+
+  const handleToggleBiometric = async () => {
+    if (hasBiometric) {
+      removeBiometric();
+      showToast('Impronta/Face ID rimossa da questo dispositivo', 'success');
+      return;
+    }
+    try {
+      const officerName = `${profile?.grado || ''} ${profile?.nome || ''} ${profile?.cognome || ''}`.trim();
+      await registerBiometric(officerName);
+      showToast('Impronta/Face ID registrata per lo sblocco', 'success');
+    } catch {
+      showToast('Registrazione annullata o non riuscita', 'error');
+    }
+  };
+
+  const handleRegisterPasskey = async () => {
+    setPasskeyBusy(true);
+    const { error } = await registerPasskeyForAccount();
+    setPasskeyBusy(false);
+    if (error) {
+      showToast(error.message || 'Registrazione passkey non riuscita', 'error');
+    } else {
+      showToast('Passkey registrato — potrai accedere senza password da questo dispositivo', 'success');
+    }
   };
 
   const handleDeleteAccount = async () => {
@@ -482,6 +569,114 @@ export const Profilo = ({ onNavigate }) => {
             label="App installata"
             sub="PolisRoad è già installata su questo dispositivo"
             isLast
+          />
+        )}
+      </Group>
+
+      {/* ── SICUREZZA ── */}
+      <Group label="Sicurezza">
+        <ProfileItem
+          iconName="lock" iconBg="#ede9fe" iconColor="#6d28d9"
+          label="Sblocco rapido"
+          sub={lockEnabled ? `Blocco dopo ${timeoutMinutes} min di inattività` : 'PIN o impronta per riaprire l\'app senza fare login da capo'}
+          right={
+            <button
+              onClick={() => lockEnabled ? handleDisableLock() : setPinSetupOpen(v => !v)}
+              style={{
+                padding: '5px 12px', borderRadius: '999px',
+                backgroundColor: lockEnabled ? '#dcfce7' : C.surfaceContainer,
+                color: lockEnabled ? '#15803d' : C.textLight,
+                fontWeight: '700', fontSize: '0.75rem', border: 'none', cursor: 'pointer',
+              }}
+            >
+              {lockEnabled ? 'Attivo' : 'Attiva'}
+            </button>
+          }
+          isLast={!pinSetupOpen && !lockEnabled}
+        />
+
+        {pinSetupOpen && !lockEnabled && (
+          <div style={{ padding: '4px 14px 16px' }}>
+            <p style={{ fontSize: '0.78rem', color: C.textLight, marginBottom: '10px' }}>
+              Scegli un PIN di 4 cifre. Resta solo su questo dispositivo, non viene mai inviato al server.
+            </p>
+            <input
+              type="password" inputMode="numeric" maxLength={4} value={pin1}
+              onChange={e => setPin1(e.target.value.replace(/\D/g, ''))}
+              placeholder="Nuovo PIN"
+              style={pinInputStyle}
+            />
+            <input
+              type="password" inputMode="numeric" maxLength={4} value={pin2}
+              onChange={e => setPin2(e.target.value.replace(/\D/g, ''))}
+              placeholder="Conferma PIN"
+              style={{ ...pinInputStyle, marginTop: '8px', marginBottom: '12px' }}
+            />
+            <div style={{ display: 'flex', gap: '10px' }}>
+              <button onClick={() => { setPinSetupOpen(false); setPin1(''); setPin2(''); }} style={{ ...S.btnSecondary, flex: 1 }}>Annulla</button>
+              <button onClick={handleEnableLock} disabled={pinBusy} style={{ ...S.btnPrimary, flex: 2, border: 'none' }}>
+                {pinBusy ? 'Attivazione...' : 'Attiva sblocco rapido'}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {lockEnabled && (
+          <>
+            <ProfileItem
+              iconName="clock" iconBg="#e0f2fe" iconColor="#075985"
+              label="Tempo di inattività"
+              sub="Dopo quanto l'app si blocca da sola"
+              right={
+                <select
+                  value={timeoutMinutes}
+                  onChange={e => setTimeoutMinutes(Number(e.target.value))}
+                  style={{ padding: '5px 10px', borderRadius: '8px', border: `1px solid ${C.border}`, backgroundColor: C.card, color: C.text, fontSize: '0.8rem', fontWeight: '600' }}
+                >
+                  <option value={1}>1 minuto</option>
+                  <option value={5}>5 minuti</option>
+                  <option value={15}>15 minuti</option>
+                </select>
+              }
+            />
+            {bioAvailable && (
+              <ProfileItem
+                iconName="fingerprint" iconBg="#ede9fe" iconColor="#6d28d9"
+                label="Impronta / Face ID"
+                sub={hasBiometric ? 'Puoi sbloccare senza digitare il PIN' : 'Registra per uno sblocco più veloce'}
+                right={
+                  <button
+                    onClick={handleToggleBiometric}
+                    style={{
+                      padding: '5px 12px', borderRadius: '999px',
+                      backgroundColor: hasBiometric ? '#dcfce7' : C.surfaceContainer,
+                      color: hasBiometric ? '#15803d' : C.textLight,
+                      fontWeight: '700', fontSize: '0.75rem', border: 'none', cursor: 'pointer',
+                    }}
+                  >
+                    {hasBiometric ? 'Attiva' : 'Registra'}
+                  </button>
+                }
+              />
+            )}
+            <ProfileItem
+              iconName="lock" iconBg="#fee2e2" iconColor="#dc2626"
+              label="Disattiva sblocco rapido"
+              sub="Rimuove PIN e impronta da questo dispositivo"
+              onPress={handleDisableLock}
+              isLast
+            />
+          </>
+        )}
+
+        {isWebAuthnSupported() && (
+          <ProfileItem
+            iconName="fingerprint" iconBg="#e0f2fe" iconColor="#075985"
+            label="Accesso con passkey"
+            sub="Login senza password, con Face ID/impronta/Windows Hello (beta)"
+            onPress={handleRegisterPasskey}
+            right={<span style={{ fontSize: '0.75rem', color: C.textLight, fontWeight: '700' }}>{passkeyBusy ? '...' : 'Registra'}</span>}
+            isLast={!lockEnabled}
           />
         )}
       </Group>

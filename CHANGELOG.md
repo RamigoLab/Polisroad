@@ -1,5 +1,27 @@
 # Changelog PolisRoad
 
+## [2.0.1] — 18 Luglio 2026
+
+### Aggiunto — Sblocco rapido e login con passkey
+
+**Sblocco rapido (locale, indipendente da Supabase)**
+- Nuova opzione in Profilo > Sicurezza: PIN a 4 cifre + impronta/Face ID per riaprire l'app dopo un periodo di inattività, senza dover rifare il login completo
+- Blocco automatico dopo un tempo di inattività configurabile (1/5/15 minuti, default 5) e immediato quando l'app va in background (cambio app, spegnimento schermo)
+- Il PIN non è mai in chiaro: hash SHA-256 con salt casuale, salvato solo in locale (`localStorage`), mai inviato a Supabase
+- La credenziale biometrica è una credenziale WebAuthn locale (platform authenticator): verifica gestita interamente dal sistema operativo del dispositivo, PolisRoad non vede né riceve alcun dato biometrico
+- Dopo 5 PIN sbagliati, l'app forza il logout completo — nessun modo di forzare l'accesso restando bloccati sullo sblocco rapido
+- Nuovi file: `src/context/AppLockContext.jsx`, `src/components/LockScreen.jsx`, `src/utils/webauthn.js`, `src/utils/pinStorage.js`
+
+**Login con passkey (Supabase Auth, beta)**
+- Bottone "Accedi con passkey" nella schermata di login, in aggiunta a email+password (mai sostitutivo, dato che la funzionalità Supabase è ancora in beta)
+- Sezione Profilo > Sicurezza > "Accesso con passkey" per registrare un passkey sull'account già autenticato
+- Richiede aver attivato Passkeys nella Dashboard Supabase (Authentication → Passkeys) — fatto in produzione il 18 luglio 2026
+- Nessun aggiornamento di libreria necessario: `@supabase/supabase-js` era già in versione compatibile (2.105.4, richiesta minima 2.105.0)
+
+### Corretto durante lo sviluppo
+- ESLint aveva segnalato un errore reale: un ref React veniva aggiornato durante il render invece che in un effect (`AppLockContext.jsx`) — corretto prima del rilascio, non dopo
+- Aggiunte le icone mancanti `fingerprint`, `clock`, `delete` alla mappa icone dell'app
+
 ## [2.0.0] — 6 Luglio 2026
 
 Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 (usabilità, ricerca, bug generali, config deploy, accessibilità, performance). Vedi le sezioni 1.9.7–1.9.9 sotto per il dettaglio di ogni singolo intervento.

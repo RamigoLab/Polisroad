@@ -8,6 +8,7 @@ import './index.css';
 import App from './App';
 import { AuthProvider } from './hooks/useAuth';
 import { DataProvider } from './context/DataContext';
+import { AppLockProvider } from './context/AppLockContext';
 import { ToastProvider } from './components/ui/ToastManager';
 import { ConfirmProvider } from './components/ui/ConfirmDialog';
 import { clearIdbIfFlagged } from './components/ErrorBoundary';
@@ -104,13 +105,15 @@ createRoot(document.getElementById('root')).render(
       }}
     >
       <AuthProvider>
-        <DataProvider>
-          <ToastProvider>
-            <ConfirmProvider>
-              <App />
-            </ConfirmProvider>
-          </ToastProvider>
-        </DataProvider>
+        <AppLockProvider>
+          <DataProvider>
+            <ToastProvider>
+              <ConfirmProvider>
+                <App />
+              </ConfirmProvider>
+            </ToastProvider>
+          </DataProvider>
+        </AppLockProvider>
       </AuthProvider>
     </PersistQueryClientProvider>
   </StrictMode>,

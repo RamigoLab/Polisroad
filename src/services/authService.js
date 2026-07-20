@@ -35,6 +35,24 @@ export async function signIn(email, password) {
   return data;
 }
 
+// Login vero e proprio senza email/password — richiede che l'utente abbia
+// già registrato un passkey su questo account (vedi registerPasskey sotto).
+// Funzionalità Supabase in beta: l'API può cambiare senza preavviso, per
+// questo resta sempre un'opzione aggiuntiva accanto a email+password, mai
+// l'unico modo per accedere.
+export async function signInWithPasskey() {
+  const { data, error } = await supabase.auth.signInWithPasskey();
+  if (error) throw error;
+  return data;
+}
+
+// Registra un passkey per l'utente già loggato (da fare una volta, da Profilo).
+export async function registerPasskey() {
+  const { data, error } = await supabase.auth.registerPasskey();
+  if (error) throw error;
+  return data;
+}
+
 export async function signUp(email, password, userData) {
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;

@@ -11,6 +11,8 @@ import { mapAuthError } from '../utils/authErrorMapper';
 import { sanitizers, validators } from '../utils/validation';
 import { PrivacyContent } from './Privacy';
 import { TerminiContent } from './TerminiServizio';
+import { Icon } from '../components/ui/Icon';
+import { isWebAuthnSupported } from '../utils/webauthn';
 
 // ─── Modal per Privacy / Termini visibile anche senza sessione ───────────────
 const DocModal = ({ title, children, onClose }) => (
@@ -101,7 +103,7 @@ const authSwitchBtnStyle = {
 };
 
 export const Auth = ({ passwordUpdateMode = false }) => {
-  const { signIn, signUp, resetPassword, updatePassword, clearPasswordRecovery } = useAuth();
+  const { signIn, signInWithPasskey, signUp, resetPassword, updatePassword, clearPasswordRecovery } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [isResettingPassword, setIsResettingPassword] = useState(false);
   const [privacyAccepted, setPrivacyAccepted] = useState(false);
@@ -113,6 +115,7 @@ export const Auth = ({ passwordUpdateMode = false }) => {
   const [grado, setGrado] = useState('');
   const [forza, setForza] = useState('');
   const [loading, setLoading] = useState(false);
+  const [passkeyLoading, setPasskeyLoading] = useState(false);
   const [modal, setModal] = useState(null); // null | 'privacy' | 'termini'
   const { showToast } = useToast();
 
@@ -175,6 +178,21 @@ export const Auth = ({ passwordUpdateMode = false }) => {
       }
     }
     setLoading(false);
+  };
+
+  // Login diretto con passkey — nessuna email/password, l'utente sceglie
+  // l'account dalla UI nativa del dispositivo. Richiede un passkey già
+  // registrato su quell'account (da Profilo > Sicurezza).
+  const handlePasskeyLogin = async () => {
+    setPasskeyLoading(true);
+    const { error } = await signInWithPasskey();
+    setPasskeyLoading(false);
+    if (error) {
+      // NotAllowedError: l'utente ha annullato — non è un vero errore, niente toast rosso
+      if (!/NotAllowedError|cancel/i.test(error.message || '')) {
+        showToast(error.message || 'Accesso con passkey non riuscito. Usa email e password.', 'error');
+      }
+    }
   };
 
   const handlePasswordReset = async (e) => {
@@ -337,6 +355,23 @@ export const Auth = ({ passwordUpdateMode = false }) => {
               >
                 {loading ? 'Attendi...' : (isLogin ? 'Accedi' : 'Registrati')}
               </button>
+
+              {isLogin && isWebAuthnSupported() && (
+                <button
+                  type="button"
+                  onClick={handlePasskeyLogin}
+                  disabled={passkeyLoading}
+                  style={{
+                    ...S.btnSecondary,
+                    marginTop: '10px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px',
+                    opacity: passkeyLoading ? 0.7 : 1,
+                  }}
+                >
+                  <Icon name="fingerprint" size={18} />
+                  {passkeyLoading ? 'Verifica in corso…' : 'Accedi con passkey'}
+                </button>
+              )}
 
               {isLogin && (
                 <div style={{ textAlign: 'center', marginTop: '20px' }}>
