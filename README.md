@@ -1,4 +1,4 @@
-# PolisRoad v2.0.1
+# PolisRoad v2.0.2
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -12,6 +12,16 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - **Deployment**: Vercel + GitHub Desktop
 - **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
+
+## Novità 2.0.2
+
+Fix di rifinitura sullo sblocco rapido/passkey, notifiche push ed export GDPR emersi dall'uso reale post-2.0.1:
+
+- **Passkey**: abilitato `experimental.passkey` nel client Supabase (rimuove il warning in console); "Accesso con passkey" ora rilegge lo stato reale via `supabase.auth.passkey.list()` e mostra "Registrato" invece di proporre sempre "Registra". Nota: resta comunque un credential separato dall'impronta/Face ID locale di "Sblocco rapido" — sono due funzioni distinte per design (una sblocca l'app sul dispositivo, l'altra fa login vero sul server).
+- **Sblocco rapido**: il PIN si digita anche da tastiera fisica su desktop; su mobile l'impronta/Face ID parte in automatico al risveglio dello schermo (un solo tentativo automatico, poi resta libero il passaggio al PIN)
+- **Notifiche push**: corretto il conteggio dispositivi mostrato in Profilo, che al primo caricamento su un dispositivo non ancora iscritto restava sul messaggio generico invece del numero reale
+- **Export dati (GDPR)**: aggiunte anche le segnalazioni inviate dall'utente, mancanti dall'export
+- **Pulizia**: rimosso codice morto della gamification (`gamificationService.js`, `useGamification.js`, `useInitializeGamification.js`, `GamificationContext.jsx`, `src/components/gamification/*`, `src/config/badges.js`) — interrogava le tabelle `gamification`/`xp_history`, droppate a fine giugno perché la feature era già stata rimossa in v1.9.4. Non più raggiungibile da nessuna pagina attiva.
 
 ## Novità 2.0.1
 
@@ -74,6 +84,8 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 - Audit RLS completo su tutte le tabelle Supabase
 
 ## Azioni richieste su Supabase dopo il deploy
+
+**2.0.2:** nessuna azione richiesta (nessuna modifica al database; il fix passkey è solo lato client).
 
 **2.0.1:** già fatto — Passkeys attivato in Dashboard (Authentication → Passkeys) con Relying Party configurato per il dominio di produzione. Nessuna migration SQL, nessuna modifica allo schema.
 

@@ -119,7 +119,7 @@ const Expandable = ({ iconName, iconBg, iconColor, label, sub, children, isOpen,
 // ─── Pagina Profilo ───────────────────────────────────────────────────────────
 
 export const Profilo = ({ onNavigate }) => {
-  const { profile, updateProfile, signOut, userCount, registerPasskeyForAccount } = useAuth();
+  const { profile, updateProfile, signOut, userCount, registerPasskeyForAccount, hasRegisteredPasskey } = useAuth();
 
   // ── Sicurezza: sblocco rapido ────────────────────────────────────────────
   const {
@@ -254,11 +254,12 @@ export const Profilo = ({ onNavigate }) => {
       const uid = profile?.id;
       if (!uid) return;
       showToast('Esportazione in corso...', 'info');
-      const [profileRes, noteRes, preferitiRes, pushRes] = await Promise.all([
+      const [profileRes, noteRes, preferitiRes, pushRes, segnalazioniRes] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', uid),
         supabase.from('note').select('*').eq('user_id', uid),
         supabase.from('preferiti').select('*').eq('user_id', uid),
         supabase.from('push_subscriptions').select('endpoint, updated_at').eq('user_id', uid),
+        supabase.from('segnalazioni').select('*').eq('email', profile?.email || ''),
       ]);
       const blob = new Blob([JSON.stringify({
         esportato_il: new Date().toISOString(),
@@ -266,6 +267,7 @@ export const Profilo = ({ onNavigate }) => {
         note: noteRes.data || [],
         preferiti: preferitiRes.data || [],
         push_subscriptions: pushRes.data || [],
+        segnalazioni: segnalazioniRes.data || [],
       }, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
@@ -511,6 +513,7 @@ export const Profilo = ({ onNavigate }) => {
             sub={
               pushPermission === 'denied' ? 'Permesso bloccato — sblocca nelle impostazioni browser' :
               pushSubscribed ? `Attive su ${pushDeviceCount} dispositiv${pushDeviceCount === 1 ? 'o' : 'i'}` :
+              pushDeviceCount > 0 ? `Non attive su questo dispositivo — attive su ${pushDeviceCount} altr${pushDeviceCount === 1 ? 'o' : 'i'}` :
               'Ricevi aggiornamenti dall\'amministratore'
             }
             right={
@@ -539,7 +542,7 @@ export const Profilo = ({ onNavigate }) => {
               : 'Non supportate da questo browser'}
           />
         )}
-        {pushSubscribed && pushDeviceCount > 1 && (
+        {pushDeviceCount > 1 && (
           <ProfileItem
             iconName="wifi-off" iconBg="#fee2e2" iconColor="#dc2626"
             label="Disattiva su tutti i dispositivi"
@@ -673,9 +676,18 @@ export const Profilo = ({ onNavigate }) => {
           <ProfileItem
             iconName="fingerprint" iconBg="#e0f2fe" iconColor="#075985"
             label="Accesso con passkey"
-            sub="Login senza password, con Face ID/impronta/Windows Hello (beta)"
-            onPress={handleRegisterPasskey}
-            right={<span style={{ fontSize: '0.75rem', color: C.textLight, fontWeight: '700' }}>{passkeyBusy ? '...' : 'Registra'}</span>}
+            sub={hasRegisteredPasskey
+              ? 'Login senza password già attivo su questo account (beta)'
+              : 'Login senza password, con Face ID/impronta/Windows Hello (beta)'}
+            onPress={hasRegisteredPasskey ? undefined : handleRegisterPasskey}
+            right={
+              <span style={{
+                fontSize: '0.75rem', fontWeight: '700',
+                color: hasRegisteredPasskey ? '#15803d' : C.textLight,
+              }}>
+                {passkeyBusy ? '...' : hasRegisteredPasskey ? 'Registrato' : 'Registra'}
+              </span>
+            }
             isLast={!lockEnabled}
           />
         )}

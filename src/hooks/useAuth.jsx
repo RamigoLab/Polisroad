@@ -7,6 +7,7 @@ import {
   signIn as signInService,
   signInWithPasskey as signInWithPasskeyService,
   registerPasskey as registerPasskeyService,
+  listPasskeys as listPasskeysService,
   signUp as signUpService,
   resetPassword as resetPasswordService,
   updatePassword as updatePasswordService,
@@ -37,6 +38,7 @@ export const AuthProvider = ({ children }) => {
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState(false);
   const [passwordRecovery, setPasswordRecovery] = useState(false);
+  const [hasRegisteredPasskey, setHasRegisteredPasskey] = useState(false);
 
   // FIX BUG-01/04: ref per tracciare se getSession() ha già avviato un loadProfile,
   // evitando che INITIAL_SESSION lo lanci di nuovo in parallelo.
@@ -228,6 +230,30 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Rilegge da Supabase se l'utente ha almeno un passkey registrato — fonte
+  // di verità reale, non un flag locale che potrebbe disallinearsi.
+  const refreshPasskeyStatus = async () => {
+    if (!isSupabaseConfigured || !supabase) return;
+    try {
+      const list = await listPasskeysService();
+      setHasRegisteredPasskey(list.length > 0);
+    } catch {
+      // API sperimentale: se la lista fallisce (es. non ancora abilitata
+      // lato progetto Supabase) non blocchiamo la UI, resta 'non registrato'.
+    }
+  };
+
+  // Ogni volta che cambia la sessione (login/logout/cambio utente), riallinea
+  // lo stato "passkey registrato" leggendolo da Supabase invece di tenerlo
+  // in un flag locale che può disallinearsi dalla realtà del server.
+  useEffect(() => {
+    if (session?.user?.id && isSupabaseConfigured && supabase) {
+      refreshPasskeyStatus();
+    } else {
+      setHasRegisteredPasskey(false);
+    }
+  }, [session?.user?.id]);
+
   // Registra un passkey per l'utente già loggato (da Profilo).
   const registerPasskeyForAccount = async () => {
     if (!isSupabaseConfigured || !supabase) {
@@ -235,6 +261,7 @@ export const AuthProvider = ({ children }) => {
     }
     try {
       await registerPasskeyService();
+      await refreshPasskeyStatus();
       return { error: null };
     } catch (err) {
       return { error: { message: err.message || 'Registrazione passkey non riuscita.' } };
@@ -334,6 +361,7 @@ export const AuthProvider = ({ children }) => {
         signIn,
         signInWithPasskey,
         registerPasskeyForAccount,
+        hasRegisteredPasskey,
         signUp,
         signOut,
         resetPassword,

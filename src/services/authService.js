@@ -53,6 +53,15 @@ export async function registerPasskey() {
   return data;
 }
 
+// Elenca i passkey già registrati per l'utente loggato — usato per mostrare
+// lo stato reale in Profilo ("Registrato" vs "Registra") invece di un flag
+// locale che potrebbe disallinearsi dal server.
+export async function listPasskeys() {
+  const { data, error } = await supabase.auth.passkey.list();
+  if (error) throw error;
+  return data || [];
+}
+
 export async function signUp(email, password, userData) {
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;

@@ -19,6 +19,9 @@ export const supabase = isSupabaseConfigured
         detectSessionInUrl: true,
         flowType: 'pkce',
         persistSession: true,
+        experimental: {
+          passkey: true,
+        },
       },
     })
   : null;

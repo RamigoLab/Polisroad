@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { C } from '../styles/theme';
 import { Icon } from './ui/Icon';
 import { useAppLock } from '../context/AppLockContext';
@@ -19,6 +19,7 @@ export const LockScreen = () => {
   const [error, setError] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [bioAvailable, setBioAvailable] = useState(false);
+  const autoTriedRef = useRef(false);
 
   useEffect(() => {
     let mounted = true;
@@ -60,6 +61,34 @@ export const LockScreen = () => {
     }
   };
   const backspace = () => setPin(p => p.slice(0, -1));
+
+  // Al risveglio dello schermo, se l'impronta/Face ID è disponibile deve
+  // partire da sola (come un vero unlock nativo) invece di aspettare il tap
+  // sull'icona. Un solo tentativo automatico per sessione di blocco: se
+  // l'utente annulla o fallisce, resta libero di passare al PIN senza che
+  // il sistema ritenti da solo in loop.
+  useEffect(() => {
+    if (!showPinPad && hasBiometric && bioAvailable && !scanning && !autoTriedRef.current) {
+      autoTriedRef.current = true;
+      handleBiometric();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [showPinPad, hasBiometric, bioAvailable]);
+
+  // Su desktop il PIN va digitabile da tastiera fisica, non solo cliccando
+  // i tasti a schermo.
+  useEffect(() => {
+    if (showPinPad === false) return undefined;
+    const onKeyDown = (e) => {
+      if (e.key >= '0' && e.key <= '9') {
+        pressDigit(e.key);
+      } else if (e.key === 'Backspace') {
+        backspace();
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [showPinPad, pin]);
 
   const officerName = profile ? `${profile.grado || ''} ${profile.nome || ''} ${profile.cognome || ''}`.trim() : '';
 

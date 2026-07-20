@@ -11,6 +11,19 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '2.0.2',
+    date: '20 Luglio 2026',
+    isNew: true,
+    items: [
+      'Risolto: il PIN di sblocco rapido ora si può digitare anche da tastiera fisica, non solo toccando i tasti a schermo',
+      'Risolto: su mobile l\'impronta/Face ID parte automaticamente al risveglio dello schermo, senza dover toccare l\'icona',
+      'Risolto: la voce "Accesso con passkey" ora mostra correttamente "Registrato" quando il passkey è già attivo, invece di proporre sempre "Registra"',
+      'Risolto: il numero di dispositivi con notifiche push attive era mostrato in modo incoerente al primo caricamento',
+      'Risolto: l\'esportazione dati (GDPR) include ora anche le segnalazioni inviate dall\'utente',
+      'Rimosso codice morto della gamification (rimossa in v1.9.4): interrogava tabelle Supabase non più esistenti, non più raggiungibile da nessuna pagina dell\'app',
+    ],
+  },
+  {
     version: '2.0.1',
     date: '18 Luglio 2026',
     isNew: true,
