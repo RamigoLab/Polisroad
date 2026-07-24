@@ -30,8 +30,8 @@ describe('useSearch Hook', () => {
   it('dovrebbe restituire risultati vuoti inizialmente', () => {
     const { result } = renderHook(() => useSearch(mockProntuario, mockNormativa));
     expect(result.current.search).toBe('');
-    expect(result.current.risultatiProntuario).toEqual({ exact: [], suggested: [], other: [] });
-    expect(result.current.risultatiNormativa).toEqual({ exact: [], suggested: [], other: [] });
+    expect(result.current.risultatiProntuario).toEqual({ exact: [], suggested: [], other: [], suggestions: [] });
+    expect(result.current.risultatiNormativa).toEqual({ exact: [], suggested: [], other: [], suggestions: [] });
     expect(result.current.total).toBe(0);
     expect(result.current.isSearching).toBe(false);
   });
@@ -39,8 +39,8 @@ describe('useSearch Hook', () => {
   it('non dovrebbe cercare con meno di minChars caratteri', () => {
     const { result } = renderHook(() => useSearch(mockProntuario, mockNormativa, 3));
     act(() => { result.current.setSearch('gu'); });
-    expect(result.current.risultatiProntuario).toEqual({ exact: [], suggested: [], other: [] });
-    expect(result.current.risultatiNormativa).toEqual({ exact: [], suggested: [], other: [] });
+    expect(result.current.risultatiProntuario).toEqual({ exact: [], suggested: [], other: [], suggestions: [] });
+    expect(result.current.risultatiNormativa).toEqual({ exact: [], suggested: [], other: [], suggestions: [] });
     expect(result.current.total).toBe(0);
     expect(result.current.isSearching).toBe(true);
   });

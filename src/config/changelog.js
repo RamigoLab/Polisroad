@@ -11,6 +11,16 @@ import { APP_VERSION } from './constants';
 
 const CHANGELOG_DATA = [
   {
+    version: '2.0.3',
+    date: '23 Luglio 2026',
+    isNew: true,
+    items: [
+      'Ricerca: trova i sinonimi anche con parole in ordine diverso o con parole di mezzo diverse (es. "telefono guida" ora trova "telefono alla guida"), non più solo con la frase identica salvata',
+      'Suggerimenti live mentre digiti su Ricerca Globale, Prontuario e Normative — appena il motore trova qualcosa, compare subito nel menu a tendina con un tap diretto al dettaglio, non solo scorrendo i risultati sotto',
+      'Aggiunti i primi test automatici per il motore di ricerca (prima non ne aveva nessuno)',
+    ],
+  },
+  {
     version: '2.0.2',
     date: '20 Luglio 2026',
     isNew: true,
@@ -21,6 +31,7 @@ const CHANGELOG_DATA = [
       'Risolto: il numero di dispositivi con notifiche push attive era mostrato in modo incoerente al primo caricamento',
       'Risolto: l\'esportazione dati (GDPR) include ora anche le segnalazioni inviate dall\'utente',
       'Rimosso codice morto della gamification (rimossa in v1.9.4): interrogava tabelle Supabase non più esistenti, non più raggiungibile da nessuna pagina dell\'app',
+      'Aggiornata la Privacy Policy: aggiunte le categorie di dati mancanti (passkey, notifiche push, segnalazioni), chiarito che PIN/impronta restano solo sul dispositivo, indicato dove esercitare la portabilità dei dati',
     ],
   },
   {

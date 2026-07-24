@@ -227,6 +227,8 @@ export const Prontuario = ({ onNavigate, navigationParams }) => {
           onChange={e => setSearch(e.target.value)}
           placeholder="Cerca articolo, titolo o codice..."
           loading={search.trim().length >= MIN_SEARCH_CHARS && search !== debouncedSearch}
+          suggestions={searchResults?.suggestions || []}
+          onSuggestionClick={(s) => setSelectedItem(s.item)}
         />
       </div>
       {content}

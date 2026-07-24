@@ -54,26 +54,91 @@ const FUSE_NORMATIVA_OPTIONS = {
   ],
 };
 
+// Parole "vuote" italiane che non aiutano il match e anzi lo confondono
+// (es. "telefono guida" deve trovare "telefono ALLA guida" ignorando "alla").
+const STOPWORDS = new Set([
+  'di', 'a', 'da', 'in', 'con', 'su', 'per', 'tra', 'fra',
+  'il', 'lo', 'la', 'i', 'gli', 'le', 'un', 'uno', 'una',
+  'e', 'o', 'che', 'si', 'ha', 'ho', 'non',
+  'al', 'allo', 'alla', 'ai', 'agli', 'alle',
+  'del', 'dello', 'della', 'dei', 'degli', 'delle',
+]);
+
+const significantWords = (s) =>
+  normalize(s).split(/\s+/).filter(w => w.length >= 2 && !STOPWORDS.has(w));
+
 // Trova i target (codice_caso / id) che matchano la query tra i sinonimi attivi.
-// Match bidirezionale (termine include query, o query include termine) così
-// funziona sia digitando parole parziali sia frasi più lunghe del sinonimo salvato.
+// Match a livello di PAROLA, non di frase intera: "telefono guida" deve trovare
+// il sinonimo salvato "telefono alla guida" anche se l'ordine/le parole di mezzo
+// non coincidono lettera per lettera. Resta bidirezionale (query più corta del
+// sinonimo, o viceversa) per continuare a funzionare mentre l'agente digita
+// solo un pezzo della frase o una frase più lunga di quella salvata.
 function matchSynonymTargets(rawQuery, synonyms, targetType) {
   const q = normalize(rawQuery);
   if (!q || !synonyms?.length) return [];
+  const qWords = significantWords(rawQuery);
+
   const matches = [];
   for (const syn of synonyms) {
     if (syn.target_type !== targetType) continue;
     const termine = normalize(syn.termine);
-    if (termine && (termine.includes(q) || q.includes(termine))) {
-      matches.push({ target_ref: syn.target_ref, peso: syn.peso || 0 });
+    if (!termine) continue;
+    const tWords = significantWords(syn.termine);
+
+    let isMatch;
+    let overlap;
+    if (qWords.length && tWords.length) {
+      // Tutte le parole della query stanno nel sinonimo, o viceversa —
+      // in qualsiasi ordine, ignorando le parole vuote in mezzo.
+      const allQinT = qWords.every(w => termine.includes(w));
+      const allTinQ = tWords.every(w => q.includes(w));
+      isMatch = allQinT || allTinQ;
+      overlap = allQinT ? qWords.length / tWords.length : tWords.length / qWords.length;
+    } else {
+      // Fallback per query/sinonimi troppo corti da tokenizzare (es. un
+      // singolo frammento di parola): torna al substring semplice di prima.
+      isMatch = termine.includes(q) || q.includes(termine);
+      overlap = isMatch ? 1 : 0;
     }
+
+    if (isMatch) matches.push({ target_ref: syn.target_ref, peso: syn.peso || 0, overlap });
   }
+
   const byTarget = new Map();
   matches.forEach(m => {
     const existing = byTarget.get(m.target_ref);
-    if (!existing || m.peso > existing.peso) byTarget.set(m.target_ref, m);
+    // A parità di peso, preferisci il match con più parole in comune
+    // (frase quasi identica batte una che condivide solo una parola).
+    if (!existing || m.peso > existing.peso || (m.peso === existing.peso && m.overlap > existing.overlap)) {
+      byTarget.set(m.target_ref, m);
+    }
   });
-  return Array.from(byTarget.values()).sort((a, b) => b.peso - a.peso);
+  return Array.from(byTarget.values()).sort((a, b) => b.peso - a.peso || b.overlap - a.overlap);
+}
+
+const DROPDOWN_SUGGESTIONS_LIMIT = 5;
+
+// Rimuove parentesi residue dai titoli normativa (stessa pulizia cosmetica
+// che prima viveva solo dentro Normativa.jsx).
+const cleanTitle = (title) => (title || '').replace(/^\s*\(\s*/, '').replace(/\s*\)\s*\.?\s*$/, '').trim();
+
+// Appiattisce i gruppi di risultati (exact/suggested/other) in una lista
+// pronta per il menu a tendina della SearchBar. Un solo posto che lo fa,
+// così Ricerca Globale, Prontuario e Normative condividono la stessa logica
+// invece di ricostruirla ciascuna a modo proprio nella pagina.
+function buildDropdownSuggestions(groupsList, { getItems, dedupeKey, label, badge, icon }) {
+  const seen = new Set();
+  const out = [];
+  for (const group of groupsList) {
+    for (const item of getItems(group)) {
+      const key = dedupeKey(item);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      out.push({ label: label(item), badge: badge(item), icon, item });
+      if (out.length >= DROPDOWN_SUGGESTIONS_LIMIT) return out;
+    }
+  }
+  return out;
 }
 
 // ─── PRONTUARIO ────────────────────────────────────────────────────────────
@@ -92,17 +157,28 @@ export function createProntuarioSearchIndex(list = [], synonyms = []) {
     ])
   );
 
+  const suggestionsFor = (groupsList) => buildDropdownSuggestions(groupsList, {
+    getItems: g => g.voci,
+    dedupeKey: item => item.id,
+    label: item => item.titolo || item.articolo_nome || `Art. ${item.articolo_numero}`,
+    badge: item => `Art. ${item.articolo_numero}`,
+    icon: 'file-text',
+  });
+
   return {
     search(rawQuery, minChars = MIN_SEARCH_CHARS) {
       const q = normalize(rawQuery);
-      if (q.length < minChars) return { exact: [], suggested: [], other: [] };
+      if (q.length < minChars) return { exact: [], suggested: [], other: [], suggestions: [] };
 
       const isNumeric = /^\d+$/.test(q);
 
       // 1. Numero articolo esatto
       if (isNumeric) {
         const exactItems = list.filter(item => (item.articolo_numero || '').toString().trim() === q);
-        if (exactItems.length > 0) return { exact: groupByArticolo(exactItems), suggested: [], other: [] };
+        if (exactItems.length > 0) {
+          const exact = groupByArticolo(exactItems);
+          return { exact, suggested: [], other: [], suggestions: suggestionsFor(exact) };
+        }
       }
 
       // 2. Sinonimi — solo per query testuali (i numeri sono già gestiti sopra)
@@ -131,7 +207,8 @@ export function createProntuarioSearchIndex(list = [], synonyms = []) {
         ...fuseResults.map(r => r.item).filter(item => !textMatchIds.has(item.id)),
       ].filter(item => !suggestedIds.has(item.id));
 
-      return { exact: [], suggested, other: groupByArticolo(allItems) };
+      const other = groupByArticolo(allItems);
+      return { exact: [], suggested, other, suggestions: suggestionsFor([...suggested, ...other]) };
     },
   };
 }
@@ -167,16 +244,31 @@ export function createNormativaSearchIndex(list = [], synonyms = []) {
     ])
   );
 
+  // Dedup per articolo_num, non per singolo comma: click su un suggerimento
+  // porta sempre all'intero articolo (Normativa.jsx non ha un dettaglio per
+  // singolo comma), quindi due commi dello stesso articolo devono contare
+  // come un suggerimento solo, non due identici.
+  const suggestionsFor = (groupsList) => buildDropdownSuggestions(groupsList, {
+    getItems: g => g.commi,
+    dedupeKey: item => item.articolo_num,
+    label: item => cleanTitle(item.titolo_articolo || item.titolo) || `Art. ${item.articolo_num}`,
+    badge: item => item.articolo || `Art. ${item.articolo_num}`,
+    icon: 'book-open',
+  });
+
   return {
     search(rawQuery, minChars = MIN_SEARCH_CHARS) {
       const q = normalize(rawQuery);
-      if (q.length < minChars) return { exact: [], suggested: [], other: [] };
+      if (q.length < minChars) return { exact: [], suggested: [], other: [], suggestions: [] };
 
       const isNumeric = /^\d+$/.test(q);
 
       if (isNumeric) {
         const exactItems = list.filter(item => String(item.articolo_num ?? '') === q);
-        if (exactItems.length > 0) return { exact: buildNormativaGroups(exactItems), suggested: [], other: [] };
+        if (exactItems.length > 0) {
+          const exact = buildNormativaGroups(exactItems);
+          return { exact, suggested: [], other: [], suggestions: suggestionsFor(exact) };
+        }
       }
 
       // Sinonimi per normativa: schema pronto (target_type='normativa'), nessun
@@ -203,7 +295,8 @@ export function createNormativaSearchIndex(list = [], synonyms = []) {
         ...fuseResults.map(r => r.item).filter(item => !textMatchIds.has(item.id)),
       ].filter(item => !suggestedIds.has(item.id));
 
-      return { exact: [], suggested, other: buildNormativaGroups(allItems) };
+      const other = buildNormativaGroups(allItems);
+      return { exact: [], suggested, other, suggestions: suggestionsFor([...suggested, ...other]) };
     },
   };
 }

@@ -1,4 +1,4 @@
-# PolisRoad v2.0.2
+# PolisRoad v2.0.3
 
 Sistema PWA di supporto alle attività di controllo in materia di circolazione stradale, riservato alle forze dell'ordine italiane.
 
@@ -13,6 +13,17 @@ Sistema PWA di supporto alle attività di controllo in materia di circolazione s
 - **Analytics**: PostHog EU cloud
 - **Errori**: Sentry
 
+## Novità 2.0.3
+
+Salto di UX sulla ricerca, a partire da un problema reale: query in linguaggio naturale come "telefono guida" o "neopatentato limiti" non trovavano nulla anche quando il dato esisteva.
+
+- **Matching sinonimi indipendente dall'ordine delle parole**: prima il match era un semplice substring dell'intera frase — bastava una parola diversa in mezzo (es. "alla") per far fallire la ricerca. Ora `matchSynonymTargets` confronta parola per parola (ignorando le parole vuote italiane tipo "di", "alla", "del"), quindi "telefono guida" trova anche il sinonimo salvato come "telefono alla guida", in qualsiasi ordine.
+- **Suggerimenti live su tutte e tre le pagine di ricerca** (Ricerca Globale, Prontuario, Normative): il menu a tendina sotto la barra di ricerca (in Ricerca Globale finora usato solo per la cronologia) ora mostra anche i risultati veri man mano che digiti, con tap diretto al dettaglio. Riusa il motore già calcolato da ciascuna pagina, nessun costo aggiuntivo. In Prontuario porta dritti alla singola voce; in Normative (che naviga per articolo, non per comma) porta all'articolo intero, come già faceva un click normale sul risultato.
+- **Sinonimi**: non ne abbiamo aggiunti "a intuito" in questo giro — meglio partire da dati reali su cosa cerca davvero chi usa l'app (vedi nota sotto).
+- Aggiunti i primi test automatici per `searchEngine.js`, che prima non ne aveva nessuno.
+
+**Nota sui sinonimi**: prima di ampliarli ulteriormente, conviene sapere quali ricerche restano a zero risultati nella vita reale, invece di indovinare nuove frasi. Si può aggiungere un contatore `results_count` all'evento PostHog `search_executed` già esistente (nessun nuovo dato personale, solo un numero) — proposta in sospeso, da confermare.
+
 ## Novità 2.0.2
 
 Fix di rifinitura sullo sblocco rapido/passkey, notifiche push ed export GDPR emersi dall'uso reale post-2.0.1:
@@ -22,6 +33,7 @@ Fix di rifinitura sullo sblocco rapido/passkey, notifiche push ed export GDPR em
 - **Notifiche push**: corretto il conteggio dispositivi mostrato in Profilo, che al primo caricamento su un dispositivo non ancora iscritto restava sul messaggio generico invece del numero reale
 - **Export dati (GDPR)**: aggiunte anche le segnalazioni inviate dall'utente, mancanti dall'export
 - **Pulizia**: rimosso codice morto della gamification (`gamificationService.js`, `useGamification.js`, `useInitializeGamification.js`, `GamificationContext.jsx`, `src/components/gamification/*`, `src/config/badges.js`) — interrogava le tabelle `gamification`/`xp_history`, droppate a fine giugno perché la feature era già stata rimossa in v1.9.4. Non più raggiungibile da nessuna pagina attiva.
+- **Privacy Policy**: aggiornata la sezione "Dati raccolti" con le categorie mancanti (credenziali passkey, sottoscrizioni notifiche push, segnalazioni inviate), chiarito che PIN/impronta di sblocco rapido restano solo sul dispositivo, e indicato dove esercitare la portabilità dei dati (Profilo → Esporta dati GDPR). Non sono un avvocato: revisione legale consigliata prima della pubblicazione.
 
 ## Novità 2.0.1
 
@@ -84,6 +96,8 @@ Milestone che chiude il ciclo di audit completo avviato con la 1.9.7 — vedi `C
 - Audit RLS completo su tutte le tabelle Supabase
 
 ## Azioni richieste su Supabase dopo il deploy
+
+**2.0.3:** nessuna azione richiesta (nessuna modifica al database; il fix del matching è solo lato client).
 
 **2.0.2:** nessuna azione richiesta (nessuna modifica al database; il fix passkey è solo lato client).
 

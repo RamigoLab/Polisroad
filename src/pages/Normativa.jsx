@@ -155,6 +155,8 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
   // Il motore lavora sulla lista piatta (un item per comma) e restituisce gruppi
   // articolo minimi: li "idratiamo" con l'oggetto articolo completo già costruito
   // in hierarchy (titolo_numero, capo_numero, id, ecc.) per non perdere il breadcrumb.
+  // I "suggestions" del motore (per il menu a tendina) vanno idratati allo
+  // stesso modo: contengono l'item comma grezzo, qui serve l'articolo intero.
   const filteredArticoli = useMemo(() => {
     if (debouncedSearch.trim().length < MIN_SEARCH_CHARS) return null;
     const raw = searchIndex.search(debouncedSearch, MIN_SEARCH_CHARS);
@@ -166,7 +168,13 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
           return full ? { ...full, isSuggested: !!g.isSuggested } : null;
         })
         .filter(Boolean);
-    return { exact: hydrate(raw.exact), suggested: hydrate(raw.suggested), other: hydrate(raw.other) };
+    const suggestions = raw.suggestions
+      .map(s => {
+        const full = byNum.get(String(s.item.articolo_num));
+        return full ? { ...s, item: full } : null;
+      })
+      .filter(Boolean);
+    return { exact: hydrate(raw.exact), suggested: hydrate(raw.suggested), other: hydrate(raw.other), suggestions };
   }, [searchIndex, debouncedSearch, hierarchy]);
 
   const handleBack = () => {
@@ -457,6 +465,8 @@ export const Normativa = ({ onNavigate, navigationParams }) => {
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Cerca n° articolo o parola..."
           loading={search.trim().length >= MIN_SEARCH_CHARS && search !== debouncedSearch}
+          suggestions={filteredArticoli?.suggestions || []}
+          onSuggestionClick={(s) => setSelectedArticolo(s.item)}
         />
       </div>
 

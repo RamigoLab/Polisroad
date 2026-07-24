@@ -17,7 +17,7 @@ export const PrivacyContent = () => {
       <p style={{ ...pStyle, fontWeight: 'bold' }}>Titolare del trattamento</p>
       <p style={pStyle}>
         Giorgio Raimondi, contattabile all'indirizzo email: <a href="mailto:privacy@polisroad.it" style={{ color: C.accent }}>privacy@polisroad.it</a><br />
-        Ultimo aggiornamento: Giugno 2026
+        Ultimo aggiornamento: Luglio 2026
       </p>
       <h3 style={h3Style}>1. Introduzione</h3>
       <p style={pStyle}>La presente informativa descrive come vengono raccolti, utilizzati e protetti i dati personali degli utenti che si registrano e utilizzano l'applicazione PolisRoad (di seguito "l'App"), ai sensi del Regolamento (UE) 2016/679 (GDPR).</p>
@@ -33,11 +33,17 @@ export const PrivacyContent = () => {
         <li style={liStyle}>Cronologia delle ricerche effettuate nell'App (memorizzata esclusivamente in locale sul dispositivo dell'utente, senza trasmissione a server esterni)</li>
         <li style={liStyle}>Articoli e voci salvati tra i preferiti (sincronizzati sul database Supabase situato in UE quando l'utente è autenticato)</li>
         <li style={liStyle}>Note personali associate agli articoli (sincronizzate sul database Supabase situato in UE quando l'utente è autenticato)</li>
+        <li style={liStyle}>Credenziali passkey (WebAuthn), se l'utente sceglie di attivare l'accesso senza password — gestite tramite il fornitore di autenticazione (Supabase Auth); non include dati biometrici, che restano sul dispositivo dell'utente</li>
+        <li style={liStyle}>Endpoint di notifica del dispositivo, se l'utente attiva le notifiche push (necessario per recapitare le notifiche; non identifica l'utente al di fuori dell'App)</li>
+        <li style={liStyle}>Contenuto delle segnalazioni inviate volontariamente dall'utente tramite l'App (es. problemi tecnici o richieste), incluso l'indirizzo email se fornito</li>
       </ul>
+      <p style={pStyle}>L'accesso rapido tramite PIN o impronta/Face ID (sblocco dell'App) è gestito interamente in locale sul dispositivo: la credenziale non lascia mai il dispositivo e non è trasmessa né conservata su alcun server.</p>
       <h3 style={h3Style}>3. Finalità del trattamento</h3>
       <ul style={ulStyle}>
-        <li style={liStyle}>Consentire l'accesso e l'utilizzo dell'App (autenticazione)</li>
+        <li style={liStyle}>Consentire l'accesso e l'utilizzo dell'App (autenticazione, incluso l'accesso senza password tramite passkey se attivato)</li>
         <li style={liStyle}>Personalizzare l'esperienza dell'utente (profilo, statistiche di utilizzo)</li>
+        <li style={liStyle}>Inviare notifiche push relative all'App, se attivate dall'utente</li>
+        <li style={liStyle}>Gestire le segnalazioni inviate volontariamente dall'utente</li>
         <li style={liStyle}>Garantire la sicurezza del servizio</li>
       </ul>
       <h3 style={h3Style}>4. Base giuridica</h3>
@@ -56,9 +62,10 @@ export const PrivacyContent = () => {
         <li style={liStyle}>Rettifica (art. 16 GDPR)</li>
         <li style={liStyle}>Cancellazione (art. 17 GDPR) — disponibile dal Profilo</li>
         <li style={liStyle}>Limitazione del trattamento (art. 18 GDPR)</li>
-        <li style={liStyle}>Portabilità dei dati (art. 20 GDPR)</li>
+        <li style={liStyle}>Portabilità dei dati (art. 20 GDPR) — esportabile in formato leggibile da <strong>Profilo → Esporta dati (GDPR)</strong></li>
         <li style={liStyle}>Opposizione al trattamento (art. 21 GDPR)</li>
       </ul>
+      <p style={pStyle}>L'esportazione include i dati di profilo, note, preferiti, sottoscrizioni alle notifiche push e segnalazioni inviate. Non include le credenziali di sblocco locale (PIN, impronta/Face ID), che non lasciano mai il dispositivo.</p>
       <p style={pStyle}>Contatto: <a href="mailto:privacy@polisroad.it" style={{ color: C.accent }}>privacy@polisroad.it</a></p>
       <h3 style={h3Style}>10. Reclami</h3>
       <p style={pStyle}>L'utente ha il diritto di proporre reclamo al Garante per la Protezione dei Dati Personali (www.garanteprivacy.it).</p>

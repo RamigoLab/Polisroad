@@ -84,30 +84,40 @@ export const SearchBar = ({
           overflow: 'hidden',
           boxShadow: 'var(--shadow-md)',
         }}>
-          {suggestions.map((s, i) => (
-            <div
-              key={i}
-              role="button"
-              tabIndex={0}
-              onClick={() => onSuggestionClick?.(s)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  e.preventDefault();
-                  onSuggestionClick?.(s);
-                }
-              }}
-              style={{
-                display: 'flex', alignItems: 'center', gap: '10px',
-                padding: '11px 14px',
-                borderBottom: i < suggestions.length - 1 ? `0.5px solid ${C.border}` : 'none',
-                cursor: 'pointer',
-                fontSize: '0.88rem', color: C.text,
-              }}
-            >
-              <Icon name="clock" size={14} color={C.textLight} strokeWidth={1.75} />
-              {s}
-            </div>
-          ))}
+          {suggestions.map((s, i) => {
+            const isRich = typeof s === 'object' && s !== null;
+            const label = isRich ? s.label : s;
+            const iconName = isRich ? (s.icon || 'search') : 'clock';
+            return (
+              <div
+                key={i}
+                role="button"
+                tabIndex={0}
+                onClick={() => onSuggestionClick?.(s)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onSuggestionClick?.(s);
+                  }
+                }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '10px',
+                  padding: '11px 14px',
+                  borderBottom: i < suggestions.length - 1 ? `0.5px solid ${C.border}` : 'none',
+                  cursor: 'pointer',
+                  fontSize: '0.88rem', color: C.text,
+                }}
+              >
+                <Icon name={iconName} size={14} color={C.textLight} strokeWidth={1.75} />
+                <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {label}
+                </span>
+                {isRich && s.badge && (
+                  <span style={{ fontSize: '0.7rem', color: C.textLight, flexShrink: 0 }}>{s.badge}</span>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
     </div>

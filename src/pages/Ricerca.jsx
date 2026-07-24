@@ -66,6 +66,22 @@ export const Ricerca = ({ onNavigate }) => {
     return history.filter(h => h.toLowerCase().startsWith(q));
   }, [search, history]);
 
+  // Suggerimenti live dal contenuto vero (non solo dalla cronologia): il
+  // motore li calcola già dentro risultatiProntuario/risultatiNormativa,
+  // qui li mergiamo soltanto — nessuna logica di costruzione duplicata qui.
+  const contentSuggestions = React.useMemo(
+    () => [...risultatiProntuario.suggestions, ...risultatiNormativa.suggestions].slice(0, 5),
+    [risultatiProntuario, risultatiNormativa],
+  );
+
+  const suggestionsToShow = contentSuggestions.length > 0 ? contentSuggestions : autoSuggestions;
+
+  const handleSuggestionClick = (s) => {
+    if (typeof s === 'string') { setSearch(s); return; }
+    if (risultatiProntuario.suggestions.includes(s)) { handleProntuarioItemClick(s.item); return; }
+    handleNormativaItemClick(s.item);
+  };
+
   const hasSearch = search.trim().length > 0;
   const searchTerms = search.trim().toLowerCase().split(/\s+/).filter(Boolean);
 
@@ -286,8 +302,8 @@ export const Ricerca = ({ onNavigate }) => {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Cerca in tutto PolisRoad..."
-          suggestions={autoSuggestions}
-          onSuggestionClick={(term) => setSearch(term)}
+          suggestions={suggestionsToShow}
+          onSuggestionClick={handleSuggestionClick}
           loading={isPending}
         />
         {search.length > 0 && search.length <= 2 && (
